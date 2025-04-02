@@ -10,7 +10,7 @@ import AdminProfilePage from "./pages/AdminProfile";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import Settings from "./components/superadmintools/Settings";
 import OTPVerification from "./pages/OtpUserLogin";
-import UserDashboard from "./pages/UserDashboard";
+import UserDashboard from "./pages/UserDashBoard";
 const router = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
   { path: "/client-events", element: <ClientEventsPage /> },

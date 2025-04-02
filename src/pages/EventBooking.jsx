@@ -1,21 +1,18 @@
 import React, { useState } from "react";
+import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
+// Function to generate unique event code
 const generateEventCode = () => {
-  // VT-YYYYMMDD-####
   const letters = "VT";
   const yearNow = new Date().getFullYear();
   const monthNow = String(new Date().getMonth() + 1).padStart(2, "0");
   const dayNow = String(new Date().getDate()).padStart(2, "0");
-  const firstNumber = Math.floor(Math.random() * 9);
-  const secondNumber = Math.floor(Math.random() * 9);
-  const thirdNumber = Math.floor(Math.random() * 9);
-  const fourthNumber = Math.floor(Math.random() * 9);
-
-  const eventCode = `${letters}-${yearNow}${monthNow}${dayNow}-${firstNumber}${secondNumber}${thirdNumber}${fourthNumber}`;
-  return eventCode;
+  const randomNumbers = Math.floor(1000 + Math.random() * 9000); // Generates a 4-digit number
+  return `${letters}-${yearNow}${monthNow}${dayNow}-${randomNumbers}`;
 };
 
 const EventBooking = () => {
@@ -29,31 +26,33 @@ const EventBooking = () => {
     clientName: "",
     clientEmail: "",
     clientPhone: "",
-    additionalNotes: ""
+    additionalNotes: "",
   });
 
   const [errors, setErrors] = useState({});
 
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
+  // Validate form inputs
   const validateForm = () => {
     let formErrors = {};
     let isValid = true;
 
     Object.keys(formData).forEach((key) => {
-      if (!formData[key] && key !== "eventCode") {
+      if (!formData[key] && key !== "eventCode" && key !== "additionalNotes") {
         formErrors[key] = `${key.replace(/([A-Z])/g, " $1")} is required`;
         isValid = false;
       }
     });
 
-    if (formData.clientPhone && !/\d{10}/.test(formData.clientPhone)) {
+    if (formData.clientPhone && !/^\d{10}$/.test(formData.clientPhone)) {
       formErrors.clientPhone = "Client phone must be 10 digits";
       isValid = false;
     }
@@ -62,26 +61,57 @@ const EventBooking = () => {
     return isValid;
   };
 
-  const handleSubmit = (e) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-        toast.success("Event Inquiry Submitted");
-      console.log("Event Inquiry Submitted:", formData);
-    } else{
-        toast.error("Submit all required fileds");
+      const userData = {
+        eventCode: formData.eventCode,
+        clientName: formData.clientName,
+        clientEmail: formData.clientEmail,
+        clientPhone: formData.clientPhone,
+        role: "user",
+      };
+
+      try {
+        // Send user data to JSON Server
+        const response = await axios.post("http://localhost:5000/users", userData);
+        console.log("User added:", response.data);
+        toast.success("Event Inquiry Submitted & User Added!");
+
+        // Reset form (except eventCode)
+        setFormData({
+          ...formData,
+          eventCode: generateEventCode(),
+          eventName: "",
+          eventType: "",
+          eventDate: "",
+          eventLocation: "",
+          numberOfAttendees: "",
+          clientName: "",
+          clientEmail: "",
+          clientPhone: "",
+          additionalNotes: "",
+        });
+
+      } catch (error) {
+        console.error("Error adding user:", error);
+        toast.error("Failed to add user.");
+      }
+    } else {
+      toast.error("Please fill in all required fields");
     }
   };
 
   return (
     <>
-    <ToastContainer />
+      <ToastContainer />
       <Navbar />
       <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
         <h2 className="text-2xl font-semibold text-center" style={{ color: "rgb(153,39,135)" }}>
           Submit an Event Inquiry
         </h2>
         <form onSubmit={handleSubmit}>
-
           {Object.keys(formData).map((field) => (
             field !== "eventCode" && (
               <div className="mb-4" key={field}>

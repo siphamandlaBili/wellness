@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "id": "e7f5",
+      "eventCode": "VT-20250402-7953",
+      "clientName": "mizo",
+      "clientEmail": "azilebili@gmail.com",
+      "clientPhone": "0837721866",
+      "role": "user"
+    },
+    {
+      "id": "e263",
+      "eventCode": "VT-20250402-5488",
+      "clientName": "Mabena",
+      "clientEmail": "tshepangbaloyi@gmail.com",
+      "clientPhone": "0826536753",
+      "role": "user"
+    }
+  ]
+}

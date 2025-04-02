@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-
+import React, { useState,useContext } from 'react';
+import { AuthContext } from '../../context/authContext';
 // Edit Profile Modal
 const EditProfileModal = ({ isOpen, onClose, onSave }) => {
   const [name, setName] = useState("Admin Name");
@@ -156,7 +156,10 @@ const AdminProfilePage = ({name}) => {
     console.log("Account deleted!");
     setDeleteModalOpen(false);
   };
+  
 
+  const {user} = useContext(AuthContext);
+  console.log(user);
   return (
     <>
       <div className="flex items-center mb-6">
@@ -166,8 +169,8 @@ const AdminProfilePage = ({name}) => {
           className="w-24 h-24 rounded-full border-4 border-[#992787] mr-6"
         />
         <div>
-          <h1 className="text-3xl font-semibold text-[#992787]">{adminInfo.name}</h1>
-          <p className="text-gray-600 text-lg">{adminInfo.role}</p>
+          <h1 className="text-3xl font-semibold text-[#992787]">{user.clientName}</h1>
+          <p className="text-gray-600 text-lg">{user.role}</p>
         </div>
       </div>
 
@@ -178,7 +181,7 @@ const AdminProfilePage = ({name}) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-gray-600">Email:</p>
-              <p className="font-semibold text-gray-800">{adminInfo.email}</p>
+              <p className="font-semibold text-gray-800">{user.clientEmail}</p>
             </div>
             <div>
               <p className="text-gray-600">Role:</p>
@@ -186,7 +189,7 @@ const AdminProfilePage = ({name}) => {
             </div>
             <div>
               <p className="text-gray-600">Phone:</p>
-              <p className="font-semibold text-gray-800">{adminInfo.phone}</p>
+              <p className="font-semibold text-gray-800">{user.clientPhone}</p>
             </div>
             <div>
               <p className="text-gray-600">Joined:</p>
