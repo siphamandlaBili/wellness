@@ -3,7 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { assets } from '../assets/assets';
 import Navbar from '../components/Navbar';
 
-const Dashboard = () => {
+const UserDashboard = () => {
     return (
         <div className='min-h-screen'>
             {/* Navbar for recruiter panel */}
@@ -14,11 +14,11 @@ const Dashboard = () => {
                 {/* Left sidebar */}
                 <div className='inline-block min-h-screen border-3 border-[#eeeeee]'>
                     <ul className='flex flex-col items-start pt-5 text-gray-800'>
-                        {['profile', 'view-applications', 'past-events'].map((item) => (
+                        {['profile', 'applications'].map((item) => (
                             <NavLink
                                 key={item}
                                 className={({ isActive }) => `relative flex items-center p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 ${isActive ? 'bg-[#f2d9eb] border-r-4 border-[#992787]' : ''}`}
-                                to={`/admin/${item}`} // Updated path to match routing structure
+                                to={`/user-dashboard/${item}`} // Updated path to match routing structure
                             >
                                 <img
                                     className='min-w-4'
@@ -41,11 +41,11 @@ const Dashboard = () => {
 
                 {/* Right-side content */}
                 <div className="flex-1 p-5">
-                    <Outlet />
+                    <Outlet/>
                 </div>
             </div>
         </div>
     );
 };
 
-export default Dashboard;
+export default UserDashboard;

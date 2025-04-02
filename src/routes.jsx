@@ -10,12 +10,22 @@ import AdminProfilePage from "./pages/AdminProfile";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import Settings from "./components/superadmintools/Settings";
 import OTPVerification from "./pages/OtpUserLogin";
-
+import UserDashboard from "./pages/UserDashboard";
 const router = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
   { path: "/client-events", element: <ClientEventsPage /> },
   { path: "/booking", element: <EventBooking /> },
   { path: "/login", element: <OTPVerification/> },
+  { path: "/user-dashboard", element: <UserDashboard/> ,
+    children:[
+      {
+         path: "profile",
+        element: <AdminProfilePage /> 
+      }
+      ,{ 
+        path: "applications",
+        element: <ManageApplications /> },
+      ]},
   { 
     path: "/admin", 
     element: <Dashboard />, 

@@ -128,7 +128,8 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onDelete }) => {
 };
 
 // Admin Profile Page
-const AdminProfilePage = () => {
+const AdminProfilePage = ({name}) => {
+  console.log(name);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [adminInfo, setAdminInfo] = useState({
