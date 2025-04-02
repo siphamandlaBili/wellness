@@ -2,11 +2,10 @@ import React,{useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
-    const [isLogedIn,setIsLogedIn] = useState(true)
-    
+ 
     const navigate = useNavigate();
-    let navigateTo = isLogedIn ?"/booking":"/"
-    console.log(navigateTo)
+    let navigateTo = "/booking";
+    
   return (
     <>
       {/* Top Blurred Background */}

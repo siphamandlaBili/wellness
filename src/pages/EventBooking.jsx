@@ -4,12 +4,18 @@ import Footer from "../components/Footer";
 import { ToastContainer, toast } from 'react-toastify';
 
 const generateEventCode = () => {
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const fourLetterPart = Array.from({ length: 4 }, () => letters[Math.floor(Math.random() * letters.length)]).join("");
+  // VT-YYYYMMDD-####
+  const letters = "VT";
+  const yearNow = new Date().getFullYear();
+  const monthNow = String(new Date().getMonth() + 1).padStart(2, "0");
+  const dayNow = String(new Date().getDate()).padStart(2, "0");
   const firstNumber = Math.floor(Math.random() * 9);
   const secondNumber = Math.floor(Math.random() * 9);
   const thirdNumber = Math.floor(Math.random() * 9);
-  return `${fourLetterPart}-${firstNumber}${thirdNumber}${secondNumber}`;
+  const fourthNumber = Math.floor(Math.random() * 9);
+
+  const eventCode = `${letters}-${yearNow}${monthNow}${dayNow}-${firstNumber}${secondNumber}${thirdNumber}${fourthNumber}`;
+  return eventCode;
 };
 
 const EventBooking = () => {

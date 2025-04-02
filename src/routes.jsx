@@ -9,12 +9,13 @@ import PastEvents from "./pages/PastEvents";
 import AdminProfilePage from "./pages/AdminProfile";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import Settings from "./components/superadmintools/Settings";
+import OTPVerification from "./pages/OtpUserLogin";
 
 const router = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
-  { path: "/login", element: <LoginPage /> },
   { path: "/client-events", element: <ClientEventsPage /> },
   { path: "/booking", element: <EventBooking /> },
+  { path: "/login", element: <OTPVerification/> },
   { 
     path: "/admin", 
     element: <Dashboard />, 
