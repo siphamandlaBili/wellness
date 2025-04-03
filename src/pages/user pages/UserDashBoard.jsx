@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { assets } from '../assets/assets';
-import Navbar from '../components/Navbar';
+import { assets } from '../../assets/assets';
+import Navbar from '../../components/Navbar';
 
 const UserDashboard = () => {
     return (
@@ -10,11 +10,11 @@ const UserDashboard = () => {
             <Navbar />
 
             {/* Sidebar with navigation links */}
-            <div className='flex items-start'>
+            <div className='flex items-start min-h-screen'>
                 {/* Left sidebar */}
-                <div className='inline-block min-h-screen border-3 border-[#eeeeee]'>
+                <div className=' min-h-[90vh] border-3 border-r-[#eeeeee] border-b-transparent border-l-transparent border-t-transparent flex flex-col justify-between'>
                     <ul className='flex flex-col items-start pt-5 text-gray-800'>
-                        {['profile', 'applications'].map((item) => (
+                        {['profile', 'applications', 'apply-for-event'].map((item) => (
                             <NavLink
                                 key={item}
                                 className={({ isActive }) => `relative flex items-center p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 ${isActive ? 'bg-[#f2d9eb] border-r-4 border-[#992787]' : ''}`}
@@ -24,24 +24,35 @@ const UserDashboard = () => {
                                     className='min-w-4'
                                     src={
                                         item === 'profile' ? assets.person_tick_icon :
-                                            item === 'past-events' ? assets.home_icon :
-                                                assets.add_icon
+                                        item === 'apply-for-event' ? assets.home_icon :
+                                        assets.add_icon
                                     }
-                                    alt=""
+                                    alt={item}
                                 />
                                 <p className='max-sm:hidden'>
                                     {item === 'profile' ? 'Profile' :
-                                        item === 'past-events' ? 'Past Events' :
-                                            'View Applications'}
+                                        item === 'applications' ? 'View Applications' :
+                                        'Apply for Event'}
                                 </p>
                             </NavLink>
                         ))}
                     </ul>
+
+                    {/* Logout at the bottom */}
+                    <NavLink
+                        className={({ isActive }) => `relative flex items-center p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 mb-10 ${isActive ? 'bg-[#f2d9eb] border-r-4 border-[#992787]' : ''}`}
+                        to={`/`}
+                    >
+                        <img className='min-w-4' src={assets.person_tick_icon} />
+                        <p className='max-sm:hidden'>
+                            Logout
+                        </p>
+                    </NavLink>
                 </div>
 
                 {/* Right-side content */}
                 <div className="flex-1 p-5">
-                    <Outlet/>
+                    <Outlet />
                 </div>
             </div>
         </div>

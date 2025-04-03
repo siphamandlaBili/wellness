@@ -6,12 +6,12 @@ import { useLocation } from "react-router-dom"; // Import useLocation to get the
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const navigate =  useNavigate();
+  const navigate = useNavigate();
   const location = useLocation(); // Get the current path
   const currentPath = location.pathname; // Get the current path from location
-  
+
   const showMiddleNav = () => {
-    if(currentPath !== "/") {
+    if (currentPath !== "/") {
       return false; // Don't show middle nav if not on the landing page
     }
     return true; // Show middle nav if on the landing page
@@ -30,39 +30,47 @@ const Navbar = () => {
             {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>)}
-        
+
 
         {/* Middle Navigation */}
         {showMiddleNav() && (<div className="hidden md:flex items-center gap-6">
-          <Link to="about" className="relative text-gray-600 text-lg hover:text-[rgb(153,39,135)] group">
+          <a href="#about" className="text-gray-600 text-lg hover:text-[rgb(153,39,135)]" onClick={() => setIsOpen(false)}>
             About
-          </Link>
-          <Link to="/projects" className="relative text-gray-600 text-lg hover:text-[rgb(153,39,135)] group">
-            Projects
-          </Link>
-          <Link to="/calendar" className="relative text-gray-600 text-lg hover:text-[rgb(153,39,135)] group">
-            Calendar
+          </a>
+          <Link to="/" className="relative text-gray-600 text-lg hover:text-[rgb(153,39,135)] group">
+            FAQ
           </Link>
         </div>)}
-        
+
 
         {/* Right Section */}
-        <div className="hidden md:flex items-center gap-4">
-        </div>
+        {showMiddleNav() ?
+          <button
+            className="btn btn-md hidden text-md text-gray-500 md:flex  cursor-pointer"
+            onClick={() => navigate('/login')}
+          >
+            Login
+          </button> : ""}
       </div>
 
       {/* Mobile Menu */}
       {(isOpen && showMiddleNav()) && (
         <div className="md:hidden flex flex-col items-center gap-4 mt-4">
-          <Link to="#about" className="text-gray-600 text-lg hover:text-[rgb(153,39,135)]" onClick={() => setIsOpen(false)}>
+          <a href="#about" className="text-gray-600 text-lg hover:text-[rgb(153,39,135)]" onClick={() => setIsOpen(false)}>
             About
+          </a>
+          <Link to="/" className="text-gray-600 text-lg hover:text-[rgb(153,39,135)]" onClick={() => setIsOpen(false)}>
+            FAQ
           </Link>
-          <Link to="/projects" className="text-gray-600 text-lg hover:text-[rgb(153,39,135)]" onClick={() => setIsOpen(false)}>
-            Projects
-          </Link>
-          <Link to="/calendar" className="text-gray-600 text-lg hover:text-[rgb(153,39,135)]" onClick={() => setIsOpen(false)}>
-            Calendar
-          </Link>
+          <button
+            className="btn btn-md cursor-pointer"
+            onClick={() => {
+              setIsOpen(false)
+              navigate('/login')
+            }}
+          >
+            Login
+          </button>
         </div>
       )}
     </nav>

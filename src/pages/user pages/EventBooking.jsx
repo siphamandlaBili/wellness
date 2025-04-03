@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import axios from "axios";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { AuthContext } from "../../../context/authContext";
 
-// Function to generate unique event code
+
 const generateEventCode = () => {
   const letters = "VT";
   const yearNow = new Date().getFullYear();
@@ -23,14 +24,12 @@ const EventBooking = () => {
     eventDate: "",
     eventLocation: "",
     numberOfAttendees: "",
-    clientName: "",
-    clientEmail: "",
-    clientPhone: "",
     additionalNotes: "",
   });
 
   const [errors, setErrors] = useState({});
 
+  const {user} = useContext(AuthContext);
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,34 +62,37 @@ const EventBooking = () => {
 
   // Handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
+   
     if (validateForm()) {
       const userData = {
         eventCode: formData.eventCode,
-        clientName: formData.clientName,
-        clientEmail: formData.clientEmail,
-        clientPhone: formData.clientPhone,
+        clientName: user.clientName,
+        clientEmail: user.clientEmail,
+        clientPhone: user.clientPhone,
+        eventName: formData.eventName,
+        eventType: formData.eventType,
+        eventDate: formData.eventDate,
+        eventLocation: formData.eventLocation,
+        numberOfAttendees: formData.numberOfAttendees,
+        additionalNotes: formData.additionalNotes,
+        status: "pending",
         role: "user",
       };
 
       try {
         // Send user data to JSON Server
-        const response = await axios.post("http://localhost:5000/users", userData);
+        const response = await axios.post("http://localhost:5000/events", userData);
         console.log("User added:", response.data);
         toast.success("Event Inquiry Submitted & User Added!");
 
         // Reset form (except eventCode)
         setFormData({
           ...formData,
-          eventCode: generateEventCode(),
           eventName: "",
           eventType: "",
           eventDate: "",
           eventLocation: "",
           numberOfAttendees: "",
-          clientName: "",
-          clientEmail: "",
-          clientPhone: "",
           additionalNotes: "",
         });
 
@@ -106,12 +108,11 @@ const EventBooking = () => {
   return (
     <>
       <ToastContainer />
-      <Navbar />
       <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
         <h2 className="text-2xl font-semibold text-center" style={{ color: "rgb(153,39,135)" }}>
           Submit an Event Inquiry
         </h2>
-        <form onSubmit={handleSubmit}>
+        <>
           {Object.keys(formData).map((field) => (
             field !== "eventCode" && (
               <div className="mb-4" key={field}>
@@ -130,15 +131,18 @@ const EventBooking = () => {
             )
           ))}
           <button
-            type="submit"
+             onClick={(event) => { 
+              event.preventDefault();  
+              handleSubmit(event);
+            }}
             className="w-[30%] py-3 text-white text-lg font-semibold rounded-md hover:opacity-90 transition duration-200"
             style={{ backgroundColor: "rgb(153,39,135)" }}
           >
             Submit Inquiry
           </button>
-        </form>
+        </>
       </div>
-      <Footer />
+
     </>
   );
 };

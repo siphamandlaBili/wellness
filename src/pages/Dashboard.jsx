@@ -4,6 +4,7 @@ import { assets } from '../assets/assets';
 import Navbar from '../components/Navbar';
 
 const Dashboard = () => {
+
     return (
         <div className='min-h-screen'>
             {/* Navbar for recruiter panel */}

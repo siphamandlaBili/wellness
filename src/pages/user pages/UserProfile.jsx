@@ -1,10 +1,12 @@
 import React, { useState,useContext } from 'react';
-import { AuthContext } from '../../context/authContext';
+import { AuthContext } from '../../../context/authContext';
 // Edit Profile Modal
 const EditProfileModal = ({ isOpen, onClose, onSave }) => {
-  const [name, setName] = useState("Admin Name");
-  const [email, setEmail] = useState("admin@wellnessapp.com");
-  const [phone, setPhone] = useState("(555) 123-4567");
+  const {user} = useContext(AuthContext);
+
+  const [name, setName] = useState(user.clientName);
+  const [email, setEmail] = useState(user.clientEmail);
+  const [phone, setPhone] = useState(user.clientPhone);
   const [image, setImage] = useState(
     "https://media.istockphoto.com/id/1372065700/photo/portrait-of-a-confident-young-businessman-working-in-a-modern-office.jpg?s=612x612&w=0&k=20&c=oPRp9aiGEb_00Y0Q_eR40MiOisM2eFfeP7lDf0IqJDw="
   );
@@ -128,15 +130,16 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onDelete }) => {
 };
 
 // Admin Profile Page
-const AdminProfilePage = ({name}) => {
-  console.log(name);
+const UserProfilePage = ({name}) => {
+  const {user} = useContext(AuthContext);
+  
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [adminInfo, setAdminInfo] = useState({
-    name: "Admin Name",
-    email: "admin@wellnessapp.com",
-    role: "Administrator",
-    phone: "(555) 123-4567",
+    name: user.clientName,
+    email: user.clientEmail,
+    role: user.role,
+    phone: user.clientPhone,
     joined: "January 15, 2023",
     image: "https://media.istockphoto.com/id/1372065700/photo/portrait-of-a-confident-young-businessman-working-in-a-modern-office.jpg?s=612x612&w=0&k=20&c=oPRp9aiGEb_00Y0Q_eR40MiOisM2eFfeP7lDf0IqJDw="
   });
@@ -158,8 +161,7 @@ const AdminProfilePage = ({name}) => {
   };
   
 
-  const {user} = useContext(AuthContext);
-  console.log(user);
+  
   return (
     <>
       <div className="flex items-center mb-6">
@@ -177,7 +179,7 @@ const AdminProfilePage = ({name}) => {
       <div className="space-y-6">
         {/* Admin Info Section */}
         <div className="bg-[#f9f4f9] p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-semibold text-[#992787] mb-4">Admin Info</h2>
+          <h2 className="text-2xl font-semibold text-[#992787] mb-4">Company Info</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-gray-600">Email:</p>
@@ -185,7 +187,7 @@ const AdminProfilePage = ({name}) => {
             </div>
             <div>
               <p className="text-gray-600">Role:</p>
-              <p className="font-semibold text-gray-800">{adminInfo.role}</p>
+              <p className="font-semibold text-gray-800">{user.role}</p>
             </div>
             <div>
               <p className="text-gray-600">Phone:</p>
@@ -233,4 +235,4 @@ const AdminProfilePage = ({name}) => {
   );
 };
 
-export default AdminProfilePage;
+export default UserProfilePage;

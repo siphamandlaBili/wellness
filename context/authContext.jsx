@@ -9,6 +9,15 @@ export const AuthProvider = ({ children }) => {
     return JSON.parse(localStorage.getItem("user")) || null;
   });
 
+  //event
+  const [userEvents, setEvent] = useState(() => {
+    return JSON.parse(localStorage.getItem("event")) || null;
+  });
+
+  const setEventStorage = (data) => {;
+    setEvent(data);
+    localStorage.setItem("event", JSON.stringify(data)); // Save session
+  };
   // Login function
   const loggedInUser = (data) => {;
     setUser(data);
@@ -18,13 +27,14 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user"); // Clear session
+    localStorage.removeItem("user"); 
+    localStorage.removeItem("event")
   };
 
 
 
   return (
-    <AuthContext.Provider value={{ user,setUser, loggedInUser, logout }}>
+    <AuthContext.Provider value={{ user,setUser, loggedInUser, logout,setEventStorage,userEvents }}>
       {children}
     </AuthContext.Provider>
   );

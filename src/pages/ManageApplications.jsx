@@ -1,9 +1,24 @@
-import React from 'react';
+import React,{useContext,useEffect,useState} from 'react';
 import { manageJobsData } from '../assets/assets';
 import moment from 'moment';
+import { AuthContext } from '../../context/authContext';
 
 const ManageApplications = () => {
- 
+ const {userEvents,setEventStorage,user} = useContext(AuthContext);
+
+ console.log(user.clientEmail);
+  const getEvent = async () => {
+  const response = await fetch('http://localhost:5000/events');
+  const data = await response.json();
+  
+  const ownedbyUser = data.filter((event) => event.clientEmail === user.clientEmail);
+  await setEventStorage(ownedbyUser);
+  console.log(userEvents);
+  }
+  useEffect(() => {
+    getEvent();
+  }, []);
+  
   return (
     <div className='container p-4 max-w-5xl'>
       <div className='overflow-x-auto'>
@@ -15,31 +30,18 @@ const ManageApplications = () => {
               <th className='py-2 px-4 text-left max-sm:hidden'>Date</th>
               <th className='py-2 px-4 text-left max-sm:hidden'>Location</th>
               <th className='py-2 px-4 text-center'>Attendies</th>
-              <th className='py-2 px-4 text-left'>Accepted</th>
+              <th className='py-2 px-4 text-left'>status</th>
             </tr>
           </thead>
           <tbody>
-            {manageJobsData.map((job, index) => (
+            {userEvents.map((event, index) => (
               <tr key={index} className='text-gray-700'>
-                <td className='py-2 px-4 border-b max-sm:hidden'>{job.eventCode}</td>
-                <td className='py-2 px-4 border-b'>{job.eventType}</td>
-                <td className='py-2 px-4 border-b max-sm:hidden'>{moment(job.eventDate).format('ll')}</td>
-                <td className='py-2 px-4 border-b max-sm:hidden'>{job.eventLocation}</td>
-                <td className='py-2 px-4 border-b text-center'>{job.numberOfAttendees}</td>
-                <td className='py-2 px-4 border-b text-center'>
-  <span
-    className='cursor-pointer text-green-500 ml-4'
-    onClick={() => handleAccept()}
-  >
-    ✔
-  </span>
-  <span
-    className='cursor-pointer text-red-500 ml-4'
-    onClick={() => handleDecline()}
-  >
-    ✘
-  </span>
-</td>
+                <td className='py-2 px-4 border-b max-sm:hidden'>{event.eventCode}</td>
+                <td className='py-2 px-4 border-b'>{event.eventType}</td>
+                <td className='py-2 px-4 border-b max-sm:hidden'>{event.eventDate}</td>
+                <td className='py-2 px-4 border-b max-sm:hidden'>{event.eventLocation}</td>
+                <td className='py-2 px-4 border-b text-center'>{event.numberOfAttendees}</td>
+                <td className='py-2 px-4 border-b text-center'>{event.status? event.status:"no status"}</td>
 
               </tr>
             ))}

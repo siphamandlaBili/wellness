@@ -1,13 +1,14 @@
 import React,{useState} from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Hero = () => {
  
     const navigate = useNavigate();
-    let navigateTo = "/booking";
     
   return (
     <>
+    <ToastContainer/>
       {/* Top Blurred Background */}
       <div
         aria-hidden="true"
@@ -27,7 +28,12 @@ const Hero = () => {
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <button
               className="rounded-md cursor-pointer bg-[rgb(153,39,135)] px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-[rgb(130,30,115)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(153,39,135)]"
-              onClick={() => navigate(navigateTo)}
+              onClick={() => {
+                toast.success("you need to login before booking...");
+                setTimeout(() => {
+                  navigate("/login");
+                }, 1000);
+              }}
             >
               Book A Wellness Event
             </button>
