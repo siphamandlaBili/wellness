@@ -75,7 +75,7 @@ const EventBooking = () => {
         eventLocation: formData.eventLocation,
         numberOfAttendees: formData.numberOfAttendees,
         additionalNotes: formData.additionalNotes,
-        status: "pending",
+        status: null,
         role: "user",
       };
 

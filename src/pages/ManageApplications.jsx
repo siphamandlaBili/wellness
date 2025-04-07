@@ -11,10 +11,12 @@ const ManageApplications = () => {
   const response = await fetch('http://localhost:5000/events');
   const data = await response.json();
   
+  console.log(data);
   const ownedbyUser = data.filter((event) => event.clientEmail === user.clientEmail);
   await setEventStorage(ownedbyUser);
   console.log(userEvents);
   }
+
   useEffect(() => {
     getEvent();
   }, []);
@@ -36,7 +38,7 @@ const ManageApplications = () => {
           </thead>
           
           <tbody>
-            {userEvents.map((event, index) => (
+            {userEvents?.map((event, index) => (
               <tr key={index} className='text-gray-700'>
                 <td className='py-2 px-4 border-b max-sm:hidden'>{event.eventCode}</td>
                 <td className='py-2 px-4 border-b'>{event.eventType}</td>

@@ -30,36 +30,12 @@
       "role": "user"
     },
     {
-      "id": "80c8",
-      "clientName": "hosh",
-      "clientEmail": "okuhlemathimba@gmail.com",
-      "clientPhone": "0789680533",
-      "password": "Okuhle@123",
-      "role": "user"
-    },
-    {
-      "id": "9475",
-      "clientName": "aflumed healthspace",
+      "id": "2be3",
+      "clientName": "Aflumed health care",
       "clientEmail": "aflumed@gmail.com",
-      "clientPhone": "0855077774",
-      "password": "aflumed",
-      "role": "user"
-    },
-    {
-      "id": "2054",
-      "clientName": "sipha dev",
-      "clientEmail": "siphabili2@gmail.com",
-      "clientPhone": "0837721866",
-      "password": "1234",
-      "role": "user"
-    },
-    {
-      "id": "feec",
-      "clientName": "aflumed heath care ",
-      "clientEmail": "azilebili@gmail.com",
       "clientPhone": "0640986398",
-      "password": "54321",
-      "role": "user"
+      "password": "siphabili",
+      "role": "admin"
     }
   ],
   "events": [
@@ -75,7 +51,8 @@
       "eventLocation": "centurion",
       "numberOfAttendees": "2",
       "additionalNotes": "please bring sipha",
-      "role": "user"
+      "role": "user",
+      "status": "Accepted"
     },
     {
       "id": "807f",
@@ -89,7 +66,8 @@
       "eventLocation": "cape town",
       "numberOfAttendees": "100",
       "additionalNotes": "rccwcwcerc",
-      "role": "user"
+      "role": "user",
+      "status": "Accepted"
     },
     {
       "id": "3885",
@@ -103,7 +81,8 @@
       "eventLocation": "cape town",
       "numberOfAttendees": "2",
       "additionalNotes": "nothing",
-      "role": "user"
+      "role": "user",
+      "status": "Rejected"
     },
     {
       "id": "39ba",
@@ -117,7 +96,8 @@
       "eventLocation": "dddd",
       "numberOfAttendees": "2",
       "additionalNotes": "nothing",
-      "role": "user"
+      "role": "user",
+      "status": "Accepted"
     },
     {
       "id": "2ccf",
@@ -131,7 +111,8 @@
       "eventLocation": "xcgvhbjnkm,.",
       "numberOfAttendees": "54",
       "additionalNotes": "dfyguhijokpl[jhgfdxfcghjkl dfghjkl;' dfghjkl;.' dcgfvhbjnkml,;./ fghbjnkml,",
-      "role": "user"
+      "role": "user",
+      "status": "Rejected"
     },
     {
       "id": "2232",
@@ -145,7 +126,8 @@
       "eventLocation": "cape town",
       "numberOfAttendees": "1",
       "additionalNotes": "dfyguhijokpl[jhgfdxfcghjkl dfghjkl;' dfghjkl;.' dcgfvhbjnkml,;./ fghbjnkml,",
-      "role": "user"
+      "role": "user",
+      "status": "Accepted"
     },
     {
       "id": "d16f",
@@ -159,7 +141,7 @@
       "eventLocation": "rdfgthjk",
       "numberOfAttendees": "1",
       "additionalNotes": "dfyguhijokpl[jhgfdxfcghjkl dfghjkl;' dfghjkl;.' dcgfvhbjnkml,;./ fghbjnkml,",
-      "status": "pending",
+      "status": "Accepted",
       "role": "user"
     },
     {
@@ -170,11 +152,11 @@
       "clientPhone": "0837721866",
       "eventName": "moodle",
       "eventType": "foot power",
-      "eventDate": "2025-04-25",
+      "eventDate": "2025-01-25",
       "eventLocation": "gqeberha",
       "numberOfAttendees": "54",
       "additionalNotes": "no notes",
-      "status": "pending",
+      "status": "Accepted",
       "role": "user"
     },
     {
@@ -185,11 +167,11 @@
       "clientPhone": "0640986398",
       "eventName": "foot massage all day",
       "eventType": "foot power",
-      "eventDate": "2025-04-15",
+      "eventDate": "2025-02-15",
       "eventLocation": "centurion",
       "numberOfAttendees": "1",
       "additionalNotes": "rccwcwcerc",
-      "status": "pending",
+      "status": "Accepted",
       "role": "user"
     },
     {
@@ -204,7 +186,7 @@
       "eventLocation": "rdfgthjk",
       "numberOfAttendees": "100",
       "additionalNotes": "no notes",
-      "status": "pending",
+      "status": "Accepted",
       "role": "user"
     },
     {
@@ -219,7 +201,7 @@
       "eventLocation": "centurion",
       "numberOfAttendees": "20",
       "additionalNotes": "dccc",
-      "status": "pending",
+      "status": "Accepted",
       "role": "user"
     },
     {
@@ -234,7 +216,7 @@
       "eventLocation": "centurion",
       "numberOfAttendees": "54",
       "additionalNotes": "no notes",
-      "status": "pending",
+      "status": "Accepted",
       "role": "user"
     }
   ]

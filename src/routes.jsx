@@ -1,6 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
-import LoginPage from "./pages/LoginPage";
 import EventBooking from "./pages/user pages/EventBooking";
 import Dashboard from "./pages/Dashboard";
 import ManageApplications from "./pages/ManageApplications";
@@ -10,6 +9,7 @@ import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import Settings from "./components/superadmintools/Settings";
 import AuthForm from "./pages/user pages/UserLogin";
 import UserDashboard from "./pages/user pages/UserDashBoard";
+import AdminManageApplications from "./components/AdminManageApplications";
 
 
 const router = createBrowserRouter([
@@ -34,8 +34,8 @@ const router = createBrowserRouter([
     path: "/admin", 
     element: <Dashboard />, 
     children: [
-      { path: "view-applications", element: <ManageApplications /> },
-      // { path: "profile", element: <AdminProfilePage /> },
+      { path: "view-applications", element: <AdminManageApplications/> },
+      { path: "profile", element: <UserProfilePage /> },
       { path: "past-events", element: <PastEvents /> },
     ],
   },

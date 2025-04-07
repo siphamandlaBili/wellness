@@ -1,9 +1,12 @@
-import React from 'react';
+import React ,{useContext}from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { assets } from '../../assets/assets';
 import Navbar from '../../components/Navbar';
 
+
+  
 const UserDashboard = () => {
+
     return (
         <div className='min-h-screen'>
             {/* Navbar for recruiter panel */}

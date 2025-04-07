@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function AuthForm() {
   const [isRegister, setIsRegister] = useState(false);
-  const { loggedInUser, user } = useContext(AuthContext); // Use AuthContext
+  const { loggedInUser } = useContext(AuthContext); // Use AuthContext
   const navigate = useNavigate(); // For redirecting after login
 
   const [formData, setFormData] = useState({
@@ -26,12 +26,23 @@ export default function AuthForm() {
   // Handle Form Submission (Register or Login)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(""); // Clear previous messages
+    setMessage("");
 
     try {
       if (isRegister) {
         // Register User
+        const allUsers = await axios.get("http://localhost:5000/users");
+        const isEmailExist = allUsers.data.some(
+          (user) => user.clientEmail === formData.clientEmail
+        );
+
+        if (isEmailExist) {
+          setMessage("Email already exists. Please use a different email.");
+          return;
+        }
+
         const response = await axios.post("http://localhost:5000/users", formData);
+        console.log(response.data);
         setMessage("Registration successful! Please log in.");
         setIsRegister(false); // Switch to login form
       } else {
@@ -43,22 +54,32 @@ export default function AuthForm() {
           },
         });
 
-        if ((response?.data[0]?.clientEmail === formData.clientEmail) && (response?.data[0]?.password === formData.password)) {
-          loggedInUser(response.data[0]);
-          setMessage("Login successful!");
-          navigate("/user-dashboard/apply-for-event"); // Redirect to user dashboard after login
-        } else {
-          setMessage("incorrect credentials");
-        }
+        const foundUser = response?.data[0];
 
+        if (
+          foundUser &&
+          foundUser.clientEmail === formData.clientEmail &&
+          foundUser.password === formData.password
+        ) {
+          loggedInUser(foundUser);
+
+          const route = foundUser.role === "admin"
+            ? "/admin"
+            : "/user-dashboard/apply-for-event";
+
+          setMessage("Login successful!");
+          navigate(route);
+        } else {
+          setMessage("Incorrect credentials.");
+        }
       }
     } catch (error) {
-      setMessage("incorrect credentials");
+      setMessage("Incorrect credentials.");
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6" >
+    <div className="flex min-h-screen items-center justify-center p-6">
       <div className="w-full max-w-md space-y-6 bg-white p-8 shadow-md rounded-lg">
         <h2 className="text-center text-2xl font-bold text-gray-900">
           {isRegister ? "Register an Account" : "Sign in to your account"}
@@ -67,7 +88,9 @@ export default function AuthForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {isRegister && (
             <div>
-              <label className="block text-sm font-medium text-gray-700">Company Name</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Company Name
+              </label>
               <input
                 type="text"
                 name="clientName"
@@ -91,7 +114,9 @@ export default function AuthForm() {
           </div>
           {isRegister && (
             <div>
-              <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Phone Number
+              </label>
               <input
                 type="text"
                 name="clientPhone"
@@ -121,7 +146,7 @@ export default function AuthForm() {
           </button>
         </form>
         <p className="text-center text-sm text-gray-600">
-          {isRegister ? "Already have an account?" : "Don't have an account?"} {" "}
+          {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
           <button
             onClick={() => setIsRegister(!isRegister)}
             className="text-[#992787] hover:underline"
