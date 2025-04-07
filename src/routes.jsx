@@ -6,7 +6,6 @@ import ManageApplications from "./pages/ManageApplications";
 import PastEvents from "./pages/PastEvents";
 import UserProfilePage from "./pages/user pages/UserProfile";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
-import Settings from "./components/superadmintools/Settings";
 import AuthForm from "./pages/user pages/UserLogin";
 import UserDashboard from "./pages/user pages/UserDashBoard";
 import AdminManageApplications from "./components/AdminManageApplications";
@@ -38,15 +37,7 @@ const router = createBrowserRouter([
       { path: "profile", element: <UserProfilePage /> },
       { path: "past-events", element: <PastEvents /> },
     ],
-  },
-  { 
-    path: "/super-admin", 
-    element: <SuperAdminDashboard />, 
-    children: [
-      { path: "settings", element: <Settings /> },
-      // Add more super admin tools here
-    ],
-  },
+  }
 ]);
 
 export default router;
