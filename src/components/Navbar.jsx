@@ -21,7 +21,7 @@ const Navbar = () => {
       <div className="flex items-center justify-between">
         {/* Left Section */}
         <div className="flex items-center gap-4">
-          <span className="text-xl font-semibold text-[rgb(153,39,135)]">Wellness</span>
+          <span className="text-xl font-semibold text-[rgb(153,39,135)]">FMP WELLENESS</span>
         </div>
 
         {/* Burger Menu Button */}
@@ -37,9 +37,9 @@ const Navbar = () => {
           <a href="#about" className="text-gray-600 text-lg hover:text-[rgb(153,39,135)]" onClick={() => setIsOpen(false)}>
             About
           </a>
-          <Link to="/" className="relative text-gray-600 text-lg hover:text-[rgb(153,39,135)] group">
+          <a href="#FAQ" className="text-gray-600 text-lg hover:text-[rgb(153,39,135)]" onClick={() => setIsOpen(false)}>
             FAQ
-          </Link>
+          </a>
         </div>)}
 
 
@@ -59,9 +59,9 @@ const Navbar = () => {
           <a href="#about" className="text-gray-600 text-lg hover:text-[rgb(153,39,135)]" onClick={() => setIsOpen(false)}>
             About
           </a>
-          <Link to="/" className="text-gray-600 text-lg hover:text-[rgb(153,39,135)]" onClick={() => setIsOpen(false)}>
+          <a href="#FAQ" className="text-gray-600 text-lg hover:text-[rgb(153,39,135)]" onClick={() => setIsOpen(false)}>
             FAQ
-          </Link>
+          </a>
           <button
             className="btn btn-md cursor-pointer"
             onClick={() => {

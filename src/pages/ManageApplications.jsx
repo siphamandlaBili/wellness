@@ -19,6 +19,7 @@ const ManageApplications = () => {
     getEvent();
   }, []);
   
+
   return (
     <div className='container p-4 max-w-5xl'>
       <div className='overflow-x-auto'>
@@ -33,6 +34,7 @@ const ManageApplications = () => {
               <th className='py-2 px-4 text-left'>status</th>
             </tr>
           </thead>
+          
           <tbody>
             {userEvents.map((event, index) => (
               <tr key={index} className='text-gray-700'>

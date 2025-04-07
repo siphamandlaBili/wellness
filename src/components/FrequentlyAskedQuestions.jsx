@@ -27,7 +27,7 @@ const FrequentlyAsked = () => {
   };
 
   return (
-    <section className="mx-auto max-w-6xl p-6 my-12">
+    <section id="FAQ" className="mx-auto max-w-6xl p-6 my-12">
        <div
         aria-hidden="true"
         className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"

@@ -36,6 +36,30 @@
       "clientPhone": "0789680533",
       "password": "Okuhle@123",
       "role": "user"
+    },
+    {
+      "id": "9475",
+      "clientName": "aflumed healthspace",
+      "clientEmail": "aflumed@gmail.com",
+      "clientPhone": "0855077774",
+      "password": "aflumed",
+      "role": "user"
+    },
+    {
+      "id": "2054",
+      "clientName": "sipha dev",
+      "clientEmail": "siphabili2@gmail.com",
+      "clientPhone": "0837721866",
+      "password": "1234",
+      "role": "user"
+    },
+    {
+      "id": "feec",
+      "clientName": "aflumed heath care ",
+      "clientEmail": "azilebili@gmail.com",
+      "clientPhone": "0640986398",
+      "password": "54321",
+      "role": "user"
     }
   ],
   "events": [
@@ -169,17 +193,47 @@
       "role": "user"
     },
     {
-      "id": "4800",
-      "eventCode": "VT-20250403-2948",
-      "clientName": "hosh",
-      "clientEmail": "okuhlemathimba@gmail.com",
-      "clientPhone": "0789680533",
-      "eventName": "Nursing bootcamp",
-      "eventType": "Bootcamp",
-      "eventDate": "2025-04-25",
-      "eventLocation": "Pretoria West",
+      "id": "fb28",
+      "eventCode": "VT-20250403-2779",
+      "clientName": "aflumed healthspace",
+      "clientEmail": "aflumed@gmail.com",
+      "clientPhone": "0855077774",
+      "eventName": "foot massage all day",
+      "eventType": "foot power",
+      "eventDate": "2025-04-17",
+      "eventLocation": "rdfgthjk",
+      "numberOfAttendees": "100",
+      "additionalNotes": "no notes",
+      "status": "pending",
+      "role": "user"
+    },
+    {
+      "id": "5ac1",
+      "eventCode": "VT-20250403-2561",
+      "clientName": "aflumed healthspace",
+      "clientEmail": "aflumed@gmail.com",
+      "clientPhone": "0855077774",
+      "eventName": "tshepang",
+      "eventType": "foot p",
+      "eventDate": "2025-04-22",
+      "eventLocation": "centurion",
       "numberOfAttendees": "20",
-      "additionalNotes": "N/A",
+      "additionalNotes": "dccc",
+      "status": "pending",
+      "role": "user"
+    },
+    {
+      "id": "14d5",
+      "eventCode": "VT-20250407-6724",
+      "clientName": "aflumed heath care ",
+      "clientEmail": "azilebili@gmail.com",
+      "clientPhone": "0640986398",
+      "eventName": "foot massage all day",
+      "eventType": "therapy",
+      "eventDate": "2025-04-24",
+      "eventLocation": "centurion",
+      "numberOfAttendees": "54",
+      "additionalNotes": "no notes",
       "status": "pending",
       "role": "user"
     }
