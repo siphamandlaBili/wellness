@@ -6,7 +6,7 @@ const PastEvents = () => {
   const [selectedEvent, setSelectedEvent] = useState(null); // To handle the selected event for modal
 
   useEffect(() => {
-    fetch('http://localhost:5000/events')
+    fetch('https://wellness-temporary-db-2.onrender.com/events')
       .then((response) => response.json())
       .then((data) => {
         const currentDate = new Date();

@@ -8,7 +8,7 @@ const ManageApplications = () => {
 
  console.log(user.clientEmail);
   const getEvent = async () => {
-  const response = await fetch('http://localhost:5000/events');
+  const response = await fetch('https://wellness-temporary-db-2.onrender.com/events');
   const data = await response.json();
   
   console.log(data);

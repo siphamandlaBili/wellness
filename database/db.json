@@ -36,6 +36,22 @@
       "clientPhone": "0640986398",
       "password": "siphabili",
       "role": "admin"
+    },
+    {
+      "id": "fa0a",
+      "clientName": "abc",
+      "clientEmail": "abc@gmail.com",
+      "clientPhone": "0640986398",
+      "password": "123",
+      "role": "user"
+    },
+    {
+      "id": "51a5",
+      "clientName": "amarok",
+      "clientEmail": "admin@example.com",
+      "clientPhone": "0640986398",
+      "password": "admin123",
+      "role": "user"
     }
   ],
   "events": [
@@ -217,6 +233,36 @@
       "numberOfAttendees": "54",
       "additionalNotes": "no notes",
       "status": "Accepted",
+      "role": "user"
+    },
+    {
+      "id": "e9f8",
+      "eventCode": "VT-20250408-5823",
+      "clientName": "abc",
+      "clientEmail": "abc@gmail.com",
+      "clientPhone": "0640986398",
+      "eventName": "foot massage all day",
+      "eventType": "foot power",
+      "eventDate": "2025-04-15",
+      "eventLocation": "dddd",
+      "numberOfAttendees": "2",
+      "additionalNotes": "rccwcwcerc",
+      "status": null,
+      "role": "user"
+    },
+    {
+      "id": "7216",
+      "eventCode": "VT-20250408-4441",
+      "clientName": "abc",
+      "clientEmail": "abc@gmail.com",
+      "clientPhone": "0640986398",
+      "eventName": "yes",
+      "eventType": "yes",
+      "eventDate": "2025-04-09",
+      "eventLocation": "centurion",
+      "numberOfAttendees": "22",
+      "additionalNotes": "35",
+      "status": null,
       "role": "user"
     }
   ]

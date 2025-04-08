@@ -81,7 +81,7 @@ const EventBooking = () => {
 
       try {
         // Send user data to JSON Server
-        const response = await axios.post("http://localhost:5000/events", userData);
+        const response = await axios.post("https://wellness-temporary-db-2.onrender.com/events", userData);
         console.log("User added:", response.data);
         toast.success("Event Inquiry Submitted & User Added!");
 

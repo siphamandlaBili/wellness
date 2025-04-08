@@ -9,7 +9,7 @@ const AdminManageApplications = () => {
   
   // Fetch events from the backend
   const getEvent = async () => {
-    const response = await fetch('http://localhost:5000/events');
+    const response = await fetch('https://wellness-temporary-db-2.onrender.com/events');
     const data = await response.json();
     await setEventStorage(data);
   };
@@ -19,7 +19,7 @@ const AdminManageApplications = () => {
     const event = userEvents[index];
     
     // PATCH request to update the status in the backend
-    const response = await fetch(`http://localhost:5000/events/${event.id}`, {
+    const response = await fetch(`https://wellness-temporary-db-2.onrender.com/events/${event.id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
