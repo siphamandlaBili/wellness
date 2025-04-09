@@ -63,10 +63,16 @@ export default function AuthForm() {
         ) {
           loggedInUser(foundUser);
 
-          const route = foundUser.role === "admin"
-            ? "/admin"
-            : "/user-dashboard/apply-for-event";
-
+          let route ;
+            if(foundUser.role === "nurse") {
+              route = "/nurse/nurse1"; 
+            } else if(foundUser.role === "superadmin") {
+              route = "/superadmin"; 
+            }else if(foundUser.role === "user") {
+              route = "/user-dashboard/apply-for-event"; 
+            }else if(foundUser.role === "admin") {
+              route = "/admin/view-applications";
+            }
           setMessage("Login successful!");
           navigate(route);
         } else {

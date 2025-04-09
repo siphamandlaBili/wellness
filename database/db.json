@@ -38,18 +38,11 @@
       "role": "admin"
     },
     {
-<<<<<<< HEAD
       "id": "dfdb",
-      "clientName": "aflu med",
-      "clientEmail": "tshepangbaloyi26@gmail.com",
       "clientPhone": "0814549483",
       "password": "Ganggang@!5",
-=======
-      "id": "fa0a",
       "clientName": "abc",
       "clientEmail": "abc@gmail.com",
-      "clientPhone": "0640986398",
-      "password": "123",
       "role": "user"
     },
     {
@@ -58,8 +51,15 @@
       "clientEmail": "admin@example.com",
       "clientPhone": "0640986398",
       "password": "admin123",
->>>>>>> fefd9c1ec7052d63b462a34d21137b2b65add0ba
       "role": "user"
+    },
+    {
+      "id": "51a3",
+      "clientName": "siphamandla bili",
+      "clientEmail": "nurse@example.com",
+      "clientPhone": "0640986398",
+      "password": "nurse123",
+      "role": "nurse"
     }
   ],
   "events": [
