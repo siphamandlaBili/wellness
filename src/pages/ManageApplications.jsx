@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../context/authContext';
+import { jsPDF } from "jspdf";
 
 const ManageApplications = () => {
   const { userEvents, setEventStorage, user } = useContext(AuthContext);
@@ -33,11 +34,11 @@ const ManageApplications = () => {
           invoiceNumber: 'INV-12345',
           date: '2025-04-09',
           items: [
-            { description: 'Event Planning', amount: '$500' },
-            { description: 'Venue Rental', amount: '$1200' },
-            { description: 'Catering', amount: '$800' },
+            { description: 'Event Planning', amount: 'R500' },
+            { description: 'Venue Rental', amount: 'R1200' },
+            { description: 'Catering', amount: 'R800' },
           ],
-          total: '$2500',
+          total: 'R2500',
         };
         setPopupContent(invoiceData); // Set invoice data
         setPopupStyle('invoice'); // Set the style for invoice
@@ -51,7 +52,27 @@ const ManageApplications = () => {
   };
 
   const renderInvoice = (invoiceData) => {
-    console.log(selectedEvent)
+    const generatePDF = () => {
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text('Invoice Details', 14, 20);
+      doc.setFontSize(12);
+      
+      doc.text(`Invoice Number: ${invoiceData.invoiceNumber}`, 14, 30);
+      doc.text(`Date: ${invoiceData.date}`, 14, 40);
+      
+      doc.text('Items:', 14, 50);
+      let yOffset = 60;
+      invoiceData.items.forEach(item => {
+        doc.text(`${item.description}: ${item.amount}`, 14, yOffset);
+        yOffset += 10;
+      });
+
+      doc.text(`Total: ${invoiceData.total}`, 14, yOffset);
+      doc.save(`Invoice_${invoiceData.invoiceNumber}.pdf`);
+    };
+
     return (
       <div>
         <h4 className="text-lg font-semibold text-[#992787] mb-2">Invoice Details</h4>
@@ -71,6 +92,12 @@ const ManageApplications = () => {
         <div className="mt-4 text-xl font-semibold text-[#992787]">
           <p><strong>Total:</strong> {invoiceData.total}</p>
         </div>
+        <button
+          onClick={generatePDF}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Download Invoice
+        </button>
       </div>
     );
   };
