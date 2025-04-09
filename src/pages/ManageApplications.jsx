@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../context/authContext';
-import { jsPDF } from 'jspdf';
+import { jsPDF } from "jspdf";
 
 const ManageApplications = () => {
   const { userEvents, setEventStorage, user } = useContext(AuthContext);
@@ -23,30 +23,56 @@ const ManageApplications = () => {
 
   const handleViewDetails = (event) => {
     setSelectedEvent(event);
-    const invoiceNo = selectedEvent ? `INV-${selectedEvent?.eventCode}`:""
-    if (event.reason) {
-      setPopupContent(event.reason); // If there's a rejection reason, show it
-      setPopupStyle('rejection'); // Set the style for rejection
+
+    if (event.status) {
+      if (event.reason) {
+        setPopupContent(event.reason); // If there's a rejection reason, show it
+        setPopupStyle('rejection'); // Set the style for rejection
+      } else {
+        // Dummy invoice data for illustration
+        const invoiceData = {
+          invoiceNumber: 'INV-12345',
+          date: '2025-04-09',
+          items: [
+            { description: 'Event Planning', amount: 'R500' },
+            { description: 'Venue Rental', amount: 'R1200' },
+            { description: 'Catering', amount: 'R800' },
+          ],
+          total: 'R2500',
+        };
+        setPopupContent(invoiceData); // Set invoice data
+        setPopupStyle('invoice'); // Set the style for invoice
+      }
     } else {
-      // Dummy invoice data for illustration
-      const invoiceData = {
-        invoiceNumber: invoiceNo,
-        date: '2025-04-09',
-        items: [
-          { description: 'Event Planning', amount: 'R500' },
-          { description: 'Venue Rental', amount: 'R1200' },
-          { description: 'Catering', amount: 'R800' },
-        ],
-        total: 'R2500',
-      };
-      setPopupContent(invoiceData); // Set invoice data
-      setPopupStyle(selectedEvent?.eventCode); // Set the style for invoice
+      setPopupContent('No details available yet, our team will get back to you shortly'); // No status message
+      setPopupStyle('no-status'); // Set style for no status
     }
 
     setShowPopup(true); // Show the popup
   };
 
   const renderInvoice = (invoiceData) => {
+    const generatePDF = () => {
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text('Invoice Details', 14, 20);
+      doc.setFontSize(12);
+      
+      doc.text(`Invoice Number: ${invoiceData.invoiceNumber}`, 14, 30);
+      doc.text(`Date: ${invoiceData.date}`, 14, 40);
+      
+      doc.text('Items:', 14, 50);
+      let yOffset = 60;
+      invoiceData.items.forEach(item => {
+        doc.text(`${item.description}: ${item.amount}`, 14, yOffset);
+        yOffset += 10;
+      });
+
+      doc.text(`Total: ${invoiceData.total}`, 14, yOffset);
+      doc.save(`Invoice_${invoiceData.invoiceNumber}.pdf`);
+    };
+
     return (
       <div>
         <h4 className="text-lg font-semibold text-[#992787] mb-2">Invoice Details</h4>
@@ -67,36 +93,13 @@ const ManageApplications = () => {
           <p><strong>Total:</strong> {invoiceData.total}</p>
         </div>
         <button
-          onClick={() => downloadInvoice(invoiceData)}
-          className="mt-4 px-4 py-2 bg-[#992787] text-white rounded"
+          onClick={generatePDF}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
         >
-          Download PDF
+          Download Invoice
         </button>
       </div>
     );
-  };
-
-  const downloadInvoice = (invoiceData) => {
-    const doc = new jsPDF();
-
-    doc.setFontSize(18);
-    doc.text('Invoice Details', 20, 20);
-
-    doc.setFontSize(12);
-    doc.text(`Invoice Number: ${invoiceData.invoiceNumber}`, 20, 40);
-    doc.text(`Date: ${invoiceData.date}`, 20, 50);
-
-    let yPosition = 60;
-    doc.text('Items:', 20, yPosition);
-    invoiceData.items.forEach((item, index) => {
-      yPosition += 10;
-      doc.text(`${item.description}: ${item.amount}`, 20, yPosition);
-    });
-
-    yPosition += 10;
-    doc.text(`Total: ${invoiceData.total}`, 20, yPosition);
-
-    doc.save(`${selectedEvent.eventCode}.pdf`);
   };
 
   const renderRejectionReason = (reason) => {
@@ -104,6 +107,15 @@ const ManageApplications = () => {
       <div>
         <h4 className="text-lg font-semibold text-red-600 mb-2">Rejection Reason</h4>
         <p>{reason}</p>
+      </div>
+    );
+  };
+
+  const renderNoStatus = () => {
+    return (
+      <div>
+        <h4 className="text-lg font-semibold text-gray-600 mb-2">No Details Available</h4>
+        <p>{popupContent}</p>
       </div>
     );
   };
@@ -152,7 +164,7 @@ const ManageApplications = () => {
       {/* Popup Modal */}
       {showPopup && selectedEvent && (
         <div className="fixed inset-0 flex items-center justify-center bg-[#211e1e79] z-50">
-          <div className={`bg-white w-[65vw] p-6 rounded-lg shadow-lg border-2 border-[#992787] ${popupStyle === 'rejection' ? 'bg-red-100' : 'bg-white'}`}>
+          <div className={`bg-white w-[65vw] p-6 rounded-lg shadow-lg border-2 border-[#992787] ${popupStyle === 'rejection' ? 'bg-red-100' : popupStyle === 'no-status' ? 'bg-gray-100' : 'bg-white'}`}>
             <h2 className="text-xl font-bold text-[#992787] mb-4">Event Details</h2>
             <p className="mb-2">
               <strong className="text-[#992787]">Event Code:</strong> {selectedEvent.eventCode}
@@ -161,7 +173,7 @@ const ManageApplications = () => {
               <strong className="text-[#992787]">Company Name:</strong> {selectedEvent.clientName}
             </p>
             <div>
-              {popupStyle === 'rejection' ? renderRejectionReason(popupContent) : renderInvoice(popupContent)}
+              {popupStyle === 'rejection' ? renderRejectionReason(popupContent) : popupStyle === 'invoice' ? renderInvoice(popupContent) : renderNoStatus()}
             </div>
             <div className="flex justify-end gap-2 mt-4">
               <button
