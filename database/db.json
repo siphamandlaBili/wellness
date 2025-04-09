@@ -36,6 +36,14 @@
       "clientPhone": "0640986398",
       "password": "siphabili",
       "role": "admin"
+    },
+    {
+      "id": "dfdb",
+      "clientName": "aflu med",
+      "clientEmail": "tshepangbaloyi26@gmail.com",
+      "clientPhone": "0814549483",
+      "password": "Ganggang@!5",
+      "role": "user"
     }
   ],
   "events": [

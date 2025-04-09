@@ -1,38 +1,58 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { User, Briefcase, Users, Settings } from 'lucide-react'; // Alternative icons
+import { User, Briefcase, Users, Settings } from 'lucide-react';
 
 const SuperAdminDashboard = () => {
     return (
-        <div className='min-h-screen'>
-            {/* Navbar for Super Admin */}
+        <div className="min-h-screen overflow-y-hidden">
+            {/* Navbar */}
             <Navbar isSuperAdmin={true} />
 
-            {/* Sidebar */}
-            <div className='flex items-start'>
-                <div className='inline-block min-h-screen border-3 border-gray-200 w-64 bg-gray-100 p-5'>
-                    <ul className='flex flex-col text-gray-800'>
+            {/* Main Layout */}
+            <div className="flex items-start overflow-hidden">
+                {/* Sidebar */}
+                <div className="flex flex-col justify-between min-h-[90vh] border-3 border-[#eeeeee]">
+                    <ul className="flex flex-col items-start pt-5 text-gray-800">
                         {[
                             { name: 'Manage Admins', path: 'manage-admins', icon: <User size={20} /> },
                             { name: 'Manage Nurses', path: 'manage-nurses', icon: <Briefcase size={20} /> },
                             { name: 'View Reports', path: 'reports', icon: <Users size={20} /> },
                             { name: 'Settings', path: 'settings', icon: <Settings size={20} /> }
                         ].map((item) => (
-                            <NavLink 
+                            <NavLink
                                 key={item.path}
                                 to={`/superadmin/${item.path}`}
-                                className={({ isActive }) => `flex items-center p-3 gap-2 w-full hover:bg-gray-200 ${isActive ? 'bg-purple-200 border-r-4 border-purple-700' : ''}`}
+                                className={({ isActive }) =>
+                                    `relative flex items-center p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 ${
+                                        isActive ? 'bg-[#f2d9eb] border-r-4 border-[#992787]' : ''
+                                    }`
+                                }
                             >
-                                {item.icon}
-                                <span>{item.name}</span>
+                                <div className="min-w-4">{item.icon}</div>
+                                <p className="max-sm:hidden">{item.name}</p>
                             </NavLink>
                         ))}
                     </ul>
+
+                    {/* Logout Link */}
+                    <NavLink
+                        className={({ isActive }) =>
+                            `relative flex items-center p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 mb-10 ${
+                                isActive ? 'bg-[#f2d9eb] border-r-4 border-[#992787]' : ''
+                            }`
+                        }
+                        to={`/`}
+                    >
+                        <div className="min-w-4">
+                            <User size={20} />
+                        </div>
+                        <p className="max-sm:hidden">Logout</p>
+                    </NavLink>
                 </div>
-                
+
                 {/* Main Content */}
-                <div className='flex-1 p-5'>
+                <div className="flex-1 p-5">
                     <Outlet />
                 </div>
             </div>
