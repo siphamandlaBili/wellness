@@ -31,7 +31,7 @@ export default function AuthForm() {
     try {
       if (isRegister) {
         // Register User
-        const allUsers = await axios.get("http://localhost:5000/users");
+        const allUsers = await axios.get("https://wellness-temporary-db-2.onrender.com/users");
         const isEmailExist = allUsers.data.some(
           (user) => user.clientEmail === formData.clientEmail
         );
@@ -41,13 +41,13 @@ export default function AuthForm() {
           return;
         }
 
-        const response = await axios.post("http://localhost:5000/users", formData);
+        const response = await axios.post("https://wellness-temporary-db-2.onrender.com/users", formData);
         console.log(response.data);
         setMessage("Registration successful! Please log in.");
         setIsRegister(false); // Switch to login form
       } else {
         // Login User
-        const response = await axios.get("http://localhost:5000/users", {
+        const response = await axios.get("https://wellness-temporary-db-2.onrender.com/users", {
           params: {
             clientEmail: formData.clientEmail,
             password: formData.password,

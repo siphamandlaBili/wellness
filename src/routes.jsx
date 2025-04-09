@@ -9,6 +9,8 @@ import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import AuthForm from "./pages/user pages/UserLogin";
 import UserDashboard from "./pages/user pages/UserDashBoard";
 import AdminManageApplications from "./components/AdminManageApplications";
+import AssignEventToNurse from './pages/AssignEventToNurse';
+import AcceptedEvents from './pages/AcceptedEvents';
 
 const router = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
@@ -37,6 +39,8 @@ const router = createBrowserRouter([
       { path: "view-applications", element: <AdminManageApplications /> },
       { path: "profile", element: <UserProfilePage /> },
       { path: "past-events", element: <PastEvents /> },
+      { path: "assign-event", element: <AssignEventToNurse /> },
+      { path: "accepted-events", element: <AcceptedEvents /> }, // New route
     ],
   },
   {
