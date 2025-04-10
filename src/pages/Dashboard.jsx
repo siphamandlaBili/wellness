@@ -1,16 +1,32 @@
-import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { assets } from '../assets/assets';
 import Navbar from '../components/Navbar';
 
 const Dashboard = () => {
+    const location = useLocation();
+
+    // UseEffect to disable scrolling on the body when on /admin path
+    useEffect(() => {
+        if (location.pathname.startsWith('/admin')) {
+            document.body.style.overflow = 'hidden'; // Disable body scroll
+        } else {
+            document.body.style.overflow = ''; // Reset body scroll on other routes
+        }
+
+        // Cleanup to reset when leaving the route
+        return () => {
+            document.body.style.overflow = ''; // Ensure scroll is re-enabled when component unmounts
+        };
+    }, [location]);
+
     return (
-        <div className='min-h-screen overflow-y-hidden'>
+        <div className='min-h-screen'>
             {/* Navbar for recruiter panel */}
             <Navbar />
 
             {/* Sidebar with navigation links */}
-            <div className='flex items-start overflow-hidden'>
+            <div className='flex items-start min-h-screen overflow-hidden'>
                 {/* Left sidebar */}
                 <div className='flex flex-col justify-between min-h-[90vh] border-3 border-[#eeeeee]'>
                     <ul className='flex flex-col items-start pt-5 text-gray-800'>
@@ -57,7 +73,8 @@ const Dashboard = () => {
                 </div>
 
                 {/* Right-side content */}
-                <div className="flex-1 p-5">
+                <div className="flex-1 p-0 overflow-y-auto max-h-[90vh]">
+                    {/* Outlet that should be scrollable */}
                     <Outlet />
                 </div>
             </div>
