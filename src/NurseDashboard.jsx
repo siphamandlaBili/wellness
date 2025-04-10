@@ -52,7 +52,7 @@ const NurseDashboard = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 p-5">
+                <div className="flex-1 p-5 md:p-2">
                     <Outlet />
                 </div>
             </div>
