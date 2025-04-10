@@ -12,6 +12,8 @@ import AdminManageApplications from "./components/AdminManageApplications";
 import AssignEventToNurse from './pages/AssignEventToNurse';
 import AcceptedEvents from './pages/AcceptedEvents';
 import NurseDashboard from "./NurseDashboard";
+import NurseEvent from "./NurseEvent";
+import PatientList from "./PatientList";
 
 const router = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
@@ -58,8 +60,8 @@ const router = createBrowserRouter([
     path: "/nurse",
     element: <NurseDashboard/>,
     children: [
-      { path: "nurse1", element: <div>Nurse page 1</div> },
-      { path: "nurse2", element: <div>Nurse page 2</div> }, 
+      { path: "events", element: <NurseEvent/> },
+      { path: "patients", element: <PatientList/> }, 
       { path: "nurse3", element: <div>Nurse page 3</div> }, 
       { path: "nurse4", element: <div>Nurse page 4</div> },
     ],

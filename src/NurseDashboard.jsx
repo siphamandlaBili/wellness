@@ -15,8 +15,8 @@ const NurseDashboard = () => {
                 <div className="flex flex-col justify-between min-h-[90vh] border-3 border-[#eeeeee]">
                     <ul className="flex flex-col items-start pt-5 text-gray-800">
                         {[
-                            { name: 'nurse 1', path: 'nurse1', icon: <User size={20} /> },
-                            { name: 'nurse 2', path: 'nurse2', icon: <Briefcase size={20} /> },
+                            { name: 'Event', path: 'events', icon: <User size={20} /> },
+                            { name: 'patients', path: 'patients', icon: <Briefcase size={20} /> },
                             { name: 'nurse 3', path: 'nurse3', icon: <Users size={20} /> },
                             { name: 'nurse 4', path: 'nurse4', icon: <Settings size={20} /> }
                         ].map((item) => (

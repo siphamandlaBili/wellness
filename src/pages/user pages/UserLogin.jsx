@@ -2,11 +2,13 @@ import { useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../../context/authContext";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function AuthForm() {
   const [isRegister, setIsRegister] = useState(false);
-  const { loggedInUser } = useContext(AuthContext); // Use AuthContext
-  const navigate = useNavigate(); // For redirecting after login
+  const { loggedInUser } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     clientName: "",
@@ -16,150 +18,142 @@ export default function AuthForm() {
     role: "user",
   });
 
-  const [message, setMessage] = useState("");
-
-  // Handle Input Changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle Form Submission (Register or Login)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
 
     try {
       if (isRegister) {
-        // Register User
         const allUsers = await axios.get("https://wellness-temporary-db-2.onrender.com/users");
-        const isEmailExist = allUsers.data.some(
-          (user) => user.clientEmail === formData.clientEmail
-        );
-
+        const isEmailExist = allUsers.data.some(user => user.clientEmail === formData.clientEmail);
         if (isEmailExist) {
-          setMessage("Email already exists. Please use a different email.");
+          toast.error("Email already exists.");
           return;
         }
 
-        const response = await axios.post("https://wellness-temporary-db-2.onrender.com/users", formData);
-        console.log(response.data);
-        setMessage("Registration successful! Please log in.");
-        setIsRegister(false); // Switch to login form
+        await axios.post("https://wellness-temporary-db-2.onrender.com/users", formData);
+        toast.success("Registration successful!");
+        setIsRegister(false);
       } else {
-        // Login User
         const response = await axios.get("https://wellness-temporary-db-2.onrender.com/users", {
-          params: {
-            clientEmail: formData.clientEmail,
-            password: formData.password,
-          },
+          params: { clientEmail: formData.clientEmail, password: formData.password },
         });
-
         const foundUser = response?.data[0];
 
-        if (
-          foundUser &&
-          foundUser.clientEmail === formData.clientEmail &&
-          foundUser.password === formData.password
-        ) {
+        if (foundUser) {
           loggedInUser(foundUser);
+          toast.success("Login successful!");
 
-          let route ;
-            if(foundUser.role === "nurse") {
-              route = "/nurse/nurse1"; 
-            } else if(foundUser.role === "superadmin") {
-              route = "/superadmin"; 
-            }else if(foundUser.role === "user") {
-              route = "/user-dashboard/apply-for-event"; 
-            }else if(foundUser.role === "admin") {
-              route = "/admin/view-applications";
-            }
-          setMessage("Login successful!");
-          navigate(route);
+          let route = foundUser.role === "nurse" ? "/nurse/events"
+            : foundUser.role === "superadmin" ? "/superadmin"
+              : foundUser.role === "admin" ? "/admin/view-applications"
+                : "/user-dashboard/apply-for-event";
+
+          setTimeout(() => navigate(route), 1000); // Delay for toast to show
         } else {
-          setMessage("Incorrect credentials.");
+          toast.error("Incorrect credentials.");
         }
       }
-    } catch (error) {
-      setMessage("Incorrect credentials.");
+    } catch (err) {
+      toast.error("Something went wrong.");
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-md space-y-6 bg-white p-8 shadow-md rounded-lg">
-        <h2 className="text-center text-2xl font-bold text-gray-900">
-          {isRegister ? "Register an Account" : "Sign in to your account"}
-        </h2>
-        {message && <p className="text-center text-sm text-red-500">{message}</p>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isRegister && (
+    <div className="flex h-screen w-full overflow-hidden font-sans">
+      <ToastContainer position="top-right" autoClose={3000} />
+
+      {/* Static Image Section */}
+      <div className="hidden md:block w-1/2 relative">
+        <img
+          src="https://www.parihomehealthcare.in/wp-content/uploads/2023/05/medium-shot-middle-aged-doctor-explaining-diagnosis-via-tablet-pc.jpg"
+          alt="Auth background"
+          className="w-full h-full object-cover rounded-l-xl"
+        />
+      </div>
+
+      {/* Signup / Login Form */}
+      <div className="w-full md:w-1/2 flex items-center justify-center px-6">
+        <div className="max-w-md w-full space-y-6 bg-white p-8 ">
+          <h2 className="text-center text-2xl md:text-3xl font-semibold text-gray-900">
+            {isRegister ? "Get Started Now" : "Welcome back!"}
+          </h2>
+          <p className="text-center text-sm text-gray-600">
+            {isRegister
+              ? "Create your credentials to access your account"
+              : "Enter your credentials to access your account"}
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {isRegister && (
+              <div>
+                <input
+                  type="text"
+                  name="clientName"
+                  placeholder="Full Name"
+                  value={formData.clientName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#992787]"
+                  required
+                />
+              </div>
+            )}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Company Name
-              </label>
               <input
-                type="text"
-                name="clientName"
-                value={formData.clientName}
+                type="email"
+                name="clientEmail"
+                placeholder="Email Address"
+                value={formData.clientEmail}
                 onChange={handleChange}
-                className="mt-1 w-full rounded-md border-gray-300 p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#992787]"
                 required
               />
             </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              name="clientEmail"
-              value={formData.clientEmail}
-              onChange={handleChange}
-              className="mt-1 w-full rounded-md border-gray-300 p-2 focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
-          </div>
-          {isRegister && (
+            {isRegister && (
+              <div>
+                <input
+                  type="text"
+                  name="clientPhone"
+                  placeholder="Phone Number"
+                  value={formData.clientPhone}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#992787]"
+                  required
+                />
+              </div>
+            )}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Phone Number
-              </label>
               <input
-                type="text"
-                name="clientPhone"
-                value={formData.clientPhone}
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
                 onChange={handleChange}
-                className="mt-1 w-full rounded-md border-gray-300 p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#992787]"
                 required
               />
             </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="mt-1 w-full rounded-md border-gray-300 p-2 focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
+            <button
+              type="submit"
+              className="w-full bg-[#992787] hover:bg-[#892277] transition-all duration-200 text-white py-2 rounded-md font-medium text-sm"
+            >
+              {isRegister ? "Sign Up" : "Login"}
+            </button>
+          </form>
+
+          <div className="text-center text-sm text-gray-600">
+            {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
+            <button
+              onClick={() => setIsRegister(!isRegister)}
+              className="text-[#992787] hover:underline font-medium"
+            >
+              {isRegister ? "Sign in" : "Sign up"}
+            </button>
           </div>
-          <button
-            type="submit"
-            className="w-full rounded-md bg-[#992787] p-2 text-white font-semibold hover:bg-[#6a1d82]"
-          >
-            {isRegister ? "Register" : "Sign In"}
-          </button>
-        </form>
-        <p className="text-center text-sm text-gray-600">
-          {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
-          <button
-            onClick={() => setIsRegister(!isRegister)}
-            className="text-[#992787] hover:underline"
-          >
-            {isRegister ? "Sign in" : "Register"}
-          </button>
-        </p>
+        </div>
       </div>
     </div>
   );

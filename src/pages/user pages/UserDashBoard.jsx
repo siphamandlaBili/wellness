@@ -1,11 +1,24 @@
-import React ,{useContext}from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { assets } from '../../assets/assets';
 import Navbar from '../../components/Navbar';
 
-
-  
 const UserDashboard = () => {
+    const location = useLocation();
+
+    // UseEffect to disable scrolling on the body when on /user-dashboard path
+    useEffect(() => {
+        if (location.pathname.startsWith('/user-dashboard')) {
+            document.body.style.overflow = 'hidden'; // Disable body scroll
+        } else {
+            document.body.style.overflow = ''; // Reset body scroll on other routes
+        }
+
+        // Cleanup to reset when leaving the route
+        return () => {
+            document.body.style.overflow = ''; // Ensure scroll is re-enabled when component unmounts
+        };
+    }, [location]);
 
     return (
         <div className='min-h-screen'>
@@ -15,7 +28,7 @@ const UserDashboard = () => {
             {/* Sidebar with navigation links */}
             <div className='flex items-start min-h-screen'>
                 {/* Left sidebar */}
-                <div className=' min-h-[90vh] border-3 border-r-[#eeeeee] border-b-transparent border-l-transparent border-t-transparent flex flex-col justify-between'>
+                <div className='min-h-[90vh] border-3 border-r-[#eeeeee] border-b-transparent border-l-transparent border-t-transparent flex flex-col justify-between'>
                     <ul className='flex flex-col items-start pt-5 text-gray-800'>
                         {['profile', 'applications', 'apply-for-event'].map((item) => (
                             <NavLink
@@ -54,7 +67,7 @@ const UserDashboard = () => {
                 </div>
 
                 {/* Right-side content */}
-                <div className="flex-1 p-5">
+                <div className="flex-1 p-5 max-h-[90vh] overflow-y-auto">
                     <Outlet />
                 </div>
             </div>

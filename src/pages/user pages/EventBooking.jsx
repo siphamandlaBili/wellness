@@ -1,18 +1,24 @@
 import React, { useContext, useState } from "react";
 import axios from "axios";
-import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthContext } from "../../../context/authContext";
-
+import {
+  HiOutlineTicket,
+  HiOutlineCalendar,
+  HiOutlineMapPin,
+  HiOutlineUserGroup,
+  HiOutlineDocumentText,
+  HiOutlineTag,
+  HiOutlineExclamationCircle,
+} from "react-icons/hi2";
 
 const generateEventCode = () => {
   const letters = "VT";
   const yearNow = new Date().getFullYear();
   const monthNow = String(new Date().getMonth() + 1).padStart(2, "0");
   const dayNow = String(new Date().getDate()).padStart(2, "0");
-  const randomNumbers = Math.floor(1000 + Math.random() * 9000); // Generates a 4-digit number
+  const randomNumbers = Math.floor(1000 + Math.random() * 9000);
   return `${letters}-${yearNow}${monthNow}${dayNow}-${randomNumbers}`;
 };
 
@@ -28,9 +34,18 @@ const EventBooking = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const { user } = useContext(AuthContext);
 
-  const {user} = useContext(AuthContext);
-  // Handle form input changes
+  const eventTypes = [
+    "Corporate Event",
+    "Wedding",
+    "Birthday Party",
+    "Conference",
+    "Seminar",
+    "Networking Event",
+    "Other"
+  ];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -39,7 +54,6 @@ const EventBooking = () => {
     });
   };
 
-  // Validate form inputs
   const validateForm = () => {
     let formErrors = {};
     let isValid = true;
@@ -60,9 +74,8 @@ const EventBooking = () => {
     return isValid;
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
-   
+    e.preventDefault();
     if (validateForm()) {
       const userData = {
         eventCode: formData.eventCode,
@@ -80,12 +93,10 @@ const EventBooking = () => {
       };
 
       try {
-        // Send user data to JSON Server
         const response = await axios.post("https://wellness-temporary-db-2.onrender.com/events", userData);
         console.log("User added:", response.data);
-        toast.success("Event Inquiry Submitted & User Added!");
+        toast.success("Event Inquiry Submitted Successfully!");
 
-        // Reset form (except eventCode)
         setFormData({
           ...formData,
           eventName: "",
@@ -95,10 +106,9 @@ const EventBooking = () => {
           numberOfAttendees: "",
           additionalNotes: "",
         });
-
       } catch (error) {
         console.error("Error adding user:", error);
-        toast.error("Failed to add user.");
+        toast.error("Failed to submit inquiry. Please try again.");
       }
     } else {
       toast.error("Please fill in all required fields");
@@ -106,44 +116,176 @@ const EventBooking = () => {
   };
 
   return (
+    // <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 py-12 px-4 sm:px-6 lg:px-8">
     <>
       <ToastContainer />
-      <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
-        <h2 className="text-2xl font-semibold text-center" style={{ color: "rgb(153,39,135)" }}>
-          Submit an Event Inquiry
-        </h2>
-        <>
-          {Object.keys(formData).map((field) => (
-            field !== "eventCode" && (
-              <div className="mb-4" key={field}>
-                <label className="block text-sm font-medium" style={{ color: "rgb(153,39,135)" }}>
-                  {field.replace(/([A-Z])/g, " $1").trim()}
-                </label>
-                <input
-                  type={field.includes("Date") ? "date" : "text"}
-                  name={field}
-                  value={formData[field]}
-                  onChange={handleChange}
-                  className="w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                {errors[field] && <p className="text-red-500 text-xs mt-1">{errors[field]}</p>}
-              </div>
-            )
-          ))}
-          <button
-             onClick={(event) => { 
-              event.preventDefault();  
-              handleSubmit(event);
-            }}
-            className="w-[30%] py-3 text-white text-lg font-semibold rounded-md hover:opacity-90 transition duration-200"
-            style={{ backgroundColor: "rgb(153,39,135)" }}
-          >
-            Submit Inquiry
-          </button>
-        </>
-      </div>
+      {/* <div className="max-w-3xl mx-auto"> */}
+        <div className="bg-white p-8 sm:p-12">
+          <h2 className="text-3xl text-[#992787] font-bold text-center m">
+            Event Inquiry Form
+          </h2>
 
-    </>
+          <div className="space-y-8">
+            {/* Event Code Display */}
+            <div className="bg-purple-50 p-4 rounded-lg mb-8 flex items-center">
+              <HiOutlineTicket className="w-6 h-6 mr-2 text-[#992787]" />
+              <span className="text-[#992787] font-semibold">
+                Your Event Code: {formData.eventCode}
+              </span>
+            </div>
+
+            {/* Form Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Event Name */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Event Name
+                </label>
+                <div className="relative">
+                  <HiOutlineTicket className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787]" />
+                  <input
+                    name="eventName"
+                    value={formData.eventName}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#992787] focus:ring-2 focus:ring-purple-200 transition-all"
+                    placeholder="Enter event name"
+                  />
+                </div>
+                {errors.eventName && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
+                    {errors.eventName}
+                  </p>
+                )}
+              </div>
+
+              {/* Event Type */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Event Type
+                </label>
+                <div className="relative">
+                  <HiOutlineTag className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787]" />
+                  <select
+                    name="eventType"
+                    value={formData.eventType}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#992787] focus:ring-2 focus:ring-purple-200 appearance-none bg-white"
+                  >
+                    <option value="">Select event type</option>
+                    {eventTypes.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+                {errors.eventType && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
+                    {errors.eventType}
+                  </p>
+                )}
+              </div>
+
+              {/* Event Date */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Event Date
+                </label>
+                <div className="relative">
+                  <HiOutlineCalendar className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-purple-500" />
+                  <input
+                    type="date"
+                    name="eventDate"
+                    value={formData.eventDate}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                  />
+                </div>
+                {errors.eventDate && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
+                    {errors.eventDate}
+                  </p>
+                )}
+              </div>
+
+              {/* Event Location */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Event Location
+                </label>
+                <div className="relative">
+                  <HiOutlineMapPin className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787]" />
+                  <input
+                    name="eventLocation"
+                    value={formData.eventLocation}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                    placeholder="Enter event location"
+                  />
+                </div>
+                {errors.eventLocation && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
+                    {errors.eventLocation}
+                  </p>
+                )}
+              </div>
+
+              {/* Number of Attendees */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Number of Attendees
+                </label>
+                <div className="relative">
+                  <HiOutlineUserGroup className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787]" />
+                  <input
+                    type="number"
+                    name="numberOfAttendees"
+                    value={formData.numberOfAttendees}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                    placeholder="Estimated attendees"
+                  />
+                </div>
+                {errors.numberOfAttendees && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
+                    {errors.numberOfAttendees}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Additional Notes */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Additional Notes
+              </label>
+              <div className="relative">
+                <HiOutlineDocumentText className="w-6 h-6 absolute left-3 top-4 text-[#992787]" />
+                <textarea
+                  name="additionalNotes"
+                  value={formData.additionalNotes}
+                  onChange={handleChange}
+                  className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 h-32"
+                  placeholder="Any special requirements or notes..."
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              onClick={handleSubmit}
+              className="bg-[#992787] flex flex-row text-white py-4 px-8 rounded-lg font-semibold text-lg items-center justify-center"
+            >
+              <HiOutlineDocumentText className="w-5 h-5 mr-2" />
+              Submit Inquiry
+            </button>
+          </div>
+        </div>
+        </>
+     
   );
 };
 
