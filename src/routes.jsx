@@ -14,6 +14,8 @@ import AcceptedEvents from './pages/AcceptedEvents';
 import NurseDashboard from "./NurseDashboard";
 import NurseEvent from "./NurseEvent";
 import PatientList from "./PatientList";
+import Analytics from './pages/Analytics';
+import Referrals from './pages/Referrals';
 
 const router = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
@@ -62,7 +64,8 @@ const router = createBrowserRouter([
     children: [
       { path: "events", element: <NurseEvent/> },
       { path: "patients", element: <PatientList/> }, 
-      { path: "nurse3", element: <div>Nurse page 3</div> }, 
+      { path: "referrals", element: <Referrals /> }, // New Referrals route
+      { path: "analytics", element: <Analytics /> }, // New Analytics route
       { path: "nurse4", element: <div>Nurse page 4</div> },
     ],
   },

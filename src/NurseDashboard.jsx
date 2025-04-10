@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import { User, Briefcase, Users, Settings } from 'lucide-react';
+import { User, Briefcase, Users, BarChart2 } from 'lucide-react';
 
 const NurseDashboard = () => {
     return (
@@ -16,9 +16,9 @@ const NurseDashboard = () => {
                     <ul className="flex flex-col items-start pt-5 text-gray-800">
                         {[
                             { name: 'Event', path: 'events', icon: <User size={20} /> },
-                            { name: 'patients', path: 'patients', icon: <Briefcase size={20} /> },
-                            { name: 'nurse 3', path: 'nurse3', icon: <Users size={20} /> },
-                            { name: 'nurse 4', path: 'nurse4', icon: <Settings size={20} /> }
+                            { name: 'Patients', path: 'patients', icon: <Briefcase size={20} /> },
+                            { name: 'Referrals', path: 'referrals', icon: <Users size={20} /> },
+                            { name: 'Analytics', path: 'analytics', icon: <BarChart2 size={20} /> }
                         ].map((item) => (
                             <NavLink
                                 key={item.path}
