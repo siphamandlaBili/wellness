@@ -1,18 +1,33 @@
-import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import { User, Briefcase, Users, BarChart2 } from 'lucide-react';
 
 const NurseDashboard = () => {
+    const location = useLocation();
+
+    useEffect(() => {
+        // Disable body scroll on `/nurse` routes
+        if (location.pathname.startsWith('/nurse')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+
+        return () => {
+            document.body.style.overflow = ''; // Reset on unmount
+        };
+    }, [location]);
+
     return (
-        <div className="min-h-screen overflow-y-hidden">
+        <div className="min-h-screen">
             {/* Navbar */}
             <Navbar isSuperAdmin={true} />
 
             {/* Main Layout */}
-            <div className="flex items-start overflow-hidden">
+            <div className="flex items-start overflow-hidden min-h-[calc(100vh-64px)]">
                 {/* Sidebar */}
-                <div className="flex flex-col justify-between min-h-[90vh] border-3 border-[#eeeeee]">
+                <div className="flex flex-col justify-between min-h-full border-r border-[#eeeeee]">
                     <ul className="flex flex-col items-start pt-5 text-gray-800">
                         {[
                             { name: 'Event', path: 'events', icon: <User size={20} /> },
@@ -52,7 +67,7 @@ const NurseDashboard = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 p-5 md:p-2">
+                <div className="flex-1 max-h-[calc(100vh-64px)] overflow-y-auto p-5 md:p-2">
                     <Outlet />
                 </div>
             </div>

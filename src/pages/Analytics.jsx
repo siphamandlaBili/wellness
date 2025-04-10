@@ -8,7 +8,6 @@ const Analytics = () => {
     const [analyticsData, setAnalyticsData] = useState(null);
 
     useEffect(() => {
-        // Mock health-related analytics data
         const fetchData = async () => {
             const mockData = {
                 totalPatients: 1200,
@@ -24,7 +23,7 @@ const Analytics = () => {
     }, []);
 
     const barData = {
-        labels: ['Total Patients', 'Active Cases', 'Recovered Patients', 'Critical Cases', 'Nurses On Duty'],
+        labels: ['Total Patients', 'Active Cases', 'Recovered', 'Critical', 'Nurses'],
         datasets: [
             {
                 label: 'Health Metrics',
@@ -37,20 +36,34 @@ const Analytics = () => {
                           analyticsData.nursesOnDuty,
                       ]
                     : [],
-                backgroundColor: ['#6b46c1', '#ed8936', '#48bb78', '#e53e3e', '#4299e1'],
+                backgroundColor: [
+                    '#992787',
+                    '#d53f8c',
+                    '#ed64a6',
+                    '#b83280',
+                    '#702459'
+                ],
+                borderColor: 'white',
+                borderWidth: 1,
             },
         ],
     };
 
     const pieData = {
-        labels: ['Active Cases', 'Recovered Patients', 'Critical Cases'],
+        labels: ['Active Cases', 'Recovered', 'Critical'],
         datasets: [
             {
                 label: 'Case Distribution',
                 data: analyticsData
                     ? [analyticsData.activeCases, analyticsData.recoveredPatients, analyticsData.criticalCases]
                     : [],
-                backgroundColor: ['#ed8936', '#48bb78', '#e53e3e'],
+                backgroundColor: [
+                    '#992787',
+                    '#6a1b9a',
+                    '#d53f8c'
+                ],
+                borderColor: 'white',
+                borderWidth: 2,
             },
         ],
     };
@@ -59,50 +72,75 @@ const Analytics = () => {
         labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
         datasets: [
             {
-                label: 'Weekly Patient Growth',
+                label: 'Weekly Growth',
                 data: [200, 400, 600, 1200],
-                borderColor: '#6b46c1',
-                backgroundColor: 'rgba(107, 70, 193, 0.2)',
+                borderColor: '#992787',
+                backgroundColor: 'rgba(153, 39, 135, 0.1)',
                 tension: 0.4,
+                borderWidth: 2,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#992787',
             },
         ],
     };
 
     return (
-        <div className="p-5 bg-gray-50 min-h-screen">
-            <h2 className="text-2xl font-bold text-purple-700 mb-6">Health Analytics</h2>
+        <div className="container m-9">
+            <h2 className="text-3xl font-bold text-[#992787] mb-8 relative pl-4 ">
+                Health Analytics
+            </h2>
+            
             {analyticsData ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Bar Chart */}
-                    <div className="bg-white shadow-lg rounded-lg p-6">
-                        <h3 className="text-xl font-semibold text-purple-700 mb-4">Health Metrics</h3>
-                        <Bar data={barData} />
+                    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                        <h3 className="text-lg font-semibold text-[#992787] mb-4">Health Metrics Overview</h3>
+                        <Bar 
+                            data={barData} 
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    legend: { display: false }
+                                }
+                            }}
+                        />
                     </div>
 
                     {/* Pie Chart */}
-                    <div className="bg-white shadow-lg rounded-lg p-6">
-                        <h3 className="text-xl font-semibold text-purple-700 mb-4">Case Distribution</h3>
-                        <Pie data={pieData} />
+                    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                        <h3 className="text-lg font-semibold text-[#992787] mb-4">Case Distribution</h3>
+                        <div className="relative h-60">
+                            <Pie 
+                                data={pieData} 
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: { position: 'bottom' }
+                                    }
+                                }}
+                            />
+                        </div>
                     </div>
 
                     {/* Line Chart */}
-                    <div className="bg-white shadow-lg rounded-lg p-6">
-                        <h3 className="text-xl font-semibold text-purple-700 mb-4">Weekly Patient Growth</h3>
-                        <Line data={lineData} />
-                    </div>
-
-                    {/* Image Section */}
-                    <div className="bg-white shadow-lg rounded-lg p-6 col-span-1 sm:col-span-2">
-                        <h3 className="text-xl font-semibold text-purple-700 mb-4">Health Awareness</h3>
-                        <img
-                            src="https://via.placeholder.com/600x300"
-                            alt="Health Awareness"
-                            className="rounded-lg w-full"
+                    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                        <h3 className="text-lg font-semibold text-[#992787] mb-4">Patient Growth Trend</h3>
+                        <Line 
+                            data={lineData} 
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    legend: { display: false }
+                                }
+                            }}
                         />
                     </div>
                 </div>
             ) : (
-                <p>Loading analytics data...</p>
+                <div className="text-center py-8 text-gray-500">
+                    Loading analytics data...
+                </div>
             )}
         </div>
     );
