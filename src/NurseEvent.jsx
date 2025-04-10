@@ -1,4 +1,14 @@
 import React from 'react';
+import { 
+  HiOutlineCalendar,
+  HiOutlineLocationMarker,
+  HiOutlineUserGroup,
+  HiOutlineClipboardList,
+  HiOutlineMail,
+  HiOutlinePhone,
+  HiOutlineInformationCircle
+} from 'react-icons/hi';
+import { HiOutlineUser } from 'react-icons/hi2';
 
 const event = {
   id: "807f",
@@ -6,55 +16,107 @@ const event = {
   clientName: "Aflumed health care",
   clientEmail: "azilebili@gmail.com",
   clientPhone: "0640986398",
-  eventName: "spa day",
-  eventType: "therapy",
+  eventName: "Spa Day",
+  eventType: "Therapy",
   eventDate: "2025-04-25",
-  eventLocation: "cape town",
+  eventLocation: "Cape Town",
   numberOfAttendees: "100",
-  additionalNotes: "no notes",
+  additionalNotes: "No notes provided",
   role: "user",
-  status: "Accepted"
+  status: "Accepted",
+  additionalNotes: "prepare masks and gloves for all the ettendies as there is going to be in a small room and want to avoid contaminationd",
 };
 
 const NurseEvent = () => {
   return (
-    <div className="container p-4 max-w-5xl">
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200 max-sm:text-sm">
-          <thead className="bg-[#992787] text-white">
-            <tr>
-              <th className="py-2 px-4 text-left">Event</th>
-              <th className="py-2 px-4 text-left max-sm:hidden">Type</th>
-              <th className="py-2 px-4 text-left max-sm:hidden">Date</th>
-              <th className="py-2 px-4 text-left">Location</th>
-              <th className="py-2 px-4 text-left max-sm:hidden">Attendees</th>
-              <th className="py-2 px-4 text-left">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="text-gray-700">
-              <td className="py-2 px-4 border-b">{event.eventName}</td>
-              <td className="py-2 px-4 border-b max-sm:hidden">{event.eventType}</td>
-              <td className="py-2 px-4 border-b max-sm:hidden">{event.eventDate}</td>
-              <td className="py-2 px-4 border-b">{event.eventLocation}</td>
-              <td className="py-2 px-4 border-b max-sm:hidden">{event.numberOfAttendees}</td>
-              <td className="py-2 px-4 border-b">
-                <span className={`px-2 py-1 rounded text-white text-sm ${event.status === 'Rejected' ? 'bg-red-500' : 'bg-green-500'}`}>
-                  {event.status}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <div className="max-w-[100vw] mx-auto p-6">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        {/* Event Header */}
+        <div className="bg-gradient-to-r from-[#992787] to-[#6a1b5e] p-6">
+          <h1 className="text-3xl font-bold text-white">{event.eventName}</h1>
+          <p className="text-white/90 mt-2">{event.eventCode}</p>
+        </div>
 
-        {/* Client Info Section */}
-        <div className="mt-6 bg-white border border-gray-200 rounded-md p-4 space-y-2 max-sm:text-sm">
-          <h2 className="text-lg font-semibold text-[#992787] mb-2">Client Info</h2>
-          <p><span className="font-semibold">Name:</span> {event.clientName}</p>
-          <p><span className="font-semibold">Email:</span> {event.clientEmail}</p>
-          <p><span className="font-semibold">Phone:</span> {event.clientPhone}</p>
-          <p><span className="font-semibold">Event Code:</span> {event.eventCode}</p>
-          <p><span className="font-semibold">Additional Notes:</span> {event.additionalNotes}</p>
+        {/* Event Details Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
+          <div className="flex items-center space-x-3">
+            <HiOutlineCalendar className="w-6 h-6 text-[#992787]" />
+            <div>
+              <p className="text-sm text-gray-500">Date</p>
+              <p className="font-medium">{new Date(event.eventDate).toLocaleDateString()}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <HiOutlineLocationMarker className="w-6 h-6 text-[#992787]" />
+            <div>
+              <p className="text-sm text-gray-500">Location</p>
+              <p className="font-medium">{event.eventLocation}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <HiOutlineUserGroup className="w-6 h-6 text-[#992787]" />
+            <div>
+              <p className="text-sm text-gray-500">Attendees</p>
+              <p className="font-medium">{event.numberOfAttendees}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <HiOutlineClipboardList className="w-6 h-6 text-[#992787]" />
+            <div>
+              <p className="text-sm text-gray-500">Status</p>
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                event.status === 'Accepted' 
+                  ? 'bg-green-100 text-green-700' 
+                  : 'bg-red-100 text-red-700'
+              }`}>
+                {event.status}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Client Information Section */}
+        <div className="border-t border-gray-100 p-6">
+          <div className="flex items-center mb-6 space-x-2">
+            <HiOutlineInformationCircle className="w-6 h-6 text-[#992787]" />
+            <h2 className="text-xl font-semibold">Client Information</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <HiOutlineUser className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="text-sm text-gray-500">Name</p>
+                  <p className="font-medium">{event.clientName}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <HiOutlineMail className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="font-medium break-all">{event.clientEmail}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <HiOutlinePhone className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="text-sm text-gray-500">Phone</p>
+                  <p className="font-medium">{event.clientPhone}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-sm text-gray-500 mb-2">Additional Notes</p>
+              <p className="text-gray-700">{event.additionalNotes}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
