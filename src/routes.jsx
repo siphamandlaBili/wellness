@@ -16,6 +16,8 @@ import NurseEvent from "./NurseEvent";
 import PatientList from "./PatientList";
 import Analytics from './pages/Analytics';
 import Referrals from './pages/Referrals';
+import NurseAnalytics from './pages/NurseAnalytics';
+import AdminAnalytics from './pages/AdminAnalytics';
 import ManageAdmins from "./ManageAdmins";
 
 const router = createBrowserRouter([
@@ -47,6 +49,7 @@ const router = createBrowserRouter([
       { path: "past-events", element: <PastEvents /> },
       { path: "assign-event", element: <AssignEventToNurse /> },
       { path: "accepted-events", element: <AcceptedEvents /> }, // New route
+      { path: "analytics", element: <AdminAnalytics /> }, // New AdminAnalytics route
     ],
   },
   {
@@ -64,6 +67,8 @@ const router = createBrowserRouter([
     children: [
       { path: "events", element: <NurseEvent/> },
       { path: "patients", element: <PatientList/> }, 
+      { path: "referrals", element: <Referrals /> }, // New Referrals route
+      { path: "analytics", element: <NurseAnalytics /> }, // New NurseAnalytics route
       { path: "referrals", element: <Referrals /> }, 
       { path: "analytics", element: <Analytics /> }, 
       { path: "nurse4", element: <div>Nurse page 4</div> },
