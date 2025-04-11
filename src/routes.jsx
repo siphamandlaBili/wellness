@@ -16,6 +16,7 @@ import NurseEvent from "./NurseEvent";
 import PatientList from "./PatientList";
 import Analytics from './pages/Analytics';
 import Referrals from './pages/Referrals';
+import ManageAdmins from "./ManageAdmins";
 
 const router = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
@@ -52,10 +53,9 @@ const router = createBrowserRouter([
     path: "/superadmin",
     element: <SuperAdminDashboard />,
     children: [
-      { path: "manage-admins", element: <div>Manage Admins Page</div> }, // Replace with actual component
-      { path: "manage-nurses", element: <div>Manage Nurses Page</div> }, // Replace with actual component
-      { path: "reports", element: <div>Reports Page</div> }, // Replace with actual component
-      { path: "settings", element: <div>Settings Page</div> }, // Replace with actual component
+      { path: "manage-admins", element: <ManageAdmins/> },
+      { path: "reports", element: 'repors' }, // Replace with actual component
+      { path: "settings", element: 'setting' }, // Replace with actual component
     ],
   },
   {
@@ -64,8 +64,8 @@ const router = createBrowserRouter([
     children: [
       { path: "events", element: <NurseEvent/> },
       { path: "patients", element: <PatientList/> }, 
-      { path: "referrals", element: <Referrals /> }, // New Referrals route
-      { path: "analytics", element: <Analytics /> }, // New Analytics route
+      { path: "referrals", element: <Referrals /> }, 
+      { path: "analytics", element: <Analytics /> }, 
       { path: "nurse4", element: <div>Nurse page 4</div> },
     ],
   },

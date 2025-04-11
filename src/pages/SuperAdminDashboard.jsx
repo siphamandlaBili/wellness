@@ -16,7 +16,7 @@ const SuperAdminDashboard = () => {
                     <ul className="flex flex-col items-start pt-5 text-gray-800">
                         {[
                             { name: 'Manage Admins', path: 'manage-admins', icon: <User size={20} /> },
-                            { name: 'Manage Nurses', path: 'manage-nurses', icon: <Briefcase size={20} /> },
+
                             { name: 'View Reports', path: 'reports', icon: <Users size={20} /> },
                             { name: 'Settings', path: 'settings', icon: <Settings size={20} /> }
                         ].map((item) => (

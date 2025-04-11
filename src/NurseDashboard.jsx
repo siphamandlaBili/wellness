@@ -27,24 +27,24 @@ const NurseDashboard = () => {
             {/* Main Layout */}
             <div className="flex items-start overflow-hidden min-h-[calc(100vh-64px)]">
                 {/* Sidebar */}
-                <div className="flex flex-col justify-between min-h-full border-r border-[#eeeeee]">
-                    <ul className="flex flex-col items-start pt-5 text-gray-800">
+                <div className="flex dark:bg-gray-900 flex-col justify-between min-h-[90vh] border-r border-[#eeeeee]">
+                    <ul className="flex  dark:text-gray-300 flex-col items-start pt-5 text-gray-800">
                         {[
-                            { name: 'Event', path: 'events', icon: <User size={20} /> },
-                            { name: 'Patients', path: 'patients', icon: <Briefcase size={20} /> },
-                            { name: 'Referrals', path: 'referrals', icon: <Users size={20} /> },
-                            { name: 'Analytics', path: 'analytics', icon: <BarChart2 size={20} /> }
+                                                        { name: 'Event', path: 'events', icon: "https://img.icons8.com/?size=28&id=nGCq83WiIaj1&format=png&color=000000" },
+                                                        { name: 'Patients', path: 'patients', icon: "https://img.icons8.com/?size=28&id=nFyiWLVR8Zrt&format=png&color=000000" },
+                                                        { name: 'Referrals', path: 'referrals', icon: "https://img.icons8.com/?size=28&id=gf7HkPc5t1hF&format=png&color=000000"},
+                            { name: 'Analytics', path: 'analytics', icon:"https://img.icons8.com/?size=28&id=rjMOGEY1NKlC&format=png&color=000000" }
                         ].map((item) => (
                             <NavLink
                                 key={item.path}
                                 to={`/nurse/${item.path}`}
                                 className={({ isActive }) =>
-                                    `relative flex items-center p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 ${
-                                        isActive ? 'bg-[#f2d9eb] border-r-4 border-[#992787]' : ''
+                                    `relative flex items-center dark:hover:bg-gray-700 p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 ${
+                                        isActive ? 'bg-[#f2d9eb] dark:bg-purple-900 dark:border-purple-400 border-r-4 border-[#992787]' : ''
                                     }`
                                 }
                             >
-                                <div className="min-w-4">{item.icon}</div>
+                                <img className='min-w-4 dark:invert' src={item.icon} alt="icon" />
                                 <p className="max-sm:hidden">{item.name}</p>
                             </NavLink>
                         ))}
@@ -53,14 +53,14 @@ const NurseDashboard = () => {
                     {/* Logout Link */}
                     <NavLink
                         className={({ isActive }) =>
-                            `relative flex items-center p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 mb-10 ${
-                                isActive ? 'bg-[#f2d9eb] border-r-4 border-[#992787]' : ''
+                            `relative flex items-center p-3 dark:hover:bg-gray-700 sm:px-6 gap-2 w-full hover:bg-gray-100 mb-10 ${
+                                isActive ? 'bg-[#f2d9eb]  dark:bg-purple-900 dark:border-purple-400 border-r-4 border-[#992787]' : ''
                             }`
                         }
                         to={`/`}
                     >
-                        <div className="min-w-4">
-                            <User size={20} />
+                        <div className="min-w-4 dark:invert">
+                            <img src="https://img.icons8.com/?size=28&id=gH60rKrZnbX9&format=png&color=000000" alt="" />
                         </div>
                         <p className="max-sm:hidden">Logout</p>
                     </NavLink>

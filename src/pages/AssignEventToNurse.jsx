@@ -75,40 +75,40 @@ const AssignEventToNurse = () => {
   const sendEmail = (payload) => {
     console.log('Sending email:', payload);
     toast.success(`Event details sent to ${payload.to}`, {
-      icon: <HiOutlineMail className="text-purple-600" />,
+      icon: <HiOutlineMail className="text-purple-600 dark:text-purple-400" />,
     });
   };
 
   return (
     <>
-      <ToastContainer />
-      <div className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="bg-white p-6 sm:p-8">
-          <h2 className="text-2xl sm:text-3xl mb-6 font-bold text-center text-[#992787]">
+      <ToastContainer theme="colored" />
+      <div className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 dark:bg-gray-900 min-h-screen">
+        <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-sm">
+          <h2 className="text-2xl sm:text-3xl mb-6 font-bold text-center text-[#992787] dark:text-purple-400">
             Nurse Event Assignment
           </h2>
 
           {/* Mobile Card View */}
           <div className="md:hidden space-y-4">
             {nurses.map((nurse) => (
-              <div key={nurse.id} className="bg-white rounded-lg border border-gray-200 p-4">
+              <div key={nurse.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center flex-row justify-center">
-                      <HiOutlineUser className="w-5 h-5 text-[#992787] mr-2" />
-                      <span className="font-medium text-gray-900">{nurse.name}</span>
+                      <HiOutlineUser className="w-5 h-5 text-[#992787] dark:text-purple-400 mr-2" />
+                      <span className="font-medium text-gray-900 dark:text-gray-100">{nurse.name}</span>
                     </div>
                     <div className="flex items-center">
                       {nurse.available ? (
-                        <HiOutlineCheckCircle className="w-5 h-5 text-green-500" />
+                        <HiOutlineCheckCircle className="w-5 h-5 text-green-500 dark:text-green-400" />
                       ) : (
-                        <HiOutlineXCircle className="w-5 h-5 text-red-500" />
+                        <HiOutlineXCircle className="w-5 h-5 text-red-500 dark:text-red-400" />
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center text-sm text-gray-600">
-                    <HiOutlineMail className="w-5 h-5 text-[#992787] mr-2" />
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                    <HiOutlineMail className="w-5 h-5 text-[#992787] dark:text-purple-400 mr-2" />
                     <span>{nurse.email}</span>
                   </div>
 
@@ -116,20 +116,24 @@ const AssignEventToNurse = () => {
                     <select
                       className={`w-full pl-10 pr-4 py-2 rounded-lg border-2 text-sm ${
                         nurse.available
-                          ? 'border-purple-200 hover:border-purple-300'
-                          : 'border-gray-200'
-                      } focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all`}
+                          ? 'border-purple-200 dark:border-purple-400/30 hover:border-purple-300 dark:hover:border-purple-400'
+                          : 'border-gray-200 dark:border-gray-600'
+                      } focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-400/30 transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100`}
                       value={assignedNurses[nurse.id] || ''}
                       onChange={(e) => handleAssignEvent(nurse.id, e.target.value)}
                     >
                       <option value="">Unassign</option>
                       {acceptedEvents.map((event) => (
-                        <option key={event.id} value={event.eventCode}>
+                        <option 
+                          key={event.id} 
+                          value={event.eventCode}
+                          className="dark:bg-gray-700"
+                        >
                           {event.eventCode} - {event.eventName}
                         </option>
                       ))}
                     </select>
-                    <HiOutlineClipboardList className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-purple-400" />
+                    <HiOutlineClipboardList className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-purple-400 dark:text-purple-300" />
                   </div>
                 </div>
               </div>
@@ -137,44 +141,52 @@ const AssignEventToNurse = () => {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto rounded-lg border border-gray-200">
+          <div className="hidden md:block overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
             <table className="w-full">
-              <thead className="bg-purple-50">
+              <thead className="bg-purple-50 dark:bg-purple-900/20">
                 <tr>
-                  <th className="p-3 flex flex-row justify-between center-items sm:p-4 text-left text-sm font-medium text-[#992787]">
-                    <HiOutlineUser className="inline-block w-5 h-5 mr-2" />
-                    Nurse
+                  <th className="p-3 sm:p-4 text-left text-sm font-medium text-[#992787] dark:text-purple-400">
+                    <div className="flex items-center">
+                      <HiOutlineUser className="w-5 h-5 mr-2" />
+                      Nurse
+                    </div>
                   </th>
-                  <th className="p-3  sm:p-4 text-left text-sm font-medium text-[#992787]">
-                    <HiOutlineMail className="inline-block w-5 h-5 mr-2" />
-                    Email
+                  <th className="p-3 sm:p-4 text-left text-sm font-medium text-[#992787] dark:text-purple-400">
+                    <div className="flex items-center">
+                      <HiOutlineMail className="w-5 h-5 mr-2" />
+                      Email
+                    </div>
                   </th>
-                  <th className="p-3 sm:p-4 text-left text-sm font-medium text-[#992787]">
-                    <HiOutlineCheckCircle className="inline-block w-5 h-5 mr-2" />
-                    Status
+                  <th className="p-3 sm:p-4 text-left text-sm font-medium text-[#992787] dark:text-purple-400">
+                    <div className="flex items-center">
+                      <HiOutlineCheckCircle className="w-5 h-5 mr-2" />
+                      Status
+                    </div>
                   </th>
-                  <th className="p-3 sm:p-4 text-left text-sm font-medium text-[#992787]">
-                    <HiOutlineClipboardList className="inline-block w-5 h-5 mr-2" />
-                    Assign Event
+                  <th className="p-3 sm:p-4 text-left text-sm font-medium text-[#992787] dark:text-purple-400">
+                    <div className="flex items-center">
+                      <HiOutlineClipboardList className="w-5 h-5 mr-2" />
+                      Assign Event
+                    </div>
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {nurses.map((nurse) => (
-                  <tr key={nurse.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="p-3 sm:p-4 text-sm text-gray-700 font-medium">{nurse.name}</td>
-                    <td className="p-3 sm:p-4 text-sm text-gray-600">{nurse.email}</td>
+                  <tr key={nurse.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                    <td className="p-3 sm:p-4 text-sm text-gray-700 dark:text-gray-100 font-medium">{nurse.name}</td>
+                    <td className="p-3 sm:p-4 text-sm text-gray-600 dark:text-gray-300">{nurse.email}</td>
                     <td className="p-3 sm:p-4">
                       <div className="inline-flex items-center">
                         {nurse.available ? (
                           <>
-                            <HiOutlineCheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                            <span className="text-green-600">Available</span>
+                            <HiOutlineCheckCircle className="w-5 h-5 text-green-500 dark:text-green-400 mr-2" />
+                            <span className="text-green-600 dark:text-green-400">Available</span>
                           </>
                         ) : (
                           <>
-                            <HiOutlineXCircle className="w-5 h-5 text-red-500 mr-2" />
-                            <span className="text-red-600">Assigned</span>
+                            <HiOutlineXCircle className="w-5 h-5 text-red-500 dark:text-red-400 mr-2" />
+                            <span className="text-red-600 dark:text-red-400">Assigned</span>
                           </>
                         )}
                       </div>
@@ -184,20 +196,24 @@ const AssignEventToNurse = () => {
                         <select
                           className={`w-full pl-10 pr-4 py-2 rounded-lg border-2 text-sm ${
                             nurse.available
-                              ? 'border-purple-200 hover:border-purple-300'
-                              : 'border-gray-200'
-                          } focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all`}
+                              ? 'border-purple-200 dark:border-purple-400/30 hover:border-purple-300 dark:hover:border-purple-400'
+                              : 'border-gray-200 dark:border-gray-600'
+                          } focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-400/30 transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100`}
                           value={assignedNurses[nurse.id] || ''}
                           onChange={(e) => handleAssignEvent(nurse.id, e.target.value)}
                         >
                           <option value="">Unassign</option>
                           {acceptedEvents.map((event) => (
-                            <option key={event.id} value={event.eventCode}>
+                            <option 
+                              key={event.id} 
+                              value={event.eventCode}
+                              className="dark:bg-gray-700"
+                            >
                               {event.eventCode} - {event.eventName}
                             </option>
                           ))}
                         </select>
-                        <HiOutlineClipboardList className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-purple-400" />
+                        <HiOutlineClipboardList className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-purple-400 dark:text-purple-300" />
                       </div>
                     </td>
                   </tr>
@@ -206,7 +222,7 @@ const AssignEventToNurse = () => {
             </table>
           </div>
 
-          <div className="mt-8 text-sm text-gray-500 flex flex-col sm:flex-row items-center p-3 bg-purple-50 rounded-lg">
+          <div className="mt-8 text-sm text-gray-500 dark:text-gray-300 flex flex-col sm:flex-row items-center p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
             <HiOutlineInformationCircle className="w-5 h-5 mr-2 text-purple-400 mb-2 sm:mb-0" />
             <span className="text-center sm:text-left">
               Nurses will receive an email notification when assigned to events

@@ -11,6 +11,7 @@
     "start": "json-server --watch ./database/db.json --port 5000"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.0.17",
     "axios": "^1.8.4",
     "chart.js": "^4.4.8",

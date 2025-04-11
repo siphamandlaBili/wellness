@@ -7,7 +7,7 @@ const Hero = () => {
   
   return (
     <>
-      <ToastContainer />
+      <ToastContainer theme="colored" />
       <div className="relative h-[90vh] w-full bg-cover bg-center" 
         style={{
           backgroundImage:
