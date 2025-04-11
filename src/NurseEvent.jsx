@@ -14,7 +14,8 @@ const event = {
   id: "807f",
   eventCode: "VT-20250403-3017",
   clientName: "Aflumed health care",
-  clientEmail: "azilebili@gmail.com",
+  clientEmail: "azilebili@gmail.com"
+  ,
   clientPhone: "0640986398",
   eventName: "Spa Day",
   eventType: "Therapy",
