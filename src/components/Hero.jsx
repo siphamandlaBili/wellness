@@ -4,7 +4,7 @@ import { toast, ToastContainer } from 'react-toastify';
 
 const Hero = () => {
   const navigate = useNavigate();
-
+  
   return (
     <>
       <ToastContainer />

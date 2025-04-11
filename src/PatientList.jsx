@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { 
+import {
   HiOutlineUser,
   HiOutlineMail,
   HiOutlinePhone,
@@ -26,7 +26,22 @@ const formSteps = [
       { name: 'idNumber', label: 'ID Number', required: true },
       { name: 'email', label: 'Email', type: 'email', icon: HiOutlineMail, required: true },
       { name: 'cellPhone', label: 'Cell Phone', type: 'tel', icon: HiOutlinePhone, required: true },
-      { name: 'medicalAid', label: 'Medical Aid Details', type: 'textarea' },
+    ]
+  },
+  {
+    title: "Medical Aid Details",
+    fields: [
+      { name: 'schemeName', label: 'Scheme Name' },
+      { name: 'planOption', label: 'Plan/Option' },
+      { name: 'membershipNumber', label: 'Membership Number' },
+      { name: 'mainMemberNames', label: 'Main Member Names' },
+      { name: 'mainMemberAddress', label: 'Main Member Address', type: 'textarea' },
+      {
+        name: 'dependentCode',
+        label: 'Dependent Code',
+        type: 'select',
+        options: Array.from({ length: 10 }, (_, i) => (i + 1).toString().padStart(2, '0'))
+      }
     ]
   },
   {
@@ -42,7 +57,6 @@ const formSteps = [
       { name: 'cholesterol', label: 'Cholesterol (mg/dL)', type: 'number' },
       { name: 'hiv', label: 'HIV Screening Result', type: 'select', options: ['Negative', 'Positive', 'Inconclusive'] },
       { name: 'glucose', label: 'Glucose Level (mg/dL)', type: 'number' },
-      
     ]
   }
 ];
@@ -59,12 +73,16 @@ const PatientList = () => {
     idNumber: '',
     email: '',
     cellPhone: '',
-    medicalAid: '',
+    schemeName: '',
+    planOption: '',
+    membershipNumber: '',
+    mainMemberNames: '',
+    mainMemberAddress: '',
+    dependentCode: '',
     bmi: '',
     cholesterol: '',
     hiv: '',
     glucose: '',
-    
   });
   const [signature, setSignature] = useState('');
   const [questions, setQuestions] = useState([
@@ -110,12 +128,16 @@ const PatientList = () => {
         idNumber: '',
         email: '',
         cellPhone: '',
-        medicalAid: '',
+        schemeName: '',
+        planOption: '',
+        membershipNumber: '',
+        mainMemberNames: '',
+        mainMemberAddress: '',
+        dependentCode: '',
         bmi: '',
         cholesterol: '',
         hiv: '',
         glucose: '',
-       
       });
       setSignature('');
       setQuestions([]);
@@ -126,9 +148,9 @@ const PatientList = () => {
     }
   };
 
-  const handleQuestionChange = (index, value) => {
+  const handleQuestionChange = (index, field, value) => {
     const newQuestions = [...questions];
-    newQuestions[index].answer = value;
+    newQuestions[index][field] = value;
     setQuestions(newQuestions);
   };
 
@@ -152,12 +174,12 @@ const PatientList = () => {
 
     const existingReferrals = JSON.parse(localStorage.getItem('referrals')) || [];
     localStorage.setItem('referrals', JSON.stringify([...existingReferrals, referralData]));
-    
+
     setPatients(prev => prev.filter(patient => patient.id !== selectedPatient.id));
     setShowReferralForm(false);
     setReferralComment('');
     setSelectedPatient(null);
-    
+
     alert('Referral added successfully!');
     navigate('/nurse/referrals');
   };
@@ -192,8 +214,8 @@ const PatientList = () => {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {patients.map(patient => (
-                  <tr 
-                    key={patient.id} 
+                  <tr
+                    key={patient.id}
                     className="hover:bg-gray-50 transition-colors group"
                   >
                     <td className="p-4">
@@ -243,13 +265,13 @@ const PatientList = () => {
 
         {/* Add Patient Modal */}
         {showForm && (
-          <div className="fixed inset-0 overflow-auto bg-black/50   backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white overflow-auto rounded-2xl  p-6 w-full max-w-2xl mx-4 shadow-xl">
+          <div className="fixed inset-0 overflow-auto bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white overflow-auto rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl">
               <div className="flex overflow-y-auto justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-[#992787]">
                   {formSteps[currentStep].title}
                 </h2>
-                <button 
+                <button
                   onClick={() => setShowForm(false)}
                   className="text-gray-500 hover:text-gray-700 transition-colors"
                 >
@@ -259,7 +281,7 @@ const PatientList = () => {
 
               <div className="mb-4 flex justify-center gap-2">
                 {formSteps.map((_, index) => (
-                  <div 
+                  <div
                     key={index}
                     className={`w-3 h-3 rounded-full ${index === currentStep ? 'bg-[#992787]' : 'bg-gray-300'}`}
                   />
@@ -271,22 +293,48 @@ const PatientList = () => {
                   {formSteps[0].fields.map((field) => (
                     <div key={field.name} className="relative">
                       {field.icon && <field.icon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />}
-                      {field.type === 'textarea' ? (
+                      <input
+                        type={field.type || 'text'}
+                        placeholder={field.label}
+                        value={newPatient[field.name]}
+                        onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
+                        className={`w-full ${field.icon ? 'pl-10' : 'pl-4'} pr-4 py-3 border-2 border-gray-200 rounded-lg`}
+                        required={field.required}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {currentStep === 1 && (
+                <div className="grid grid-cols-2 gap-4">
+                  {formSteps[1].fields.map((field) => (
+                    <div key={field.name} className="relative">
+                      {field.type === 'select' ? (
+                        <select
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg"
+                          value={newPatient[field.name]}
+                          onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
+                        >
+                          <option value="">Select {field.label}</option>
+                          {field.options.map(option => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                      ) : field.type === 'textarea' ? (
                         <textarea
                           placeholder={field.label}
                           value={newPatient[field.name]}
                           onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
-                          className={`w-full ${field.icon ? 'pl-10' : 'pl-4'} pr-4 py-3 border-2 border-gray-200 rounded-lg`}
-                          required={field.required}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg"
                         />
                       ) : (
                         <input
-                          type={field.type || 'text'}
+                          type="text"
                           placeholder={field.label}
                           value={newPatient[field.name]}
                           onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
-                          className={`w-full ${field.icon ? 'pl-10' : 'pl-4'} pr-4 py-3 border-2 border-gray-200 rounded-lg`}
-                          required={field.required}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg"
                         />
                       )}
                     </div>
@@ -294,7 +342,7 @@ const PatientList = () => {
                 </div>
               )}
 
-              {currentStep === 1 && (
+              {currentStep === 2 && (
                 <div className="space-y-4">
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <h3 className="font-semibold mb-2">Consent Agreement</h3>
@@ -305,16 +353,16 @@ const PatientList = () => {
                     </p>
                     <div className="border-2 border-dashed border-gray-300 w-full h-32 rounded-lg flex items-center justify-center">
                       {signature ? (
-                        <img 
-                          src={signature} 
-                          alt="Signature" 
+                        <img
+                          src={signature}
+                          alt="Signature"
                           className="w-full h-full object-contain"
                         />
                       ) : (
                         <p className="text-gray-400">Sign here</p>
                       )}
                     </div>
-                    <button 
+                    <button
                       onClick={handleSignatureClear}
                       className="mt-2 text-sm text-[#992787] hover:text-[#7a1f6e]"
                     >
@@ -324,61 +372,103 @@ const PatientList = () => {
                 </div>
               )}
 
-              {currentStep === 2 && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    {formSteps[2].fields.map((field) => (
-                      <div key={field.name} className="space-y-2">
-                        <label className="block text-sm font-medium">{field.label}</label>
-                        {field.type === 'select' ? (
-                          <select 
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg"
-                            value={newPatient[field.name]}
-                            onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
-                          >
-                            {field.options.map(option => (
-                              <option key={option} value={option}>{option}</option>
-                            ))}
-                          </select>
-                        ) : field.type === 'textarea' ? (
-                          <textarea
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg"
-                            value={newPatient[field.name]}
-                            onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
-                          />
-                        ) : (
-                          <input
-                            type={field.type || 'text'}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg"
-                            value={newPatient[field.name]}
-                            onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="border-t pt-4">
-                    <h3 className="font-semibold mb-4">Mental Health Assessment</h3>
-                    {questions.map((q, index) => (
-                      <div key={index} className="mb-4">
-                        <label className="block text-sm font-medium mb-2">{q.question}</label>
-                        <textarea
-                          className="w-full px-4 py-2 border rounded-lg"
-                          value={q.answer}
-                          onChange={(e) => handleQuestionChange(index, e.target.value)}
+              {
+                currentStep === 3 && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* BMI Field */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium">BMI</label>
+                        <input
+                          type="number"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg"
+                          value={newPatient.bmi}
+                          onChange={(e) => setNewPatient({ ...newPatient, bmi: e.target.value })}
                         />
                       </div>
-                    ))}
-                    <button
-                      onClick={() => setQuestions([...questions, { question: '', answer: '' }])}
-                      className="text-[#992787] hover:text-[#7a1f6e] text-sm"
-                    >
-                      <HiOutlinePlus className="inline mr-1" /> Add Question
-                    </button>
+
+                      {/* Cholesterol Field */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium">Cholesterol (mg/dL)</label>
+                        <input
+                          type="number"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg"
+                          value={newPatient.cholesterol}
+                          onChange={(e) => setNewPatient({ ...newPatient, cholesterol: e.target.value })}
+                        />
+                      </div>
+
+                      {/* Glucose Field */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium">Glucose Level (mg/dL)</label>
+                        <input
+                          type="number"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg"
+                          value={newPatient.glucose}
+                          onChange={(e) => setNewPatient({ ...newPatient, glucose: e.target.value })}
+                        />
+                      </div>
+
+                      {/* HIV Screening */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium">HIV Screening Result</label>
+                        <select
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg"
+                          value={newPatient.hiv}
+                          onChange={(e) => setNewPatient({ ...newPatient, hiv: e.target.value })}
+                        >
+                          <option value="">Select Result</option>
+                          {['Negative', 'Positive', 'Inconclusive'].map(option => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Mental Health Assessment Section */}
+                    <div className="border-t pt-4">
+                      <h3 className="font-semibold mb-4">Additional Health Questions</h3>
+                      {questions.map((q, index) => (
+                        <div key={index} className="mb-4 space-y-2">
+                          <div className="flex gap-2 items-center">
+                            <input
+                              type="text"
+                              placeholder="Enter health question"
+                              value={q.question}
+                              onChange={(e) => handleQuestionChange(index, 'question', e.target.value)}
+                              className="flex-1 px-4 py-2 border rounded-lg"
+                            />
+                            <button
+                              onClick={() => {
+                                const newQuestions = [...questions];
+                                newQuestions.splice(index, 1);
+                                setQuestions(newQuestions);
+                              }}
+                              className="text-red-500 hover:text-red-700 p-2"
+                            >
+                              <HiOutlineX className="w-5 h-5" />
+                            </button>
+                          </div>
+                          <textarea
+                            placeholder="Patient's response"
+                            value={q.answer}
+                            onChange={(e) => handleQuestionChange(index, 'answer', e.target.value)}
+                            className="w-full px-4 py-2 border rounded-lg"
+                            rows={2}
+                          />
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => setQuestions([...questions, { question: '', answer: '' }])}
+                        className="flex items-center gap-2 text-[#992787] hover:text-[#7a1f6e] text-sm"
+                      >
+                        <HiOutlinePlus className="w-5 h-5" />
+                        Add Custom Question
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )
+              }
 
               <div className="flex justify-between mt-6">
                 <button
@@ -388,7 +478,7 @@ const PatientList = () => {
                 >
                   <HiOutlineArrowLeft className="inline mr-2" /> Back
                 </button>
-                
+
                 <button
                   onClick={() => {
                     if (currentStep === formSteps.length - 1) {
@@ -409,8 +499,9 @@ const PatientList = () => {
 
         {/* View Details Modal */}
         {showDetails && selectedDetails && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl relative max-h-[90vh] flex flex-col">
+              {/* Header */}
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-[#992787]">
                   Patient Details - {selectedDetails.fullName}
@@ -420,45 +511,61 @@ const PatientList = () => {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <h3 className="font-semibold">Personal Information</h3>
-                  <p>ID: {selectedDetails.idNumber}</p>
-                  <p>Date of Birth: {new Date(selectedDetails.dateOfBirth).toLocaleDateString()}</p>
-                  <p>Email: {selectedDetails.email}</p>
-                  <p>Phone: {selectedDetails.cellPhone}</p>
-                  <p>Medical Aid: {selectedDetails.medicalAid || 'None'}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="font-semibold">Medical Information</h3>
-                  <p>BMI: {selectedDetails.bmi}</p>
-                  <p>Cholesterol: {selectedDetails.cholesterol} mg/dL</p>
-                  <p>HIV Status: {selectedDetails.hiv}</p>
-                  <p>Glucose: {selectedDetails.glucose} mg/dL</p>
-                  
-                </div>
-
-                <div className="col-span-2">
-                  <h3 className="font-semibold mt-4">Mental Health Assessment</h3>
-                  {selectedDetails.questions?.map((q, index) => (
-                    <div key={index} className="mb-2">
-                      <p className="font-medium">{q.question}</p>
-                      <p className="text-gray-600">{q.answer || 'No response'}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {selectedDetails.signature && (
-                  <div className="col-span-2 mt-4">
-                    <h3 className="font-semibold">Consent Signature</h3>
-                    <img 
-                      src={selectedDetails.signature} 
-                      alt="Consent signature" 
-                      className="w-48 h-32 border-2 border-gray-200 object-contain"
-                    />
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto pr-4 -mr-4"> {/* Add scrollable container */}
+                <div className="grid grid-cols-2 gap-4 pb-4"> {/* Add padding bottom */}
+                  {/* Personal Information */}
+                  <div className="space-y-2">
+                    <h3 className="font-semibold">Personal Information</h3>
+                    <p>ID: {selectedDetails.idNumber}</p>
+                    <p>Date of Birth: {new Date(selectedDetails.dateOfBirth).toLocaleDateString()}</p>
+                    <p>Email: {selectedDetails.email}</p>
+                    <p>Phone: {selectedDetails.cellPhone}</p>
                   </div>
-                )}
+
+                  {/* Medical Aid Details */}
+                  <div className="space-y-2">
+                    <h3 className="font-semibold">Medical Aid Details</h3>
+                    <p>Scheme: {selectedDetails.schemeName || 'N/A'}</p>
+                    <p>Plan: {selectedDetails.planOption || 'N/A'}</p>
+                    <p>Member #: {selectedDetails.membershipNumber || 'N/A'}</p>
+                    <p>Main Member: {selectedDetails.mainMemberNames || 'N/A'}</p>
+                    <p>Address: {selectedDetails.mainMemberAddress || 'N/A'}</p>
+                    <p>Dependent Code: {selectedDetails.dependentCode || 'N/A'}</p>
+                  </div>
+
+                  {/* Medical Information */}
+                  <div className="col-span-2 space-y-2">
+                    <h3 className="font-semibold">Medical Information</h3>
+                    <p>BMI: {selectedDetails.bmi}</p>
+                    <p>Cholesterol: {selectedDetails.cholesterol} mg/dL</p>
+                    <p>HIV Status: {selectedDetails.hiv}</p>
+                    <p>Glucose: {selectedDetails.glucose} mg/dL</p>
+                  </div>
+
+                  {/* Mental Health Assessment */}
+                  <div className="col-span-2">
+                    <h3 className="font-semibold mt-4">Mental Health Assessment</h3>
+                    {selectedDetails.questions?.map((q, index) => (
+                      <div key={index} className="mb-2">
+                        <p className="font-medium">{q.question}</p>
+                        <p className="text-gray-600">{q.answer || 'No response'}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Signature */}
+                  {selectedDetails.signature && (
+                    <div className="col-span-2 mt-4">
+                      <h3 className="font-semibold">Consent Signature</h3>
+                      <img
+                        src={selectedDetails.signature}
+                        alt="Consent signature"
+                        className="w-48 h-32 border-2 border-gray-200 object-contain"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -472,7 +579,7 @@ const PatientList = () => {
                 <h2 className="text-xl font-bold text-[#992787]">
                   New Referral for {selectedPatient.fullName}
                 </h2>
-                <button 
+                <button
                   onClick={() => setShowReferralForm(false)}
                   className="text-gray-500 hover:text-gray-700 transition-colors"
                 >
