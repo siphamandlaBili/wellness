@@ -42,7 +42,7 @@ const formSteps = [
         name: 'dependentCode',
         label: 'Dependent Code',
         type: 'select',
-        options: Array.from({ length: 10 }, (_, i) => (i + 1).toString().padStart(2, '0'))
+        options: Array.from({ length: 10 }, (_, i) => (i).toString().padStart(2, '0'))
       }
     ]
   },
@@ -55,11 +55,16 @@ const formSteps = [
   {
     title: "Medical Screening",
     fields: [
-      { name: 'bmi', label: 'BMI', type: 'number' },
+      { name: 'height', label: 'Height (cm)', type: 'number' },
+      { name: 'weight', label: 'Weight (kg)', type: 'number' },
       { name: 'cholesterol', label: 'Cholesterol (mg/dL)', type: 'number' },
       { name: 'hiv', label: 'HIV Screening Result', type: 'select', options: ['Negative', 'Positive', 'Inconclusive'] },
       { name: 'glucose', label: 'Glucose Level (mg/dL)', type: 'number' },
     ]
+  },
+  {
+    title: "Additional Health Questions",
+    fields: []
   }
 ];
 
@@ -84,11 +89,14 @@ const PatientList = () => {
     mainMemberNames: '',
     mainMemberAddress: '',
     dependentCode: '',
-    bmi: '',
+    height: '',
+    weight: '',
+    bmi:"",
     cholesterol: '',
     hiv: '',
     glucose: '',
   });
+
   const [signature, setSignature] = useState('');
   const [questions, setQuestions] = useState([
     { question: "How often do you feel anxious?", answer: '' },
@@ -138,11 +146,31 @@ const PatientList = () => {
 
   const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
 
+  const calculateBMI = (height, weight) => {
+    const h = parseFloat(height);
+    const w = parseFloat(weight);
+    if (isNaN(h) || isNaN(w) || h <= 0) return null;
+    return Math.round((w / ((h / 100) ** 2)) * 10) / 10;
+  };
+
+  const getBmiColor = (bmi) => {
+    if (bmi === undefined || bmi === null || bmi === '') return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    const numericBmi = typeof bmi === 'string' ? parseFloat(bmi) : bmi;
+    if (numericBmi < 17) return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100';
+    if (numericBmi < 18.5) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
+    if (numericBmi < 25) return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
+    if (numericBmi < 30) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
+    return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100';
+  };
+
   const handleAddPatient = async () => {
     try {
+      const bmiCalc = calculateBMI(newPatient.height, newPatient.weight);
+      
       const patientData = {
         ...newPatient,
         id: patients.length + 1,
+        bmi:bmiCalc,
         signature,
         questions,
         createdAt: new Date().toISOString()
@@ -165,13 +193,14 @@ const PatientList = () => {
         mainMemberNames: '',
         mainMemberAddress: '',
         dependentCode: '',
-        bmi: '',
+        bmi:bmiCalc,
         cholesterol: '',
         hiv: '',
         glucose: '',
       });
       setSignature('');
       setQuestions([]);
+      console.log(newPatient);
       toast.success('Patient registered successfully!');
     } catch (error) {
       console.error('Error adding patient:', error);
@@ -198,7 +227,7 @@ const PatientList = () => {
     const referralData = {
       id: selectedPatient.id,
       name: selectedPatient.name,
-      surname:selectedPatient.surname,
+      surname: selectedPatient.surname,
       email: selectedPatient.email,
       referralComment,
       date: new Date().toISOString()
@@ -273,7 +302,7 @@ const PatientList = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {currentPatients.map(patient => (
-                    
+
                     <tr
                       key={patient.id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group"
@@ -324,27 +353,27 @@ const PatientList = () => {
           )}
         </div>
 
-        
-          <div className="flex justify-center items-center gap-4 mt-6">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors flex items-center gap-2"
-            >
-              <FiChevronLeft className="w-5 h-5" />
-            </button>
-            <span className="text-gray-600 dark:text-gray-300">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors flex items-center gap-2"
-            >
-              <FiChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        
+
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors flex items-center gap-2"
+          >
+            <FiChevronLeft className="w-5 h-5" />
+          </button>
+          <span className="text-gray-600 dark:text-gray-300">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors flex items-center gap-2"
+          >
+            <FiChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+
 
         {/* Add Patient Modal */}
         {showForm && (
@@ -368,11 +397,10 @@ const PatientList = () => {
                 {formSteps.map((_, index) => (
                   <div
                     key={index}
-                    className={`w-3 h-3 rounded-full ${
-                      index === currentStep 
-                        ? 'bg-[#992787] dark:bg-purple-400' 
-                        : 'bg-gray-300 dark:bg-gray-600'
-                    }`}
+                    className={`w-3 h-3 rounded-full ${index === currentStep
+                      ? 'bg-[#992787] dark:bg-purple-400'
+                      : 'bg-gray-300 dark:bg-gray-600'
+                      }`}
                   />
                 ))}
               </div>
@@ -465,39 +493,48 @@ const PatientList = () => {
               {currentStep === 3 && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
-                    {/* Form fields with dark mode */}
-                    {['bmi', 'cholesterol', 'glucose'].map(field => (
-                      <div key={field} className="space-y-2">
+                    {formSteps[3].fields.map((field) => (
+                      <div key={field.name} className="space-y-2">
                         <label className="block text-sm font-medium dark:text-gray-300">
-                          {field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
+                          {field.label}
                         </label>
-                        <input
-                          type="number"
-                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
-                          value={newPatient[field]}
-                          onChange={(e) => setNewPatient({ ...newPatient, [field]: e.target.value })}
-                        />
+                        {field.type === 'select' ? (
+                          <select
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
+                            value={newPatient[field.name]}
+                            onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
+                          >
+                            <option value="">Select {field.label}</option>
+                            {field.options.map(option => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type={field.type || 'number'}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
+                            value={newPatient[field.name]}
+                            onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
+                          />
+                        )}
                       </div>
                     ))}
-                    {/* HIV Select */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium dark:text-gray-300">HIV Screening Result</label>
-                      <select
-                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
-                        value={newPatient.hiv}
-                        onChange={(e) => setNewPatient({ ...newPatient, hiv: e.target.value })}
-                      >
-                        <option value="">Select Result</option>
-                        {['Negative', 'Positive', 'Inconclusive'].map(option => (
-                          <option key={option} value={option} className="dark:bg-gray-700">{option}</option>
-                        ))}
-                      </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium dark:text-gray-300 mb-2">BMI</label>
+                    <div className={`p-3 rounded-lg text-center ${getBmiColor(calculateBMI(newPatient.height, newPatient.weight))}`}>
+                      {calculateBMI(newPatient.height, newPatient.weight) !== null
+                        ? calculateBMI(newPatient.height, newPatient.weight).toFixed(1)
+                        : 'Enter height and weight to calculate BMI'}
                     </div>
                   </div>
+                </div>
+              )}
 
-                  {/* Mental Health Assessment */}
+              {currentStep === 4 && (
+                <div className="space-y-6">
                   <div className="border-t pt-4 dark:border-gray-700">
-                    <h3 className="font-semibold mb-4 dark:text-gray-100">Additional Health Questions</h3>
+                    <h3 className="font-semibold mb-4 dark:text-gray-100">Mental Health Assessment</h3>
                     {questions.map((q, index) => (
                       <div key={index} className="mb-4 space-y-2">
                         <div className="flex gap-2 items-center">
@@ -600,7 +637,12 @@ const PatientList = () => {
                   {/* Medical Information */}
                   <div className="col-span-2 space-y-2">
                     <h3 className="font-semibold dark:text-gray-100">Medical Information</h3>
-                    <p className="dark:text-gray-300">BMI: {selectedDetails.bmi}</p>
+                    <p className="dark:text-gray-300">
+                      BMI: <span className={`${getBmiColor(selectedDetails.bmi)} px-2 py-1 rounded`}>
+                        {selectedDetails.bmi}
+                      </span>
+                    </p>
+                    {/* <p className="dark:text-gray-300">BMI: {selectedDetails.bmi}</p> */}
                     <p className="dark:text-gray-300">Cholesterol: {selectedDetails.cholesterol} mg/dL</p>
                     <p className="dark:text-gray-300">HIV Status: {selectedDetails.hiv}</p>
                     <p className="dark:text-gray-300">Glucose: {selectedDetails.glucose} mg/dL</p>
