@@ -11,7 +11,7 @@ const Hero = () => {
       <div className="relative h-[90vh] w-full bg-cover bg-center" 
         style={{
           backgroundImage:
-            "url('https://www.cvent.com/sites/default/files/styles/focus_scale_and_crop_800x450/public/image/2019-10/48980241783_2b57e5f535_k.jpg?h=a1e1a043&itok=TvObf6VQ')",
+            "url('https://jacoblund.com/cdn/shop/files/fd511ddebad5b6d84208b93defe69eb2.jpg?v=1720609826')",
         }}
       >
         {/* Overlay Cover */}
