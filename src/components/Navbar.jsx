@@ -17,12 +17,12 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-4 shadow-md">
+    <nav className="bg-white dark:bg-gray-800 px-4 text-gray-900 dark:text-gray-100 shadow-md">
       <div className="flex items-center justify-between">
         {/* Left Section */}
         <div className="flex items-center gap-4">
           <span className=" text-[rgb(153,39,135)] dark:text-purple-400">
-            <img src={logo} alt="Logo" className="h-10 w-30" /> {/* Use the imported logo */}
+            <img src={logo} alt="Logo" className="h-15" /> {/* Use the imported logo */}
           </span>
         </div>
 
