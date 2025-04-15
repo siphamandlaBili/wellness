@@ -22,7 +22,6 @@ const event = {
   eventDate: "2025-04-25",
   eventLocation: "Cape Town",
   numberOfAttendees: "100",
-  additionalNotes: "No notes provided",
   role: "user",
   status: "Accepted",
   additionalNotes: "prepare masks and gloves for all the ettendies as there is going to be in a small room and want to avoid contaminationd",

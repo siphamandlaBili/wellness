@@ -1,6 +1,10 @@
+// Importing React and its hooks for component state and lifecycle management
 import React, { useState, useEffect } from 'react';
+// Axios is used for making HTTP requests
 import axios from 'axios';
+// useNavigate is a React Router hook for programmatic navigation
 import { useNavigate } from 'react-router-dom';
+// Importing various icons from react-icons/hi (Heroicons) for UI enhancement
 import {
   HiOutlineUser,
   HiOutlineMail,
@@ -14,8 +18,11 @@ import {
   HiOutlineEye,
   HiOutlineSearch
 } from 'react-icons/hi';
+// Additional icons from Feather Icons (react-icons/fi)
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+// Importing toast functionality for showing notifications
 import { toast, ToastContainer } from 'react-toastify';
+// Importing required styles for react-toastify notifications
 import 'react-toastify/dist/ReactToastify.css';
 
 const formSteps = [
@@ -59,7 +66,22 @@ const formSteps = [
       { name: 'weight', label: 'Weight (kg)', type: 'number' },
       { name: 'cholesterol', label: 'Cholesterol (mg/dL)', type: 'number' },
       { name: 'hiv', label: 'HIV Screening Result', type: 'select', options: ['Negative', 'Positive', 'Inconclusive'] },
-      { name: 'glucose', label: 'Glucose Level (mg/dL)', type: 'number' },
+       // New dropdown selector for blood glucose type
+      {
+        name: 'glucoseType',
+        label: 'Blood Glucose Type',
+        type: 'select',
+        options: ['Fasting', 'Random', 'Postprandial'],
+        required: true
+      },
+      
+      // Glucose level input field (value)
+      {
+        name: 'glucose',
+        label: 'Glucose Level (mmol/L)',
+        type: 'number',
+        required: true
+      }
     ]
   },
   {
@@ -162,6 +184,32 @@ const PatientList = () => {
     if (numericBmi < 30) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
     return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100';
   };
+
+  // Function to return color classes based on glucose value
+  const getGlucoseColor = (glucoseType, glucoseValue) => {
+    const x = parseFloat(glucoseValue); 
+    if (isNaN(x)) return 'bg-gray-400'; // If value is not a number, return neutral gray
+
+    switch (glucoseType) {
+      case 'Fasting':
+        if (x >= 7.0) return 'bg-red-500 text-white'; 
+        if (x >= 5.6 && x <= 6.9) return 'bg-yellow-400 text-black'; 
+        if (x >= 3.9 && x <= 5.5) return 'bg-green-500 text-white'; 
+        break;
+
+      case 'Random':
+      case 'Postprandial':
+        if (x >= 11.1) return 'bg-red-500 text-white'; 
+        if (x >= 7.8 && x <= 11.0) return 'bg-yellow-400 text-black'; 
+        if (x < 7.8) return 'bg-green-500 text-white'; 
+        break;
+
+      default:
+        return 'bg-gray-400'; 
+    }
+  };
+
+  
 
   const handleAddPatient = async () => {
     try {
@@ -512,7 +560,8 @@ const PatientList = () => {
                         ) : (
                           <input
                             type={field.type || 'number'}
-                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
+                            className={`w-full px-4 py-3 border-2 rounded-lg bg-transparent dark:text-gray-100
+                              ${field.name === 'glucose' ? getGlucoseColor(newPatient.glucoseType, newPatient.glucose) : 'border-gray-200 dark:border-gray-600'}`}
                             value={newPatient[field.name]}
                             onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
                           />
@@ -520,6 +569,7 @@ const PatientList = () => {
                       </div>
                     ))}
                   </div>
+                  {/*BMI form display*/}
                   <div>
                     <label className="block text-sm font-medium dark:text-gray-300 mb-2">BMI</label>
                     <div className={`p-3 rounded-lg text-center ${getBmiColor(calculateBMI(newPatient.height, newPatient.weight))}`}>
@@ -637,27 +687,33 @@ const PatientList = () => {
                   {/* Medical Information */}
                   <div className="col-span-2 space-y-2">
                     <h3 className="font-semibold dark:text-gray-100">Medical Information</h3>
+                    
                     <p className="dark:text-gray-300">
                       BMI: <span className={`${getBmiColor(selectedDetails.bmi)} px-2 py-1 rounded`}>
                         {selectedDetails.bmi}
                       </span>
                     </p>
-                    {/* <p className="dark:text-gray-300">BMI: {selectedDetails.bmi}</p> */}
+                    
                     <p className="dark:text-gray-300">Cholesterol: {selectedDetails.cholesterol} mg/dL</p>
                     <p className="dark:text-gray-300">HIV Status: {selectedDetails.hiv}</p>
-                    <p className="dark:text-gray-300">Glucose: {selectedDetails.glucose} mg/dL</p>
+
+                    {/* Blood Glucose Value */}
+                    <p className="dark:text-gray-300">
+                      Glucose: {selectedDetails.glucose} 
+                    </p>
                   </div>
 
-                  {/* Mental Health Assessment */}
-                  <div className="col-span-2">
-                    <h3 className="font-semibold mt-4 dark:text-gray-100">Mental Health Assessment</h3>
-                    {selectedDetails.questions?.map((q, index) => (
-                      <div key={index} className="mb-2">
-                        <p className="font-medium dark:text-gray-300">{q.question}</p>
-                        <p className="text-gray-600 dark:text-gray-400">{q.answer || 'No response'}</p>
-                      </div>
-                    ))}
-                  </div>
+{/* Mental Health Assessment */}
+<div className="col-span-2">
+  <h3 className="font-semibold mt-4 dark:text-gray-100">Mental Health Assessment</h3>
+  {selectedDetails.questions?.map((q, index) => (
+    <div key={index} className="mb-2">
+      <p className="font-medium dark:text-gray-300">{q.question}</p>
+      <p className="text-gray-600 dark:text-gray-400">{q.answer || 'No response'}</p>
+    </div>
+  ))}
+</div>
+
 
                   {/* Signature */}
                   {selectedDetails.signature && (
