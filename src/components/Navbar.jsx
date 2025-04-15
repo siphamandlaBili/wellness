@@ -34,17 +34,13 @@ const Navbar = () => {
       <div className="flex items-center justify-between">
         {/* Left Section */}
         <div className="flex items-center gap-4">
-<<<<<<< HEAD
           <span className="text-[rgb(153,39,135)] dark:text-purple-400">
             <img
               src={isDarkMode ? logoDark : logoLight} // Dynamically switch logo
               alt="Logo"
-              className="h-10 w-30"
+              className="h-12"
             />
-=======
-          <span className=" text-[rgb(153,39,135)] dark:text-purple-400">
-            <img src={logo} alt="Logo" className="h-15" /> {/* Use the imported logo */}
->>>>>>> c4793f94cd705efc75e3bf5744eb4083e924f62d
+
           </span>
         </div>
 
