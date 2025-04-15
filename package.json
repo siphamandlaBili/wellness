@@ -25,7 +25,8 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.4.0",
     "react-toastify": "^11.0.5",
-    "tailwindcss": "^4.0.17"
+    "tailwindcss": "^4.0.17",
+    "xero-node": "^11.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

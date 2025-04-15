@@ -1,13 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom"; // Consolidated imports
 import { Menu, X } from "lucide-react";
-import logo from "../assets/NEWLOGO1.png"; // Import the logo correctly
+import logoLight from "../assets/NEWLOGO1.png"; // Light mode logo
+import logoDark from "../assets/darkmodelogo.png"; // Dark mode logo
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false); // Track dark mode
   const navigate = useNavigate();
   const location = useLocation(); // Get the current path
   const currentPath = location.pathname; // Get the current path from location
+
+  // Detect dark mode using the prefers-color-scheme media query
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    setIsDarkMode(mediaQuery.matches);
+
+    const handleChange = (e) => setIsDarkMode(e.matches);
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
 
   const showMiddleNav = () => {
     if (currentPath !== "/") {
@@ -21,8 +34,12 @@ const Navbar = () => {
       <div className="flex items-center justify-between">
         {/* Left Section */}
         <div className="flex items-center gap-4">
-          <span className=" text-[rgb(153,39,135)] dark:text-purple-400">
-            <img src={logo} alt="Logo" className="h-10 w-30" /> {/* Use the imported logo */}
+          <span className="text-[rgb(153,39,135)] dark:text-purple-400">
+            <img
+              src={isDarkMode ? logoDark : logoLight} // Dynamically switch logo
+              alt="Logo"
+              className="h-10 w-30"
+            />
           </span>
         </div>
 
