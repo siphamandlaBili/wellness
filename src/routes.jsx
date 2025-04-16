@@ -19,6 +19,7 @@ import Referrals from './pages/Referrals';
 import NurseAnalytics from './pages/NurseAnalytics';
 import AdminAnalytics from './pages/AdminAnalytics';
 import ManageAdmins from "./ManageAdmins";
+import { NurseReport,AdminReport } from "./NurseReport";
 
 const router = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
@@ -49,7 +50,8 @@ const router = createBrowserRouter([
       { path: "past-events", element: <PastEvents /> },
       { path: "assign-event", element: <AssignEventToNurse /> },
       { path: "accepted-events", element: <AcceptedEvents /> }, // New route
-      { path: "analytics", element: <AdminAnalytics /> }, // New AdminAnalytics route
+      { path: "analytics", element: <AdminAnalytics /> }, 
+      { path: "reports", element: <AdminReport /> }
     ],
   },
   {
@@ -71,7 +73,7 @@ const router = createBrowserRouter([
       { path: "analytics", element: <NurseAnalytics /> }, // New NurseAnalytics route
       { path: "referrals", element: <Referrals /> }, 
       { path: "analytics", element: <Analytics /> }, 
-      { path: "nurse4", element: <div>Nurse page 4</div> },
+      { path: "reports", element: <NurseReport/> },
     ],
   },
 ]);

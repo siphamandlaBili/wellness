@@ -38,7 +38,7 @@ const Navbar = () => {
             <img
               src={isDarkMode ? logoDark : logoLight} // Dynamically switch logo
               alt="Logo"
-              className="h-12"
+              className="h-13"
             />
 
           </span>

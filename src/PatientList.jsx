@@ -68,13 +68,26 @@ const formSteps = [
       { name: 'hiv', label: 'HIV Screening Result', type: 'select', options: ['Negative', 'Positive', 'Inconclusive'] },
       // New dropdown selector for blood glucose type
       {
+        name: 'bloodPressure',
+        label: 'Blood Pressure (mmHg)',
+        type: 'text',
+        required: true,
+        placeholder: 'e.g., 120/80 mmHg'
+      },
+      {
         name: 'glucoseType',
         label: 'Blood Glucose Type',
         type: 'select',
         options: ['Fasting', 'Random', 'Postprandial'],
         required: true
       },
-
+      {
+        name: 'hba1c',
+        label: 'HbA1c (%)',
+        type: 'number',
+        step: "0.1",
+        required: true
+      },
       // Glucose level input field (value)
       {
         name: 'glucose',
@@ -101,10 +114,12 @@ const PatientList = () => {
   const [newPatient, setNewPatient] = useState({
     name: '',
     surname: '',
+    bloodPressure: '',
     dateOfBirth: '',
     idNumber: '',
     email: '',
     cellPhone: '',
+     hba1c: '',
     schemeName: '',
     planOption: '',
     membershipNumber: '',
@@ -205,7 +220,35 @@ const PatientList = () => {
     }
   };
 
+  //blood pressure
+  const getBloodPressureColor = (value) => {
+    if (!value) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    const match = value.match(/(\d+)\s*\/\s*(\d+)/);
+    if (!match) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
 
+    const systolic = parseInt(match[1], 10);
+    const diastolic = parseInt(match[2], 10);
+
+    if (isNaN(systolic) || isNaN(diastolic)) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+
+    if (systolic < 120 && diastolic < 80) {
+      return 'bg-green-500 text-white';
+    } else if (systolic < 139 && diastolic < 89) {
+      return 'bg-yellow-400 text-black';
+    } else if (systolic >= 140 && diastolic >= 90) {
+      return 'bg-red-500 text-white';
+    }
+    return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+  };
+
+  const getHbA1cColor = (value) => {
+    const numericValue = parseFloat(value);
+    if (isNaN(numericValue)) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    
+    if (numericValue < 5.7) return 'bg-green-500 text-white';
+    if (numericValue < 6.5) return 'bg-yellow-400 text-black';
+    return 'bg-red-500 text-white';
+  };
 
   const handleAddPatient = async () => {
     try {
@@ -534,58 +577,208 @@ const PatientList = () => {
                 </div>
               )}
 
-              {currentStep === 3 && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    {formSteps[3].fields.map((field) => (
-                      <div key={field.name} className="space-y-2">
-                        <label className="block text-sm font-medium dark:text-gray-300">
-                          {field.label}
-                        </label>
-                        {field.type === 'select' ? (
-                          <select
-                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
-                            value={newPatient[field.name]}
-                            onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
-                          >
-                            <option value="">Select {field.label}</option>
-                            {field.options.map(option => (
-                              <option key={option} value={option}>{option}</option>
-                            ))}
-                          </select>
-                        ) : field.name === 'glucose' ? (
-                          <input
-                            type="number"
-                            step="0.1"
-                            className={`w-full px-4 py-3 rounded-lg transition-colors ${getGlucoseColor(newPatient.glucoseType, newPatient.glucose)
-                              } ${!newPatient.glucoseType ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'
-                              }`}
-                            value={newPatient.glucose}
-                            onChange={(e) => setNewPatient({ ...newPatient, glucose: e.target.value })}
-                            placeholder="Glucose Level (mmol/L)"
-                          />
-                        ) : (
-                          <input
-                            type={field.type || 'number'}
-                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
-                            value={newPatient[field.name]}
-                            onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {/* BMI display */}
-                  <div>
-                    <label className="block text-sm font-medium dark:text-gray-300 mb-2">BMI</label>
-                    <div className={`p-3 rounded-lg text-center ${getBmiColor(calculateBMI(newPatient.height, newPatient.weight))}`}>
-                      {calculateBMI(newPatient.height, newPatient.weight) !== null
-                        ? calculateBMI(newPatient.height, newPatient.weight).toFixed(1)
-                        : 'Enter height and weight to calculate BMI'}
-                    </div>
-                  </div>
-                </div>
+{currentStep === 3 && (
+  <div className="fixed inset-0 overflow-auto flex items-center justify-center z-50">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl relative max-h-[90vh] flex flex-col">
+      {/* Modal Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
+          Medical Screening
+        </h2>
+        <button onClick={() => setShowForm(false)}>
+          <HiOutlineX className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+        </button>
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="overflow-y-auto flex-1 pr-2 -mr-2">
+        <div className="space-y-6 pb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Height */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Height (cm)
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                  value={newPatient.height}
+                  onChange={(e) => setNewPatient({ ...newPatient, height: e.target.value })}
+                  placeholder="Height"
+                />
+                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">cm</span>
+              </div>
+            </div>
+
+            {/* Weight */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Weight (kg)
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                  value={newPatient.weight}
+                  onChange={(e) => setNewPatient({ ...newPatient, weight: e.target.value })}
+                  placeholder="Weight"
+                />
+                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">kg</span>
+              </div>
+            </div>
+
+            {/* Cholesterol */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Cholesterol (mg/dL)
+              </label>
+              <input
+                type="number"
+                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                value={newPatient.cholesterol}
+                onChange={(e) => setNewPatient({ ...newPatient, cholesterol: e.target.value })}
+                placeholder="Cholesterol Level"
+              />
+            </div>
+
+            {/* Blood Pressure */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Blood Pressure (mmHg)
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="\d+/\d+"
+                  placeholder="120/80"
+                  value={newPatient.bloodPressure}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9/]/g, '');
+                    setNewPatient({ ...newPatient, bloodPressure: value });
+                  }}
+                  className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getBloodPressureColor(newPatient.bloodPressure)} ${!newPatient.bloodPressure ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
+                />
+                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">mmHg</span>
+              </div>
+            </div>
+
+            {/* HbA1c */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                HbA1c (%)
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="20"
+                  placeholder="HbA1c Level"
+                  value={newPatient.hba1c}
+                  onChange={(e) => setNewPatient({ ...newPatient, hba1c: e.target.value })}
+                  className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getHbA1cColor(newPatient.hba1c)} ${!newPatient.hba1c ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
+                />
+                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">%</span>
+              </div>
+            </div>
+
+            {/* HIV Screening */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                HIV Screening Result
+              </label>
+              <select
+                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                value={newPatient.hiv}
+                onChange={(e) => setNewPatient({ ...newPatient, hiv: e.target.value })}
+              >
+                <option value="">Select Result</option>
+                <option value="Negative">Negative</option>
+                <option value="Positive">Positive</option>
+                <option value="Inconclusive">Inconclusive</option>
+              </select>
+            </div>
+
+            {/* Glucose Type */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Blood Glucose Type
+              </label>
+              <select
+                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                value={newPatient.glucoseType}
+                onChange={(e) => setNewPatient({ ...newPatient, glucoseType: e.target.value })}
+              >
+                <option value="">Select Type</option>
+                <option value="Fasting">Fasting</option>
+                <option value="Random">Random</option>
+                <option value="Postprandial">Postprandial</option>
+              </select>
+            </div>
+
+            {/* Glucose Level */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Glucose Level (mmol/L)
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.1"
+                  placeholder="Glucose Level"
+                  value={newPatient.glucose}
+                  onChange={(e) => setNewPatient({ ...newPatient, glucose: e.target.value })}
+                  className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getGlucoseColor(newPatient.glucoseType, newPatient.glucose)} ${!newPatient.glucoseType ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
+                />
+                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">mmol/L</span>
+              </div>
+            </div>
+          </div>
+
+          {/* BMI Display */}
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Body Mass Index (BMI)
+            </label>
+            <div className={`p-4 rounded-lg text-center text-sm md:text-base ${getBmiColor(calculateBMI(newPatient.height, newPatient.weight))}`}>
+              {calculateBMI(newPatient.height, newPatient.weight) !== null ? (
+                <>
+                  <span className="font-semibold">
+                    {calculateBMI(newPatient.height, newPatient.weight).toFixed(1)}
+                  </span>
+                  {/* <span className="block text-xs mt-1 opacity-80">
+                    {getBmiCategory(calculateBMI(newPatient.height, newPatient.weight))}
+                  </span> */}
+                </>
+              ) : (
+                'Enter height and weight to calculate BMI'
               )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation Buttons */}
+      <div className="flex justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <button
+          onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+          className="px-6 py-2 text-gray-600 dark:text-gray-300 hover:text-[#992787] dark:hover:text-purple-400 transition-colors"
+        >
+          <HiOutlineArrowLeft className="inline mr-2" /> Back
+        </button>
+        <button
+          onClick={() => currentStep === formSteps.length - 1 ? handleAddPatient() : setCurrentStep(prev => prev + 1)}
+          className="px-6 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
+        >
+          {currentStep === formSteps.length - 1 ? 'Submit' : 'Next'}
+          <HiOutlineArrowRight className="inline ml-2" />
+        </button>
+      </div>
+    </div>
+  </div>
+)}
               {currentStep === 4 && (
                 <div className="space-y-6">
                   <div className="border-t pt-4 dark:border-gray-700">
@@ -707,7 +900,16 @@ const PatientList = () => {
                       Glucose: {selectedDetails.glucose}
                     </p>
                   </div>
-
+                  <p className="dark:text-gray-300">
+  HbA1c: <span className={`${getHbA1cColor(selectedDetails.hba1c)} px-2 py-1 rounded`}>
+    {selectedDetails.hba1c ? `${selectedDetails.hba1c}%` : 'N/A'}
+  </span>
+</p>
+                  <p className="dark:text-gray-300">
+                    Blood Pressure: <span className={`${getBloodPressureColor(selectedDetails.bloodPressure)} px-2 py-1 rounded`}>
+                      {selectedDetails.bloodPressure || 'N/A'}
+                    </span>
+                  </p>
                   {/* Mental Health Assessment */}
                   <div className="col-span-2">
                     <h3 className="font-semibold mt-4 dark:text-gray-100">Mental Health Assessment</h3>
