@@ -64,7 +64,7 @@ const formSteps = [
     fields: [
       { name: 'height', label: 'Height (cm)', type: 'number' },
       { name: 'weight', label: 'Weight (kg)', type: 'number' },
-      { name: 'cholesterol', label: 'Cholesterol (mg/dL)', type: 'number' },
+      { name: 'cholesterol', label: 'Total Cholesterol (mg/dL)', type: 'number' },
       { name: 'hiv', label: 'HIV Screening Result', type: 'select', options: ['Negative', 'Positive', 'Inconclusive'] },
       // New dropdown selector for blood glucose type
       {
@@ -388,53 +388,55 @@ const PatientList = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {currentPatients.map(patient => (
+  {currentPatients.map(patient => (
+    <tr
+      key={patient.id}
+      className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group"
+    >
+      <td className="p-4">
+        <div className="font-medium text-gray-900 dark:text-gray-100">{patient.name}</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">{patient.surname}</div>
+      </td>
+      <td className="p-4 max-md:hidden">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+            <HiOutlineMail className="w-4 h-4 text-[#992787] dark:text-purple-400" />
+            {patient.email}
+          </div>
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+            <HiOutlinePhone className="w-4 h-4 text-[#992787] dark:text-purple-400" />
+            {patient.cellPhone}
+          </div>
+        </div>
+      </td>
+      <td className="p-4">
+        <div className="flex justify-center gap-4">
+          {/* Referrals Button */}
+          <button
+            onClick={() => {
+              setSelectedPatient(patient);
+              setShowReferralForm(true);
+            }}
+            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
+          >
+            Referrals {/* Replaced the icon with the word "Referrals" */}
+          </button>
 
-                    <tr
-                      key={patient.id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group"
-                    >
-                      <td className="p-4">
-                        <div className="font-medium text-gray-900 dark:text-gray-100">{patient.name}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{patient.surname}</div>
-                      </td>
-                      <td className="p-4 max-md:hidden">
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                            <HiOutlineMail className="w-4 h-4 text-[#992787] dark:text-purple-400" />
-                            {patient.email}
-                          </div>
-                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                            <HiOutlinePhone className="w-4 h-4 text-[#992787] dark:text-purple-400" />
-                            {patient.cellPhone}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex justify-center gap-4">
-                          <button
-                            onClick={() => {
-                              setSelectedPatient(patient);
-                              setShowReferralForm(true);
-                            }}
-                            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
-                          >
-                            <HiOutlineDocumentAdd className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedDetails(patient);
-                              setShowDetails(true);
-                            }}
-                            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
-                          >
-                            <HiOutlineEye className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+          {/* View Details Button (unchanged) */}
+          <button
+            onClick={() => {
+              setSelectedDetails(patient);
+              setShowDetails(true);
+            }}
+            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
+          >
+            <HiOutlineEye className="w-5 h-5" />
+          </button>
+        </div>
+      </td>
+    </tr>
+  ))}
+</tbody>
               </table>
             </div>
           )}
@@ -628,17 +630,17 @@ const PatientList = () => {
               </div>
             </div>
 
-            {/* Cholesterol */}
+            {/* Total Cholesterol */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Cholesterol (mg/dL)
+                Total Cholesterol (mg/dL) {/* Updated label */}
               </label>
               <input
                 type="number"
                 className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
                 value={newPatient.cholesterol}
                 onChange={(e) => setNewPatient({ ...newPatient, cholesterol: e.target.value })}
-                placeholder="Cholesterol Level"
+                placeholder="Total Cholesterol Level"
               />
             </div>
 
