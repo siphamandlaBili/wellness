@@ -32,7 +32,6 @@ const NurseDashboard = () => {
                         {[
                             { name: 'Event', path: 'events', icon: "https://img.icons8.com/?size=28&id=nGCq83WiIaj1&format=png&color=000000" },
                             { name: 'Patients', path: 'patients', icon: "https://img.icons8.com/?size=28&id=nFyiWLVR8Zrt&format=png&color=000000" },
-                            { name: 'Event', path: 'events', icon: "https://img.icons8.com/?size=28&id=nGCq83WiIaj1&format=png&color=000000" },
                             { name: 'Referrals', path: 'referrals', icon: "https://img.icons8.com/?size=28&id=gf7HkPc5t1hF&format=png&color=000000" },
                             { name: 'Report', path: 'reports', icon: "https://img.icons8.com/?size=28&id=nGCq83WiIaj1&format=png&color=000000" },
                             { name: 'Analytics', path: 'analytics', icon: "https://img.icons8.com/?size=28&id=123822&format=png&color=000000" }
