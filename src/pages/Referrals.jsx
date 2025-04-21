@@ -23,7 +23,13 @@ const Referrals = () => {
                   Name
                 </th>
                 <th className="py-4 px-6 text-left text-white dark:text-purple-200 font-semibold uppercase tracking-wider text-sm">
-                  Email
+                  client Email
+                </th>
+                <th className="py-4 px-6 text-left  text-white dark:text-purple-200 font-semibold uppercase tracking-wider text-sm">
+                  doctor Name
+                </th>
+                <th className="py-4 px-6 text-left text-white dark:text-purple-200 font-semibold uppercase tracking-wider text-sm">
+                  doctor Email
                 </th>
                 <th className="py-4 px-6 text-left text-white dark:text-purple-200 font-semibold uppercase tracking-wider text-sm rounded-tr-2xl">
                   Referral Comment
@@ -48,6 +54,12 @@ const Referrals = () => {
                     </td>
                     <td className="py-4 px-6 text-gray-600 dark:text-gray-300">
                       {referral.email}
+                    </td>
+                    <td className="py-4 px-6 text-gray-600 dark:text-gray-300">
+                      {referral.practitionerName}
+                    </td>
+                    <td className="py-4 px-6 text-gray-600 dark:text-gray-300">
+                      {referral.practitionerEmail}
                     </td>
                     <td className="py-4 px-6 text-gray-600 dark:text-gray-300 max-w-xs">
                       <p className="truncate hover:text-clip">

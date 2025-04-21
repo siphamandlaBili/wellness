@@ -141,6 +141,8 @@ const PatientList = () => {
   ]);
   const [showReferralForm, setShowReferralForm] = useState(false);
   const [referralComment, setReferralComment] = useState('');
+const [practitionerName, setPractitionerName] = useState('');
+const [practitionerEmail, setPractitionerEmail] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [selectedDetails, setSelectedDetails] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -306,29 +308,36 @@ const PatientList = () => {
   };
 
   const handleAddReferral = () => {
+    if (!practitionerName.trim() || !practitionerEmail.trim()) {
+      toast.error('Please enter practitioner name and email');
+      return;
+    }
     if (!referralComment.trim()) {
       toast.error('Please enter referral comments');
       return;
     }
-
+  
     const referralData = {
       id: selectedPatient.id,
       name: selectedPatient.name,
       surname: selectedPatient.surname,
       email: selectedPatient.email,
+      practitionerName,
+      practitionerEmail,
       referralComment,
       date: new Date().toISOString()
     };
-
+  
     const existingReferrals = JSON.parse(localStorage.getItem('referrals')) || [];
     localStorage.setItem('referrals', JSON.stringify([...existingReferrals, referralData]));
-
-    setPatients(prev => prev.filter(patient => patient.id !== selectedPatient.id));
-    setFilteredPatients(prev => prev.filter(patient => patient.id !== selectedPatient.id));
+  
+    // Reset states
     setShowReferralForm(false);
     setReferralComment('');
+    setPractitionerName('');
+    setPractitionerEmail('');
     setSelectedPatient(null);
-
+  
     toast.success('Referral added successfully!');
     navigate('/nurse/referrals');
   };
@@ -943,59 +952,89 @@ const PatientList = () => {
 
         {/* Referral Modal */}
         {showReferralForm && selectedPatient && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
-                  New Referral for {selectedPatient.name}
-                </h2>
-                <button
-                  onClick={() => setShowReferralForm(false)}
-                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                >
-                  <HiOutlineX className="w-6 h-6" />
-                </button>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
+                New Referral for {selectedPatient.name}
+              </h2>
+              <button
+                onClick={() => setShowReferralForm(false)}
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              >
+                <HiOutlineX className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-500 dark:text-gray-400">Patient ID</p>
+                    <p className="font-medium dark:text-gray-300">{selectedPatient.idNumber}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 dark:text-gray-400">Email</p>
+                    <p className="font-medium dark:text-gray-300">{selectedPatient.email}</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500 dark:text-gray-400">Patient ID</p>
-                      <p className="font-medium dark:text-gray-300">{selectedPatient.idNumber}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500 dark:text-gray-400">Email</p>
-                      <p className="font-medium dark:text-gray-300">{selectedPatient.email}</p>
-                    </div>
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Health Practitioner's Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Dr. John Smith"
+                    value={practitionerName}
+                    onChange={(e) => setPractitionerName(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 dark:bg-gray-700 dark:text-gray-100"
+                    required
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Health Practitioner's Email
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="practitioner@clinic.com"
+                    value={practitionerEmail}
+                    onChange={(e) => setPractitionerEmail(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 dark:bg-gray-700 dark:text-gray-100"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Referral Comments
                   </label>
                   <textarea
                     placeholder="Enter detailed referral comments..."
                     value={referralComment}
                     onChange={(e) => setReferralComment(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 h-40 resize-none dark:bg-gray-700 dark:text-gray-100"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 h-32 resize-none dark:bg-gray-700 dark:text-gray-100"
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="flex justify-end gap-4 mt-6">
-                <button
-                  onClick={handleAddReferral}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
-                >
-                  Submit Referral
-                  <HiOutlineArrowRight className="w-5 h-5" />
-                </button>
-              </div>
+            <div className="flex justify-end gap-4 mt-6">
+              <button
+                onClick={handleAddReferral}
+                className="flex items-center gap-2 px-6 py-2.5 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
+              >
+                Submit Referral
+                <HiOutlineArrowRight className="w-5 h-5" />
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
       </div>
     </div>
   );

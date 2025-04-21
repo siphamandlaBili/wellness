@@ -38,6 +38,16 @@ const router = createBrowserRouter([
         index: true,
         path: "apply-for-event",
         element: <EventBooking />
+      },
+      {
+        index: true,
+        path: "reports",
+        element: <AdminReport />
+      },
+      {
+        index: true,
+        path: "analytics",
+        element: <Analytics />
       }
     ]
   },
