@@ -3,19 +3,29 @@ import React from "react";
 
 const faqs = [
   {
-    question: "Why is the moon sometimes out during the day?",
+    question: "What servics does Healthspace FMP Wellness offer for companies?",
     answer:
-      "The moon is visible during the day because its brightness can outshine the scattered sunlight when positioned favorably in the sky.",
+      "We offer a range of onsite and digital wellness services , including health screenings, chronic disease programmes, mental health support, wellness days, and vaccination drives - all linked to an Electronic Health Record (EHR) system.",
   },
   {
-    question: "Why is the sky blue?",
+    question: "How is this different from a regular wellness provider?",
     answer:
-      "The sky appears blue due to the scattering of sunlight by the atmosphere. The shorter blue wavelengths scatter more, making the sky look blue.",
+      "Most wellness events are once-off events with no continuity. We intergrate your employees' health data directly into their medical histroy, helping healthcare providers make better decisions and improving long-term health outcomes.",
   },
   {
-    question: "Will we ever discover aliens?",
+    question: "Can we server multiple branches or remote teams?",
     answer:
-      "The search for extraterrestrial life continues, but there is no confirmed discovery of aliens yet.",
+      "Yes. We offer onsite activations, virtual wellness weejs, and whatsaap-based wellness tools to ensure all teams - including remote workers - are covered",
+  },
+  {
+    question: "Is it POPIA-compliant?",
+    answer:
+      "Absolutely. All patient data is securely stored,access-controlled, and fully POPIA compliant.",
+  },
+  {
+    question: "How do we track ROI?",
+    answer:
+      "You'll recieve anonymized, easy-to-read reports on participation, risk trends, and suggested actions. Over time, this helps reduces absenteeism and chronic-related medical claims.",
   },
 ];
 
