@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../context/authContext';
+import { AuthContext } from '../../../context/authContext';
 import { ToastContainer, toast } from 'react-toastify';
 import { FiMoreVertical, FiCheck, FiX, FiEye, FiGrid, FiList, FiInfo, FiCalendar, FiMapPin, FiUsers, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import 'react-toastify/dist/ReactToastify.css';

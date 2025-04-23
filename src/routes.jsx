@@ -1,25 +1,25 @@
 import { createBrowserRouter } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import EventBooking from "./pages/user pages/EventBooking";
-import Dashboard from "./pages/Dashboard";
-import ManageApplications from "./pages/ManageApplications";
-import PastEvents from "./pages/PastEvents";
+import Dashboard from "./pages/admin pages/Dashboard";
+import ManageApplications from "../src/pages/user pages/ManageApplications";
+import PastEvents from "./pages/admin pages/PastEvents";
 import UserProfilePage from "./pages/user pages/UserProfile";
-import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import SuperAdminDashboard from "../src/pages/super admin/SuperAdminDashboard";
 import AuthForm from "./pages/user pages/UserLogin";
 import UserDashboard from "./pages/user pages/UserDashBoard";
-import AdminManageApplications from "./components/AdminManageApplications";
-import AssignEventToNurse from './pages/AssignEventToNurse';
-import AcceptedEvents from './pages/AcceptedEvents';
-import NurseDashboard from "./NurseDashboard";
-import NurseEvent from "./NurseEvent";
-import PatientList from "./PatientList";
+import AdminManageApplications from "../src/pages/admin pages/AdminManageApplications";
+import AssignEventToNurse from './pages/admin pages/AssignEventToNurse';
+import AcceptedEvents from './pages/admin pages/AcceptedEvents';
+import NurseDashboard from "../src/pages/nurse pages/NurseDashboard"
+import NurseEvent from "./pages/nurse pages/NurseEvent";
+import PatientList from "./pages/nurse pages/PatientList";
 import Analytics from './pages/Analytics';
-import Referrals from './pages/Referrals';
-import NurseAnalytics from './pages/NurseAnalytics';
-import AdminAnalytics from './pages/AdminAnalytics';
-import ManageAdmins from "./ManageAdmins";
-import { NurseReport,AdminReport } from "./NurseReport";
+import Referrals from './pages/nurse pages/Referrals';
+import NurseAnalytics from '../src/pages/nurse pages/NurseAnalytics';
+import AdminAnalytics from '../src/pages/admin pages/AdminAnalytics';
+import ManageAdmins from "./components/ManageAdmins";
+import { NurseReport,AdminReport } from "./pages/nurse pages/NurseReport";
 
 const router = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
@@ -82,7 +82,6 @@ const router = createBrowserRouter([
       { path: "referrals", element: <Referrals /> }, // New Referrals route
       { path: "analytics", element: <NurseAnalytics /> }, // New NurseAnalytics route
       { path: "referrals", element: <Referrals /> }, 
-      { path: "analytics", element: <Analytics /> }, 
       { path: "reports", element: <NurseReport/> },
     ],
   },

@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import { User, Briefcase, Users, Settings } from 'lucide-react';
+import Navbar from '../../components/Navbar';
+import { User, Users, Settings } from 'lucide-react';
 
 const SuperAdminDashboard = () => {
     return (

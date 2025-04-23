@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { assets } from '../assets/assets';
-import Navbar from '../components/Navbar';
+import { assets } from '../../assets/assets';
+import Navbar from '../../components/Navbar';
 
 const Dashboard = () => {
     const location = useLocation();

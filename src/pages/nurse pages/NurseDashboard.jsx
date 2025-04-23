@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import Navbar from '../../components/Navbar';
 import { User, Briefcase, Users, BarChart2 } from 'lucide-react';
 
 const NurseDashboard = () => {

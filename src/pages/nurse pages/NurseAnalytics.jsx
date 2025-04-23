@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Analytics from '../components/Analytics';
+import Analytics from '../../components/Analytics';
 
 const NurseAnalytics = () => {
     const [analyticsData, setAnalyticsData] = useState(null);

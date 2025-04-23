@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../context/authContext';
+import { AuthContext } from '../../../context/authContext';
 import { jsPDF } from "jspdf";
 import { 
   FiEye, 
@@ -154,63 +154,161 @@ const ManageApplications = () => {
   );
 
   const renderInvoice = (invoiceData) => {
-    const generatePDF = () => {
-      const doc = new jsPDF();
-      doc.setFontSize(18);
-      doc.text('Invoice Details', 14, 20);
-      doc.setFontSize(12);
-      doc.text(`Invoice Number: ${invoiceData.invoiceNumber}`, 14, 30);
-      doc.text(`Date: ${invoiceData.date}`, 14, 40);
-      doc.text('Items:', 14, 50);
-      let yOffset = 60;
-      invoiceData.items.forEach(item => {
-        doc.text(`${item.description}: ${item.amount}`, 14, yOffset);
-        yOffset += 10;
-      });
-      doc.text(`Total: ${invoiceData.total}`, 14, yOffset);
-      doc.save(`Invoice_${invoiceData.invoiceNumber}.pdf`);
-    };
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Add gradient header
+    doc.setFillColor(45, 55, 72); // Dark gray
+    doc.rect(0, 0, pageWidth, 40, 'F');
+    
+    // Company Info
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Wellness Events Co.", 14, 20);
+    doc.setFontSize(10);
+    doc.text("123 Event Street, City, Country", 14, 27);
+    doc.text("Tel: (555) 123-4567 | Email: info@wellnessevents.com", 14, 34);
 
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm text-gray-500 dark:text-gray-400">Invoice Number</label>
-            <p className="font-medium dark:text-gray-200">{invoiceData.invoiceNumber}</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-500 dark:text-gray-400">Date</label>
-            <p className="font-medium dark:text-gray-200">{invoiceData.date}</p>
-          </div>
-        </div>
+    // Invoice title and details
+    doc.setTextColor(153, 39, 135); // Brand purple
+    doc.setFontSize(20);
+    doc.text("INVOICE", pageWidth - 60, 20);
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    const invoiceDetails = [
+      `Invoice Number: ${invoiceData.invoiceNumber}`,
+      `Date: ${new Date(invoiceData.date).toLocaleDateString()}`,
+      `Due Date: ${new Date(invoiceData.date).toLocaleDateString()}`,
+    ];
+    
+    let yPos = 40;
+    invoiceDetails.forEach((detail, i) => {
+      doc.text(detail, pageWidth - 60, 30 + (i * 5));
+    });
 
-        <div className="border-t border-gray-100 dark:border-gray-700 pt-4">
-          <h5 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Items</h5>
-          <div className="space-y-3">
-            {invoiceData.items.map((item, index) => (
-              <div key={index} className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-                <span className="dark:text-gray-300">{item.description}</span>
-                <span className="font-medium dark:text-gray-200">{item.amount}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+    // Client Info
+    yPos += 20;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Bill To:", 14, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(selectedEvent.clientName, 14, yPos + 5);
+    doc.text(selectedEvent.clientEmail, 14, yPos + 10);
 
-        <div className="flex justify-between items-center pt-4">
-          <span className="font-semibold dark:text-gray-200">Total Amount:</span>
-          <span className="text-xl font-bold text-[#992787] dark:text-purple-400">{invoiceData.total}</span>
-        </div>
+    // Table header
+    yPos += 30;
+    doc.setFillColor(245, 245, 245);
+    doc.rect(14, yPos, pageWidth - 28, 10, 'F');
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Description", 14, yPos + 7);
+    doc.text("Amount", pageWidth - 24, yPos + 7, { align: 'right' });
+    
+    // Table rows
+    yPos += 10;
+    invoiceData.items.forEach((item, index) => {
+      doc.setFont('helvetica', 'normal');
+      doc.text(item.description, 14, yPos + 7 + (index * 10));
+      doc.text(item.amount, pageWidth - 24, yPos + 7 + (index * 10), { align: 'right' });
+    });
 
-        <button
-          onClick={generatePDF}
-          className="w-full mt-6 px-6 py-3 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
-        >
-          <FiDownload className="w-5 h-5" />
-          Download Invoice
-        </button>
-      </div>
-    );
+    // Total section
+    yPos += (invoiceData.items.length * 10) + 20;
+    doc.setFont('helvetica', 'bold');
+    doc.text("Total Due:", pageWidth - 64, yPos);
+    doc.text(invoiceData.total, pageWidth - 24, yPos, { align: 'right' });
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Thank you for your business! Please make payment by the due date.", 14, 280);
+    doc.text("Payment Terms: Net 30 Days", 14, 285);
+
+    doc.save(`Invoice_${invoiceData.invoiceNumber}.pdf`);
   };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[#2d3748] to-[#4a5568] p-6 rounded-xl text-white">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-bold">Wellness Events Co.</h2>
+            <p className="mt-1 text-sm opacity-90">123 Event Street, City, Country</p>
+            <p className="text-sm opacity-90">Tel: (555) 123-4567 | Email: info@wellnessevents.com</p>
+          </div>
+          <div className="text-right">
+            <h3 className="text-3xl font-bold text-[#ff99e8]">INVOICE</h3>
+            <p className="mt-2 text-sm opacity-90">Date: {new Date(invoiceData.date).toLocaleDateString()}</p>
+            <p className="text-sm opacity-90">Due Date: {new Date(invoiceData.date).toLocaleDateString()}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Client Info */}
+      <div className="grid grid-cols-2 gap-6 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl">
+        <div>
+          <h4 className="text-sm font-semibold text-[#992787] dark:text-purple-400 mb-2">Bill To:</h4>
+          <p className="font-medium dark:text-gray-200">{selectedEvent.clientName}</p>
+          <p className="text-gray-600 dark:text-gray-300">{selectedEvent.clientEmail}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-lg font-bold text-[#992787] dark:text-purple-400">
+            Invoice #: {invoiceData.invoiceNumber}
+          </p>
+        </div>
+      </div>
+
+      {/* Items Table */}
+      <div className="border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
+        <div className="grid grid-cols-12 bg-gray-50 dark:bg-gray-700 p-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="col-span-8 font-semibold text-[#992787] dark:text-purple-400">Description</div>
+          <div className="col-span-4 font-semibold text-[#992787] dark:text-purple-400 text-right">Amount</div>
+        </div>
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
+          {invoiceData.items.map((item, index) => (
+            <div key={index} className="grid grid-cols-12 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+              <div className="col-span-8 dark:text-gray-300">{item.description}</div>
+              <div className="col-span-4 dark:text-gray-300 text-right">{item.amount}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Total Section */}
+      <div className="flex justify-end p-6 bg-gray-50 dark:bg-gray-700 rounded-xl">
+        <div className="w-64 space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="font-semibold dark:text-gray-200">Subtotal:</span>
+            <span className="dark:text-gray-300">{invoiceData.total}</span>
+          </div>
+          <div className="flex justify-between items-center border-t border-gray-200 dark:border-gray-600 pt-4">
+            <span className="text-xl font-bold text-[#992787] dark:text-purple-400">Total Due:</span>
+            <span className="text-xl font-bold text-[#992787] dark:text-purple-400">{invoiceData.total}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Notes */}
+      <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl text-center text-sm text-gray-600 dark:text-gray-400">
+        <p>Thank you for your business! Please make payment by the due date.</p>
+        <p className="mt-1">Payment Terms: Net 30 Days</p>
+      </div>
+
+      {/* Download Button */}
+      <button
+        onClick={generatePDF}
+        className="w-full mt-6 px-6 py-3 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+      >
+        <FiDownload className="w-5 h-5" />
+        Download Invoice
+      </button>
+    </div>
+  );
+};
 
   return (
     <div className='container p-6 max-w-7xl mx-auto dark:bg-gray-900 min-h-screen'>
