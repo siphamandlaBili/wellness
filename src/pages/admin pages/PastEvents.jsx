@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import moment from 'moment';
+import axios from 'axios';
 import { 
-  HiOutlineCalendar,
-  HiOutlineLocationMarker,
-  HiOutlineUserGroup,
-  HiOutlineClipboardList,
-  HiOutlineUserCircle,
-  HiOutlineMail,
-  HiOutlinePhone,
-  HiOutlineX
-} from 'react-icons/hi';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+  FiCalendar,
+  FiMapPin,
+  FiUsers,
+  FiInfo,
+  FiChevronLeft,
+  FiChevronRight,
+  FiEye,
+  FiX
+} from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+const CACHE_KEY = 'pastEventsCache';
+const CACHE_DURATION = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
 
 const PastEvents = () => {
   const [pastEvents, setPastEvents] = useState([]);
@@ -21,20 +24,53 @@ const PastEvents = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(6);
 
+  // Cache functions
+  const getCachedEvents = () => {
+    const cache = localStorage.getItem(CACHE_KEY);
+    if (!cache) return null;
+    try {
+      const { data, timestamp } = JSON.parse(cache);
+      if (Date.now() - timestamp < CACHE_DURATION) {
+        return data;
+      }
+    } catch (error) {
+      console.error('Error parsing cache:', error);
+    }
+    return null;
+  };
+
+  const setCachedEvents = (data) => {
+    const cacheData = {
+      data,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+  };
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('https://wellness-temporary-db-2.onrender.com/events');
-        const data = await response.json();
-        const currentDate = new Date();
-        
-        const filteredEvents = data.filter(event => 
-          new Date(event.eventDate) < currentDate
+        const cached = getCachedEvents();
+        if (cached) {
+          setPastEvents(cached);
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get(
+          'https://wellness-backend-ntls.onrender.com/api/v1/events/past-events',
+          { withCredentials: true }
         );
         
-        setPastEvents(filteredEvents);
+        if (response.data.success) {
+          setPastEvents(response.data.pastEvents);
+          setCachedEvents(response.data.pastEvents);
+        } else {
+          throw new Error('Failed to fetch events');
+        }
       } catch (error) {
-        toast.error('Failed to load events');
+        const errorMessage = error.response?.data?.message || 'Failed to load events';
+        toast.error(errorMessage);
         console.error('Error fetching events:', error);
       } finally {
         setLoading(false);
@@ -50,24 +86,26 @@ const PastEvents = () => {
   const currentEvents = pastEvents.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(pastEvents.length / itemsPerPage);
 
-  useEffect(() => {
-    if (pastEvents.length > 0) {
-      setCurrentPage(1);
-    }
-  }, [pastEvents]);
+  const StatusBadge = ({ status }) => (
+    <span className={`px-3 py-1 rounded-full text-sm ${
+      status === 'Accepted' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+      status === 'Rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    }`}>
+      {status}
+    </span>
+  );
 
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 dark:bg-gray-900">
       <ToastContainer theme="colored" />
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12 text-[#992787] dark:text-purple-400">
-          Past Events Archive
-        </h2>
+        <h2 className="text-2xl font-bold text-[#2d3748] dark:text-white mb-8">Past Events Archive</h2>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg animate-pulse">
+              <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 animate-pulse">
                 <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
                 <div className="space-y-3">
                   <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
@@ -79,47 +117,52 @@ const PastEvents = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {currentEvents.length > 0 ? (
                 currentEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 group border border-gray-100 dark:border-gray-700"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-bold text-[#992787] dark:text-purple-300">{event.eventName}</h3>
-                      <span className="text-sm bg-purple-100 dark:bg-purple-900/30 text-[#992787] dark:text-purple-300 px-3 py-1 rounded-full">
-                        {event.eventCode}
-                      </span>
+                  <div key={event._id} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-[#992787] dark:text-purple-400">{event.eventCode}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{event.clientName}</p>
+                      </div>
+                      <StatusBadge status={event.status} />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <FiCalendar className="text-[#992787] dark:text-purple-400" />
+                        <span className="dark:text-gray-300">
+                          {moment(event.eventDate).format('DD MMM YYYY')}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FiMapPin className="text-[#992787] dark:text-purple-400" />
+                        <span className="dark:text-gray-300">{event.eventLocation}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FiUsers className="text-[#992787] dark:text-purple-400" />
+                        <span className="dark:text-gray-300">{event.numberOfAttendees} attendees</span>
+                      </div>
                     </div>
 
-                    <div className="space-y-4 text-gray-600 dark:text-gray-300">
-                      <div className="flex items-center">
-                        <HiOutlineCalendar className="w-5 h-5 mr-2 text-[#992787] dark:text-purple-400" />
-                        {moment(event.eventDate).format('MMMM Do YYYY')}
-                      </div>
-                      <div className="flex items-center">
-                        <HiOutlineLocationMarker className="w-5 h-5 mr-2 text-[#992787] dark:text-purple-400" />
-                        {event.eventLocation}
-                      </div>
-                      <div className="flex items-center">
-                        <HiOutlineUserGroup className="w-5 h-5 mr-2 text-[#992787] dark:text-purple-400" />
-                        {event.numberOfAttendees} attendees
-                      </div>
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-center">
+                      <button
+                        onClick={() => setSelectedEvent(event)}
+                        className="text-[#992787] hover:text-[#7a1f6e] flex items-center gap-2 dark:text-purple-400 dark:hover:text-purple-300"
+                      >
+                        <FiEye className="w-5 h-5" />
+                        <span className="dark:text-gray-300">View Details</span>
+                      </button>
                     </div>
-
-                    <button
-                      onClick={() => setSelectedEvent(event)}
-                      className="mt-6 w-full py-2.5 text-[#992787] dark:text-purple-300 font-semibold rounded-lg border-2 border-[#992787] dark:border-purple-400 hover:border-purple-300 dark:hover:border-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all"
-                    >
-                      View Details
-                    </button>
                   </div>
                 ))
               ) : (
                 <div className="col-span-full text-center py-12">
-                  <HiOutlineClipboardList className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
-                  <p className="text-xl text-gray-500 dark:text-gray-400">No past events found</p>
+                  <div className="inline-block p-4 bg-[#992787]/10 rounded-full mb-4 dark:bg-purple-400/20">
+                    <FiInfo className="text-3xl text-[#992787] dark:text-purple-400" />
+                  </div>
+                  <p className="text-xl text-gray-600 dark:text-gray-300">No past events found</p>
                 </div>
               )}
             </div>
@@ -149,55 +192,81 @@ const PastEvents = () => {
           </>
         )}
 
-        {/* Modal */}
+        {/* Details Modal */}
         {selectedEvent && (
-          <div className="fixed inset-0 bg-[#4644446c] dark:bg-[#000000cc] backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-gray-200 dark:border-gray-700">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 className="text-2xl font-bold text-purple-600 dark:text-purple-400">{selectedEvent.eventName}</h3>
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+            <div className="bg-white dark:bg-gray-800 w-full max-w-md mx-4 p-6 rounded-2xl shadow-2xl border-l-4 border-[#992787]">
+              <div className="flex justify-between items-start mb-6">
+                <h2 className="text-xl font-bold text-[#2d3748] dark:text-white">Event Details</h2>
                 <button
                   onClick={() => setSelectedEvent(null)}
-                  className="text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 transition-colors"
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
                 >
-                  <HiOutlineX className="w-6 h-6" />
+                  <FiX className="w-6 h-6" />
                 </button>
               </div>
-
-              <div className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <DetailItem icon={<HiOutlineCalendar className="w-5 h-5 text-purple-500 dark:text-purple-400" />}
-                    label="Date" value={moment(selectedEvent.eventDate).format('MMMM Do YYYY')} />
-                  
-                  <DetailItem icon={<HiOutlineLocationMarker className="w-5 h-5 text-purple-500 dark:text-purple-400" />}
-                    label="Location" value={selectedEvent.eventLocation} />
-                  
-                  <DetailItem icon={<HiOutlineUserGroup className="w-5 h-5 text-purple-500 dark:text-purple-400" />}
-                    label="Attendees" value={selectedEvent.numberOfAttendees} />
-                  
-                  <DetailItem icon={<HiOutlineUserCircle className="w-5 h-5 text-purple-500 dark:text-purple-400" />}
-                    label="Client" value={selectedEvent.clientName} />
-                  
-                  <DetailItem icon={<HiOutlineMail className="w-5 h-5 text-purple-500 dark:text-purple-400" />}
-                    label="Email" value={selectedEvent.clientEmail} />
-                  
-                  <DetailItem icon={<HiOutlinePhone className="w-5 h-5 text-purple-500 dark:text-purple-400" />}
-                    label="Phone" value={selectedEvent.clientPhone} />
-                </div>
-
-                {selectedEvent.additionalNotes && (
-                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h4 className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-2">Additional Notes</h4>
-                    <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{selectedEvent.additionalNotes}</p>
+              
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Event Code</p>
+                    <p className="font-medium dark:text-gray-200">{selectedEvent.eventCode}</p>
                   </div>
-                )}
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                    <StatusBadge status={selectedEvent.status} />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <FiCalendar className="text-[#992787] dark:text-purple-400" />
+                    <span className="font-medium dark:text-gray-200">
+                      {moment(selectedEvent.eventDate).format('DD MMM YYYY')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FiMapPin className="text-[#992787] dark:text-purple-400" />
+                    <span className="font-medium dark:text-gray-200">{selectedEvent.eventLocation}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FiUsers className="text-[#992787] dark:text-purple-400" />
+                    <span className="font-medium dark:text-gray-200">{selectedEvent.numberOfAttendees} attendees</span>
+                  </div>
+                  {selectedEvent.reason && (
+                    <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/30 rounded-lg">
+                      <p className="text-sm text-red-600 dark:text-red-300 font-medium">Rejection Reason:</p>
+                      <p className="text-red-500 dark:text-red-400">{selectedEvent.reason}</p>
+                    </div>
+                  )}
+                  {selectedEvent.additionalNotes && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Additional Notes</p>
+                      <p className="text-gray-700 dark:text-gray-300">{selectedEvent.additionalNotes}</p>
+                    </div>
+                  )}
+                  {selectedEvent.invoiceItems?.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Invoice Items</p>
+                      <div className="space-y-2">
+                        {selectedEvent.invoiceItems.map((item, index) => (
+                          <div key={index} className="flex justify-between">
+                            <span className="dark:text-gray-300">{item.description}</span>
+                            <span className="dark:text-gray-300">R{parseFloat(item.amount).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setSelectedEvent(null)}
-                  className="w-full py-3 bg-purple-600 dark:bg-purple-700 text-white rounded-lg font-semibold hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors"
+                  className="px-4 py-2 bg-[#992787] text-white rounded-lg hover:bg-[#7a1f6e] transition-colors dark:bg-purple-600 dark:hover:bg-purple-700"
                 >
-                  Close Details
+                  Close
                 </button>
               </div>
             </div>
@@ -207,15 +276,5 @@ const PastEvents = () => {
     </div>
   );
 };
-
-const DetailItem = ({ icon, label, value }) => (
-  <div className="flex items-start space-x-3">
-    <div className="text-purple-500 dark:text-purple-400 pt-1">{icon}</div>
-    <div>
-      <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</div>
-      <div className="text-gray-700 dark:text-gray-200">{value || '-'}</div>
-    </div>
-  </div>
-);
 
 export default PastEvents;

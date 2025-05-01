@@ -10,7 +10,6 @@ import AuthForm from "./pages/user pages/UserLogin";
 import UserDashboard from "./pages/user pages/UserDashBoard";
 import AdminManageApplications from "../src/pages/admin pages/AdminManageApplications";
 import AssignEventToNurse from './pages/admin pages/AssignEventToNurse';
-import AcceptedEvents from './pages/admin pages/AcceptedEvents';
 import NurseDashboard from "../src/pages/nurse pages/NurseDashboard"
 import NurseEvent from "./pages/nurse pages/NurseEvent";
 import PatientList from "./pages/nurse pages/PatientList";
@@ -59,7 +58,6 @@ const router = createBrowserRouter([
       { path: "profile", element: <UserProfilePage /> },
       { path: "past-events", element: <PastEvents /> },
       { path: "assign-event", element: <AssignEventToNurse /> },
-      { path: "accepted-events", element: <AcceptedEvents /> }, // New route
       { path: "analytics", element: <AdminAnalytics /> }, 
       { path: "reports", element: <AdminReport /> }
     ],

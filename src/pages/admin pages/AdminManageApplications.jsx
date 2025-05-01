@@ -1,13 +1,21 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../../context/authContext';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
-import { FiMoreVertical, FiCheck, FiX, FiEye, FiGrid, FiList, FiInfo, FiCalendar, FiMapPin, FiUsers, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { 
+  FiMoreVertical, FiCheck, FiX, FiEye, FiGrid, FiList, 
+  FiInfo, FiCalendar, FiMapPin, FiUsers, FiChevronLeft, 
+  FiChevronRight, FiPlus, FiTrash 
+} from 'react-icons/fi';
 import 'react-toastify/dist/ReactToastify.css';
 
+const CACHE_KEY = 'adminEventsCache';
+const CACHE_DURATION = 6 * 60 * 1000; // 6 minutes
+
 const AdminManageApplications = () => {
-  const { userEvents, setEventStorage } = useContext(AuthContext);
+  const [eventStorage, setEventStorage] = useState([]);
   const [activeDropdownIndex, setActiveDropdownIndex] = useState(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [selectedEventIndex, setSelectedEventIndex] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,114 +23,147 @@ const AdminManageApplications = () => {
   const [selectedEventDetails, setSelectedEventDetails] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(6);
+  const [invoiceItems, setInvoiceItems] = useState([{ description: '', amount: '' }]);
 
+  // Cache functions
+  const getCachedEvents = () => {
+    const cache = localStorage.getItem(CACHE_KEY);
+    if (!cache) return null;
+    const { data, timestamp } = JSON.parse(cache);
+    return Date.now() - timestamp < CACHE_DURATION ? data : null;
+  };
+
+  const setCachedEvents = (data) => {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+  };
+
+  // Responsive view handling
   useEffect(() => {
-    const handleResize = () => {
-      setIsTableView(window.innerWidth >= 1024);
-    };
+    const handleResize = () => setIsTableView(window.innerWidth >= 1024);
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Pagination calculations
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedEvents = userEvents?.slice(startIndex, endIndex) || [];
-  const totalPages = Math.ceil((userEvents?.length || 0) / itemsPerPage);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [userEvents]);
-
-  const StatusBadge = ({ status }) => {
-    const statusStyles = {
-      Accepted: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      Rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-      Pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-    };
-    
-    return (
-      <span className={`px-3 py-1 rounded-full text-sm ${statusStyles[status] || 'bg-gray-100 dark:bg-gray-700 dark:text-gray-200'}`}>
-        {status || "Pending"}
-      </span>
-    );
-  };
-
+  // Fetch events with cache
   const getEvents = async () => {
+    const cached = getCachedEvents();
+    if (cached) {
+      setEventStorage(cached);
+      setLoading(false);
+    }
+
     try {
-      const response = await fetch('https://wellness-temporary-db-2.onrender.com/events');
-      const data = await response.json();
-      setEventStorage(data);
+      if (!cached) setLoading(true);
+      const { data } = await axios.get(
+        'https://wellness-backend-ntls.onrender.com/api/v1/events',
+        { withCredentials: true }
+      );
+      setCachedEvents(data.events);
+      setEventStorage(data.events);
     } catch (error) {
       toast.error('Failed to load events');
+      if (!cached) setEventStorage([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const updateStatus = async (index, newStatus) => {
-    try {
-      const event = userEvents[index];
-      const response = await fetch(`https://wellness-temporary-db-2.onrender.com/events/${event.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (response.ok) {
-        const updatedEvents = userEvents.map((e, i) =>
-          i === index ? { ...e, status: newStatus } : e
-        );
-        setEventStorage(updatedEvents);
-        setActiveDropdownIndex(null);
-        toast.success(`Event ${newStatus.toLowerCase()} successfully`);
-      }
-    } catch (error) {
-      toast.error('Update failed. Please try again.');
-    }
-  };
-
+  // Handle rejection
   const handleRejectSubmit = async () => {
-    if (rejectionReason.trim() && selectedEventIndex !== null) {
-      try {
-        const event = userEvents[selectedEventIndex];
-        const response = await fetch(`https://wellness-temporary-db-2.onrender.com/events/${event.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            status: 'Rejected',
-            reason: rejectionReason 
-          })
-        });
+    if (!rejectionReason.trim() || selectedEventIndex === null) return;
 
-        if (response.ok) {
-          const updatedEvents = userEvents.map((e, i) =>
-            i === selectedEventIndex ? { ...e, status: 'Rejected', reason: rejectionReason } : e
-          );
-          setEventStorage(updatedEvents);
-          setShowRejectModal(false);
-          setRejectionReason('');
-          toast.success('Event rejected successfully');
-        }
-      } catch (error) {
-        toast.error('Rejection failed. Please try again.');
-      }
+    try {
+      const event = eventStorage[selectedEventIndex];
+      const { data } = await axios.put(
+        `https://wellness-backend-ntls.onrender.com/api/v1/events/${event._id}/status`,
+        { 
+          status: 'Rejected',
+          reason: rejectionReason 
+        },
+        { withCredentials: true }
+      );
+
+      const updatedEvents = [...eventStorage];
+      updatedEvents[selectedEventIndex] = data.event;
+      
+      setEventStorage(updatedEvents);
+      setCachedEvents(updatedEvents);
+      setShowRejectModal(false);
+      setRejectionReason('');
+      toast.success('Event rejected successfully');
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Rejection failed. Please try again.');
     }
   };
 
-  const handleDotClick = (index) => {
-    setActiveDropdownIndex(activeDropdownIndex === index ? null : index);
+  // Handle invoice submission
+  const handleInvoiceSubmit = async () => {
+    if (invoiceItems.some(item => !item.description || !item.amount)) {
+      toast.error('Please fill in all invoice fields');
+      return;
+    }
+
+    try {
+      const event = eventStorage[selectedEventIndex];
+      const { data } = await axios.put(
+        `https://wellness-backend-ntls.onrender.com/api/v1/events/${event._id}/status`,
+        { 
+          status: 'Accepted',
+          invoiceItems: invoiceItems.filter(item => item.description && item.amount)
+        },
+        { withCredentials: true }
+      );
+
+      const updatedEvents = [...eventStorage];
+      updatedEvents[selectedEventIndex] = data.event;
+      
+      setEventStorage(updatedEvents);
+      setCachedEvents(updatedEvents);
+      setShowInvoiceForm(false);
+      setInvoiceItems([{ description: '', amount: '' }]);
+      toast.success('Event approved with invoice details');
+    } catch (error) {
+      console.log(error)
+      toast.error(error?.response?.data?.message || 'Failed to save invoice details');
+    }
   };
 
-  const handleViewDetails = (event) => {
+  // Pagination
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedEvents = eventStorage.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(eventStorage.length / itemsPerPage);
+
+  useEffect(() => { getEvents(); }, []);
+
+  const StatusBadge = ({ status }) => (
+    <span className={`px-3 py-1 rounded-full text-sm ${
+      status === 'Accepted' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+      status === 'Rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    }`}>
+      {status || "Pending"}
+    </span>
+  );
+
+  const addInvoiceItem = () => {
+    setInvoiceItems([...invoiceItems, { description: '', amount: '' }]);
+  };
+
+  const removeInvoiceItem = (index) => {
+    if (invoiceItems.length === 1) return;
+    const newItems = invoiceItems.filter((_, i) => i !== index);
+    setInvoiceItems(newItems);
+  };
+
+  const handleViewDetails = (eventId) => {
+    const event = eventStorage.find(e => e._id === eventId);
     setSelectedEventDetails(event);
-    setActiveDropdownIndex(null);
   };
-
-  useEffect(() => {
-    getEvents();
-  }, []);
 
   if (loading) return (
     <div className="flex justify-center items-center h-64 dark:bg-gray-900">
@@ -130,7 +171,7 @@ const AdminManageApplications = () => {
     </div>
   );
 
-  if (!userEvents?.length) return (
+  if (eventStorage.length === 0) return (
     <div className="text-center p-8 text-gray-600 dark:bg-gray-900 dark:text-gray-300 min-h-screen">
       <div className="inline-block p-4 bg-[#992787]/10 rounded-full mb-4 dark:bg-purple-400/20">
         <FiInfo className="text-3xl text-[#992787] dark:text-purple-400" />
@@ -173,7 +214,7 @@ const AdminManageApplications = () => {
               {paginatedEvents.map((event, index) => {
                 const originalIndex = startIndex + index;
                 return (
-                  <tr key={originalIndex} className="hover:bg-[#f9f4f9] dark:hover:bg-gray-700 transition-colors">
+                  <tr key={event._id} className="hover:bg-[#f9f4f9] dark:hover:bg-gray-700 transition-colors">
                     <td className="py-4 px-6 font-medium dark:text-gray-200">{event.eventCode}</td>
                     <td className="py-4 px-6 max-md:hidden dark:text-gray-300">{event.clientName}</td>
                     <td className="py-4 px-6 dark:text-gray-300">{event.eventType}</td>
@@ -186,7 +227,7 @@ const AdminManageApplications = () => {
                     <td className="py-4 px-6 text-center relative">
                       <div className="inline-block relative">
                         <button
-                          onClick={() => handleDotClick(originalIndex)}
+                          onClick={() => setActiveDropdownIndex(activeDropdownIndex === originalIndex ? null : originalIndex)}
                           className="text-[#992787] hover:text-[#7a1f6e] p-2 rounded-lg dark:text-purple-400 dark:hover:text-purple-300"
                         >
                           <FiMoreVertical className="w-5 h-5" />
@@ -194,7 +235,11 @@ const AdminManageApplications = () => {
                         {activeDropdownIndex === originalIndex && (
                           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-20">
                             <div
-                              onClick={() => updateStatus(originalIndex, 'Accepted')}
+                              onClick={() => {
+                                setSelectedEventIndex(originalIndex);
+                                setShowInvoiceForm(true);
+                                setActiveDropdownIndex(null);
+                              }}
                               className="px-4 py-3 hover:bg-green-50 dark:hover:bg-green-900 cursor-pointer flex items-center gap-2 text-green-600 dark:text-green-300"
                             >
                               <FiCheck className="w-5 h-5" />
@@ -212,7 +257,7 @@ const AdminManageApplications = () => {
                               Reject
                             </div>
                             <div
-                              onClick={() => handleViewDetails(event)}
+                              onClick={() => handleViewDetails(event._id)}
                               className="px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900 cursor-pointer flex items-center gap-2 text-blue-600 dark:text-blue-300"
                             >
                               <FiEye className="w-5 h-5" />
@@ -233,7 +278,7 @@ const AdminManageApplications = () => {
           {paginatedEvents.map((event, index) => {
             const originalIndex = startIndex + index;
             return (
-              <div key={originalIndex} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow">
+              <div key={event._id} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-lg font-bold text-[#992787] dark:text-purple-400">{event.eventCode}</h3>
@@ -259,7 +304,7 @@ const AdminManageApplications = () => {
 
                 <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
                   <button
-                    onClick={() => handleViewDetails(event)}
+                    onClick={() => handleViewDetails(event._id)}
                     className="text-[#992787] hover:text-[#7a1f6e] flex items-center gap-2 dark:text-purple-400 dark:hover:text-purple-300"
                   >
                     <FiEye className="w-5 h-5" />
@@ -267,7 +312,7 @@ const AdminManageApplications = () => {
                   </button>
                   <div className="relative">
                     <button
-                      onClick={() => handleDotClick(originalIndex)}
+                      onClick={() => setActiveDropdownIndex(activeDropdownIndex === originalIndex ? null : originalIndex)}
                       className="text-[#992787] hover:text-[#7a1f6e] p-2 rounded-lg dark:text-purple-400 dark:hover:text-purple-300"
                     >
                       <FiMoreVertical className="w-5 h-5" />
@@ -275,7 +320,11 @@ const AdminManageApplications = () => {
                     {activeDropdownIndex === originalIndex && (
                       <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-20">
                         <div
-                          onClick={() => updateStatus(originalIndex, 'Accepted')}
+                          onClick={() => {
+                            setSelectedEventIndex(originalIndex);
+                            setShowInvoiceForm(true);
+                            setActiveDropdownIndex(null);
+                          }}
                           className="px-4 py-3 hover:bg-green-50 dark:hover:bg-green-900 cursor-pointer flex items-center gap-2 text-green-600 dark:text-green-300"
                         >
                           <FiCheck className="w-5 h-5" />
@@ -376,6 +425,19 @@ const AdminManageApplications = () => {
                     <p className="text-gray-700 dark:text-gray-300">{selectedEventDetails.additionalNotes}</p>
                   </div>
                 )}
+                {selectedEventDetails.invoiceItems?.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Invoice Items</p>
+                    <div className="space-y-2">
+                      {selectedEventDetails.invoiceItems.map((item, index) => (
+                        <div key={index} className="flex justify-between">
+                          <span className="dark:text-gray-300">{item.description}</span>
+                          <span className="dark:text-gray-300">R{parseFloat(item.amount).toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -409,11 +471,11 @@ const AdminManageApplications = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Event Code</p>
-                  <p className="font-medium dark:text-gray-200">{userEvents[selectedEventIndex]?.eventCode}</p>
+                  <p className="font-medium dark:text-gray-200">{eventStorage[selectedEventIndex]?.eventCode}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Company</p>
-                  <p className="font-medium dark:text-gray-200">{userEvents[selectedEventIndex]?.clientName}</p>
+                  <p className="font-medium dark:text-gray-200">{eventStorage[selectedEventIndex]?.clientName}</p>
                 </div>
               </div>
 
@@ -445,6 +507,103 @@ const AdminManageApplications = () => {
                 className="px-4 py-2 bg-[#992787] text-white rounded-lg hover:bg-[#7a1f6e] transition-colors dark:bg-purple-600 dark:hover:bg-purple-700"
               >
                 Confirm Rejection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Form Modal */}
+      {showInvoiceForm && selectedEventIndex !== null && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+          <div className="bg-white dark:bg-gray-800 w-full max-w-2xl mx-4 p-6 rounded-2xl shadow-2xl border-l-4 border-[#992787]">
+            <div className="flex justify-between items-start mb-6">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white">Create Invoice</h2>
+              <button
+                onClick={() => setShowInvoiceForm(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
+              >
+                <FiX className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Event Code</p>
+                  <p className="font-medium dark:text-gray-200">{eventStorage[selectedEventIndex]?.eventCode}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Company</p>
+                  <p className="font-medium dark:text-gray-200">{eventStorage[selectedEventIndex]?.clientName}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {invoiceItems.map((item, index) => (
+                  <div key={index} className="flex gap-4 items-start">
+                    <div className="flex-1">
+                      <label className="block text-sm text-gray-500 dark:text-gray-400 mb-2">Description</label>
+                      <input
+                        type="text"
+                        value={item.description}
+                        onChange={(e) => {
+                          const newItems = [...invoiceItems];
+                          newItems[index].description = e.target.value;
+                          setInvoiceItems(newItems);
+                        }}
+                        className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-700 dark:text-gray-200"
+                        placeholder="Service description"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm text-gray-500 dark:text-gray-400 mb-2">Amount (R)</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          value={item.amount}
+                          onChange={(e) => {
+                            const newItems = [...invoiceItems];
+                            newItems[index].amount = e.target.value;
+                            setInvoiceItems(newItems);
+                          }}
+                          className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-700 dark:text-gray-200"
+                          placeholder="Amount"
+                        />
+                        {invoiceItems.length > 1 && (
+                          <button
+                            onClick={() => removeInvoiceItem(index)}
+                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                          >
+                            <FiTrash className="w-5 h-5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <button
+                  onClick={addInvoiceItem}
+                  className="w-full py-2 text-[#992787] dark:text-purple-400 hover:bg-[#992787]/10 dark:hover:bg-purple-400/10 rounded-lg transition-colors"
+                >
+                  <FiPlus className="inline-block mr-2" /> Add Another Item
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowInvoiceForm(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleInvoiceSubmit}
+                className="px-4 py-2 bg-[#992787] text-white rounded-lg hover:bg-[#7a1f6e] transition-colors dark:bg-purple-600 dark:hover:bg-purple-700"
+              >
+                Save Invoice & Approve
               </button>
             </div>
           </div>

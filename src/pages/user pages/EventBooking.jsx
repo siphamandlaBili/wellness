@@ -2,7 +2,6 @@ import React, { useContext, useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { AuthContext } from "../../../context/authContext";
 import {
   HiOutlineTicket,
   HiOutlineCalendar,
@@ -12,6 +11,7 @@ import {
   HiOutlineTag,
   HiOutlineExclamationCircle,
 } from "react-icons/hi2";
+import { UserContext } from "../../../context/authContext";
 
 const generateEventCode = () => {
   const letters = "VT";
@@ -23,6 +23,8 @@ const generateEventCode = () => {
 };
 
 const EventBooking = () => {
+  const {user} = useContext(UserContext);
+ 
   const [formData, setFormData] = useState({
     eventCode: generateEventCode(),
     eventName: "",
@@ -34,7 +36,7 @@ const EventBooking = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const { user } = useContext(AuthContext);
+  
 
   const eventTypes = [
     "Corporate Event",
@@ -77,11 +79,11 @@ const EventBooking = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      const userData = {
-        eventCode: formData.eventCode,
-        clientName: user.clientName,
-        clientEmail: user.clientEmail,
-        clientPhone: user.clientPhone,
+      const eventData = {
+        eventCode: formData?.eventCode,
+        clientName: user?.fullName,
+        clientEmail: user?.email,
+        clientPhone: user?.phone,
         eventName: formData.eventName,
         eventType: formData.eventType,
         eventDate: formData.eventDate,
@@ -91,14 +93,19 @@ const EventBooking = () => {
         status: null,
         role: "user",
       };
-
+  
       try {
-        const response = await axios.post("https://wellness-temporary-db-2.onrender.com/events", userData);
+        const response = await axios.post(
+          "https://wellness-backend-ntls.onrender.com/api/v1/events",
+          eventData,
+          { withCredentials: true }
+        );
         console.log("User added:", response.data);
         toast.success("Event Inquiry Submitted Successfully!");
-
+  
+        // Generate new event code and reset form
         setFormData({
-          ...formData,
+          eventCode: generateEventCode(), // Generate new code here
           eventName: "",
           eventType: "",
           eventDate: "",
