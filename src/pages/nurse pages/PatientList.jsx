@@ -1,9 +1,9 @@
 // Importing React and its hooks for component state and lifecycle management
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 // Axios is used for making HTTP requests
-import axios from 'axios';
+import axios from "axios";
 // useNavigate is a React Router hook for programmatic navigation
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 // Importing various icons from react-icons/hi (Heroicons) for UI enhancement
 import {
   HiOutlineUser,
@@ -16,133 +16,184 @@ import {
   HiOutlineUserAdd,
   HiOutlineDocumentAdd,
   HiOutlineEye,
-  HiOutlineSearch
-} from 'react-icons/hi';
+  HiOutlineSearch,
+} from "react-icons/hi";
 // Additional icons from Feather Icons (react-icons/fi)
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 // Importing toast functionality for showing notifications
-import { toast, ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from "react-toastify";
 // Importing required styles for react-toastify notifications
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 const formSteps = [
   {
     title: "Patient Registration",
     fields: [
-      { name: 'name', label: 'Full Name', icon: HiOutlineUser, required: true },
-      { name: 'surname', label: 'Surname', icon: HiOutlineUser, required: true },
-      { name: 'dateOfBirth', label: 'Date of Birth', type: 'date', required: true },
-      { name: 'idNumber', label: 'ID Number', required: true },
-      { name: 'email', label: 'Email', type: 'email', icon: HiOutlineMail, required: true },
-      { name: 'cellPhone', label: 'Cell Phone', type: 'tel', icon: HiOutlinePhone, required: true },
-    ]
+      { name: "name", label: "Full Name", icon: HiOutlineUser, required: true },
+      {
+        name: "surname",
+        label: "Surname",
+        icon: HiOutlineUser,
+        required: true,
+      },
+      {
+        name: "dateOfBirth",
+        label: "Date of Birth",
+        type: "date",
+        required: true,
+      },
+      { name: "idNumber", label: "ID Number", required: true },
+      {
+        name: "email",
+        label: "Email",
+        type: "email",
+        icon: HiOutlineMail,
+        required: true,
+      },
+      {
+        name: "cellPhone",
+        label: "Cell Phone",
+        type: "tel",
+        icon: HiOutlinePhone,
+        required: true,
+      },
+      {
+        name: "sex",
+        label: "Sex",
+        type: "select",
+        options: ["Male", "Female", "Other"],
+        required: true,
+      },
+    ],
   },
   {
     title: "Medical Aid Details",
     fields: [
-      { name: 'schemeName', label: 'Scheme Name' },
-      { name: 'planOption', label: 'Plan/Option' },
-      { name: 'membershipNumber', label: 'Membership Number' },
-      { name: 'mainMemberNames', label: 'Main Member Names' },
-      { name: 'mainMemberAddress', label: 'Main Member Address', type: 'textarea' },
+      { name: "schemeName", label: "Scheme Name" },
+      { name: "planOption", label: "Plan/Option" },
+      { name: "membershipNumber", label: "Membership Number" },
+      { name: "mainMemberNames", label: "Main Member Names" },
       {
-        name: 'dependentCode',
-        label: 'Dependent Code',
-        type: 'select',
-        options: Array.from({ length: 10 }, (_, i) => (i).toString().padStart(2, '0'))
-      }
-    ]
+        name: "mainMemberAddress",
+        label: "Main Member Address",
+        type: "textarea",
+      },
+      {
+        name: "dependentCode",
+        label: "Dependent Code",
+        type: "select",
+        options: Array.from({ length: 10 }, (_, i) =>
+          i.toString().padStart(2, "0")
+        ),
+      },
+    ],
   },
   {
     title: "Consent Agreement",
     fields: [
-      { name: 'consent', label: 'Digital Signature', type: 'signature', required: true }
-    ]
+      {
+        name: "consent",
+        label: "Digital Signature",
+        type: "signature",
+        required: true,
+      },
+    ],
   },
   {
     title: "Medical Screening",
     fields: [
-      { name: 'height', label: 'Height (cm)', type: 'number' },
-      { name: 'weight', label: 'Weight (kg)', type: 'number' },
-      { name: 'cholesterol', label: 'Total Cholesterol (mg/dL)', type: 'number' },
-      { name: 'hiv', label: 'HIV Screening Result', type: 'select', options: ['Negative', 'Positive', 'Inconclusive'] },
+      { name: "height", label: "Height (cm)", type: "number" },
+      { name: "weight", label: "Weight (kg)", type: "number" },
+      {
+        name: "cholesterol",
+        label: "Total Cholesterol (mg/dL)",
+        type: "number",
+      },
+      {
+        name: "hiv",
+        label: "HIV Screening Result",
+        type: "select",
+        options: ["Negative", "Positive", "Inconclusive"],
+      },
       // New dropdown selector for blood glucose type
       {
-        name: 'bloodPressure',
-        label: 'Blood Pressure (mmHg)',
-        type: 'text',
+        name: "bloodPressure",
+        label: "Blood Pressure (mmHg)",
+        type: "text",
         required: true,
-        placeholder: 'e.g., 120/80 mmHg'
+        placeholder: "e.g., 120/80 mmHg",
       },
       {
-        name: 'glucoseType',
-        label: 'Blood Glucose Type',
-        type: 'select',
-        options: ['Fasting', 'Random', 'Postprandial'],
-        required: true
+        name: "glucoseType",
+        label: "Blood Glucose Type",
+        type: "select",
+        options: ["Fasting", "Random", "Postprandial"],
+        required: true,
       },
       {
-        name: 'hba1c',
-        label: 'HbA1c (%)',
-        type: 'number',
+        name: "hba1c",
+        label: "HbA1c (%)",
+        type: "number",
         step: "0.1",
-        required: true
+        required: true,
       },
       // Glucose level input field (value)
       {
-        name: 'glucose',
-        label: 'Glucose Level (mmol/L)',
-        type: 'number',
-        required: true
-      }
-    ]
+        name: "glucose",
+        label: "Glucose Level (mmol/L)",
+        type: "number",
+        required: true,
+      },
+    ],
   },
   {
     title: "Additional Health Questions",
-    fields: []
-  }
+    fields: [],
+  },
 ];
 
 const PatientList = () => {
   const [patients, setPatients] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]);
   const [currentPatients, setCurrentPatients] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [newPatient, setNewPatient] = useState({
-    name: '',
-    surname: '',
-    bloodPressure: '',
-    dateOfBirth: '',
-    idNumber: '',
-    email: '',
-    cellPhone: '',
-     hba1c: '',
-    schemeName: '',
-    planOption: '',
-    membershipNumber: '',
-    mainMemberNames: '',
-    mainMemberAddress: '',
-    dependentCode: '',
-    height: '',
-    weight: '',
+    name: "",
+    surname: "",
+    bloodPressure: "",
+    dateOfBirth: "",
+    idNumber: "",
+    email: "",
+    cellPhone: "",
+    hba1c: "",
+    schemeName: "",
+    planOption: "",
+    membershipNumber: "",
+    mainMemberNames: "",
+    mainMemberAddress: "",
+    dependentCode: "",
+    height: "",
+    weight: "",
     bmi: "",
-    cholesterol: '',
-    hiv: '',
-    glucose: '',
+    cholesterol: "",
+    hiv: "",
+    glucose: "",
+    sex: "",
+    age: "",
   });
 
-  const [signature, setSignature] = useState('');
+  const [signature, setSignature] = useState("");
   const [questions, setQuestions] = useState([
-    { question: "How often do you feel anxious?", answer: '' },
-    { question: "Do you have trouble sleeping?", answer: '' },
+    { question: "How often do you feel anxious?", answer: "" },
+    { question: "Do you have trouble sleeping?", answer: "" },
   ]);
   const [showReferralForm, setShowReferralForm] = useState(false);
-  const [referralComment, setReferralComment] = useState('');
-const [practitionerName, setPractitionerName] = useState('');
-const [practitionerEmail, setPractitionerEmail] = useState('');
+  const [referralComment, setReferralComment] = useState("");
+  const [practitionerName, setPractitionerName] = useState("");
+  const [practitionerEmail, setPractitionerEmail] = useState("");
   const [showDetails, setShowDetails] = useState(false);
   const [selectedDetails, setSelectedDetails] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -152,19 +203,21 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const res = await axios.get('https://wellness-temporary-db-2.onrender.com/patients');
+        const res = await axios.get(
+          "https://wellness-temporary-db-2.onrender.com/patients"
+        );
         setPatients(res.data);
         setFilteredPatients(res.data);
       } catch (error) {
-        console.error('Error fetching patients:', error);
-        toast.error('Failed to load patients');
+        console.error("Error fetching patients:", error);
+        toast.error("Failed to load patients");
       }
     };
     fetchPatients();
   }, []);
 
   useEffect(() => {
-    const filtered = patients.filter(patient => {
+    const filtered = patients.filter((patient) => {
       const searchLower = searchTerm.toLowerCase();
       return (
         patient.name?.toLowerCase().includes(searchLower) ||
@@ -180,7 +233,9 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
   useEffect(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    setCurrentPatients(filteredPatients.slice(indexOfFirstItem, indexOfLastItem));
+    setCurrentPatients(
+      filteredPatients.slice(indexOfFirstItem, indexOfLastItem)
+    );
   }, [currentPage, filteredPatients, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
@@ -189,111 +244,125 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
     const h = parseFloat(height);
     const w = parseFloat(weight);
     if (isNaN(h) || isNaN(w) || h <= 0) return null;
-    return Math.round((w / ((h / 100) ** 2)) * 10) / 10;
+    return Math.round((w / (h / 100) ** 2) * 10) / 10;
   };
 
   const getBmiColor = (bmi) => {
-    if (bmi === undefined || bmi === null || bmi === '') return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
-    const numericBmi = typeof bmi === 'string' ? parseFloat(bmi) : bmi;
-    if (numericBmi < 17) return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100';
-    if (numericBmi < 18.5) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
-    if (numericBmi < 25) return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
-    if (numericBmi < 30) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
-    return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100';
+    if (bmi === undefined || bmi === null || bmi === "")
+      return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
+    const numericBmi = typeof bmi === "string" ? parseFloat(bmi) : bmi;
+    if (numericBmi < 17)
+      return "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100";
+    if (numericBmi < 18.5)
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100";
+    if (numericBmi < 25)
+      return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100";
+    if (numericBmi < 30)
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100";
+    return "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100";
   };
 
   // Function to return color classes based on glucose value
   const getGlucoseColor = (glucoseType, glucoseValue) => {
     const numericValue = parseFloat(glucoseValue);
-    if (isNaN(numericValue)) return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    if (isNaN(numericValue))
+      return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
 
     switch (glucoseType) {
-      case 'Fasting':
-        if (numericValue >= 7.0) return 'bg-red-500 text-white';
-        if (numericValue >= 5.6) return 'bg-yellow-400 text-black';
-        return 'bg-green-500 text-white';
-      case 'Random':
-      case 'Postprandial':
-        if (numericValue >= 11.1) return 'bg-red-500 text-white';
-        if (numericValue >= 7.8) return 'bg-yellow-400 text-black';
-        return 'bg-green-500 text-white';
+      case "Fasting":
+        if (numericValue >= 7.0) return "bg-red-500 text-white";
+        if (numericValue >= 5.6) return "bg-yellow-400 text-black";
+        return "bg-green-500 text-white";
+      case "Random":
+      case "Postprandial":
+        if (numericValue >= 11.1) return "bg-red-500 text-white";
+        if (numericValue >= 7.8) return "bg-yellow-400 text-black";
+        return "bg-green-500 text-white";
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
     }
   };
 
   //blood pressure
   const getBloodPressureColor = (value) => {
-    if (!value) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    if (!value)
+      return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
     const match = value.match(/(\d+)\s*\/\s*(\d+)/);
-    if (!match) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    if (!match)
+      return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
 
     const systolic = parseInt(match[1], 10);
     const diastolic = parseInt(match[2], 10);
 
-    if (isNaN(systolic) || isNaN(diastolic)) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    if (isNaN(systolic) || isNaN(diastolic))
+      return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
 
     if (systolic < 120 && diastolic < 80) {
-      return 'bg-green-500 text-white';
+      return "bg-green-500 text-white";
     } else if (systolic < 139 && diastolic < 89) {
-      return 'bg-yellow-400 text-black';
+      return "bg-yellow-400 text-black";
     } else if (systolic >= 140 && diastolic >= 90) {
-      return 'bg-red-500 text-white';
+      return "bg-red-500 text-white";
     }
-    return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
   };
 
   const getHbA1cColor = (value) => {
     const numericValue = parseFloat(value);
-    if (isNaN(numericValue)) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
-    
-    if (numericValue < 5.7) return 'bg-green-500 text-white';
-    if (numericValue < 6.5) return 'bg-yellow-400 text-black';
-    return 'bg-red-500 text-white';
+    if (isNaN(numericValue))
+      return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
+
+    if (numericValue < 5.7) return "bg-green-500 text-white";
+    if (numericValue < 6.5) return "bg-yellow-400 text-black";
+    return "bg-red-500 text-white";
   };
 
   const handleAddPatient = async () => {
     try {
       const bmiCalc = calculateBMI(newPatient.height, newPatient.weight);
+      const ageCalc = calculateAge(newPatient.dateOfBirth);
 
       const patientData = {
         ...newPatient,
         id: patients.length + 1,
         bmi: bmiCalc,
+        age: ageCalc,
         signature,
         questions,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
-      setPatients(prev => [...prev, patientData]);
-      setFilteredPatients(prev => [...prev, patientData]);
+      setPatients((prev) => [...prev, patientData]);
+      setFilteredPatients((prev) => [...prev, patientData]);
       setShowForm(false);
       setCurrentStep(0);
       setNewPatient({
-        name: '',
-        surname: '',
-        dateOfBirth: '',
-        idNumber: '',
-        email: '',
-        cellPhone: '',
-        schemeName: '',
-        planOption: '',
-        membershipNumber: '',
-        mainMemberNames: '',
-        mainMemberAddress: '',
-        dependentCode: '',
+        name: "",
+        surname: "",
+        dateOfBirth: "",
+        idNumber: "",
+        email: "",
+        cellPhone: "",
+        schemeName: "",
+        planOption: "",
+        membershipNumber: "",
+        mainMemberNames: "",
+        mainMemberAddress: "",
+        dependentCode: "",
         bmi: bmiCalc,
-        cholesterol: '',
-        hiv: '',
-        glucose: '',
+        cholesterol: "",
+        hiv: "",
+        glucose: "",
+        sex: "",
+        age: "",
       });
-      setSignature('');
+      setSignature("");
       setQuestions([]);
       console.log(newPatient);
-      toast.success('Patient registered successfully!');
+      toast.success("Patient registered successfully!");
     } catch (error) {
-      console.error('Error adding patient:', error);
-      toast.error('Failed to add patient');
+      console.error("Error adding patient:", error);
+      toast.error("Failed to add patient");
     }
   };
 
@@ -304,19 +373,19 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
   };
 
   const handleSignatureClear = () => {
-    setSignature('');
+    setSignature("");
   };
 
   const handleAddReferral = () => {
     if (!practitionerName.trim() || !practitionerEmail.trim()) {
-      toast.error('Please enter practitioner name and email');
+      toast.error("Please enter practitioner name and email");
       return;
     }
     if (!referralComment.trim()) {
-      toast.error('Please enter referral comments');
+      toast.error("Please enter referral comments");
       return;
     }
-  
+
     const referralData = {
       id: selectedPatient.id,
       name: selectedPatient.name,
@@ -325,21 +394,33 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
       practitionerName,
       practitionerEmail,
       referralComment,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
     };
-  
-    const existingReferrals = JSON.parse(localStorage.getItem('referrals')) || [];
-    localStorage.setItem('referrals', JSON.stringify([...existingReferrals, referralData]));
-  
+
+    const existingReferrals =
+      JSON.parse(localStorage.getItem("referrals")) || [];
+    localStorage.setItem(
+      "referrals",
+      JSON.stringify([...existingReferrals, referralData])
+    );
+
     // Reset states
     setShowReferralForm(false);
-    setReferralComment('');
-    setPractitionerName('');
-    setPractitionerEmail('');
+    setReferralComment("");
+    setPractitionerName("");
+    setPractitionerEmail("");
     setSelectedPatient(null);
-  
-    toast.success('Referral added successfully!');
-    navigate('/nurse/referrals');
+
+    toast.success("Referral added successfully!");
+    navigate("/nurse/referrals");
+  };
+
+  // calculate age from date of birth
+  const calculateAge = (dateOfBirth) => {
+    const dob = new Date(dateOfBirth);
+    const diff = Date.now() - dob.getTime();
+    const ageDate = new Date(diff);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
   };
 
   return (
@@ -371,7 +452,7 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
             />
             {searchTerm && (
               <button
-                onClick={() => setSearchTerm('')}
+                onClick={() => setSearchTerm("")}
                 className="absolute right-3 top-3.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <HiOutlineX className="w-5 h-5" />
@@ -391,70 +472,80 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
               <table className="w-full">
                 <thead className="bg-[#992787]/10 dark:bg-purple-900/20">
                   <tr>
-                    <th className="p-4 text-left text-[#992787] dark:text-purple-400 font-semibold">Patient Name</th>
-                    <th className="p-4 text-left text-[#992787] dark:text-purple-400 font-semibold max-md:hidden">Contact Info</th>
-                    <th className="p-4 text-center text-[#992787] dark:text-purple-400 font-semibold">Actions</th>
+                    <th className="p-4 text-left text-[#992787] dark:text-purple-400 font-semibold">
+                      Patient Name
+                    </th>
+                    <th className="p-4 text-left text-[#992787] dark:text-purple-400 font-semibold max-md:hidden">
+                      Contact Info
+                    </th>
+                    <th className="p-4 text-center text-[#992787] dark:text-purple-400 font-semibold">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-  {currentPatients.map(patient => (
-    <tr
-      key={patient.id}
-      className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group"
-    >
-      <td className="p-4">
-        <div className="font-medium text-gray-900 dark:text-gray-100">{patient.name}</div>
-        <div className="text-sm text-gray-500 dark:text-gray-400">{patient.surname}</div>
-      </td>
-      <td className="p-4 max-md:hidden">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            <HiOutlineMail className="w-4 h-4 text-[#992787] dark:text-purple-400" />
-            {patient.email}
-          </div>
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            <HiOutlinePhone className="w-4 h-4 text-[#992787] dark:text-purple-400" />
-            {patient.cellPhone}
-          </div>
-        </div>
-      </td>
-      <td className="p-4">
-        <div className="flex justify-center gap-4">
-          {/* Referrals Button */}
-          <button
-            onClick={() => {
-              setSelectedPatient(patient);
-              setShowReferralForm(true);
-            }}
-            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
-          >
-            Referrals {/* Replaced the icon with the word "Referrals" */}
-          </button>
+                  {currentPatients.map((patient) => (
+                    <tr
+                      key={patient.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group"
+                    >
+                      <td className="p-4">
+                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                          {patient.name}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {patient.surname}
+                        </div>
+                      </td>
+                      <td className="p-4 max-md:hidden">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                            <HiOutlineMail className="w-4 h-4 text-[#992787] dark:text-purple-400" />
+                            {patient.email}
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                            <HiOutlinePhone className="w-4 h-4 text-[#992787] dark:text-purple-400" />
+                            {patient.cellPhone}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex justify-center gap-4">
+                          {/* Referrals Button */}
+                          <button
+                            onClick={() => {
+                              setSelectedPatient(patient);
+                              setShowReferralForm(true);
+                            }}
+                            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
+                          >
+                            Referrals{" "}
+                            {/* Replaced the icon with the word "Referrals" */}
+                          </button>
 
-          {/* View Details Button (unchanged) */}
-          <button
-            onClick={() => {
-              setSelectedDetails(patient);
-              setShowDetails(true);
-            }}
-            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
-          >
-            <HiOutlineEye className="w-5 h-5" />
-          </button>
-        </div>
-      </td>
-    </tr>
-  ))}
-</tbody>
+                          {/* View Details Button (unchanged) */}
+                          <button
+                            onClick={() => {
+                              setSelectedDetails(patient);
+                              setShowDetails(true);
+                            }}
+                            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
+                          >
+                            <HiOutlineEye className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           )}
         </div>
 
-
         <div className="flex justify-center items-center gap-4 mt-6">
           <button
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
             className="px-4 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors flex items-center gap-2"
           >
@@ -464,14 +555,13 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
             Page {currentPage} of {totalPages}
           </span>
           <button
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
             className="px-4 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors flex items-center gap-2"
           >
             <FiChevronRight className="w-5 h-5" />
           </button>
         </div>
-
 
         {/* Add Patient Modal */}
         {showForm && (
@@ -495,10 +585,11 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                 {formSteps.map((_, index) => (
                   <div
                     key={index}
-                    className={`w-3 h-3 rounded-full ${index === currentStep
-                      ? 'bg-[#992787] dark:bg-purple-400'
-                      : 'bg-gray-300 dark:bg-gray-600'
-                      }`}
+                    className={`w-3 h-3 rounded-full ${
+                      index === currentStep
+                        ? "bg-[#992787] dark:bg-purple-400"
+                        : "bg-gray-300 dark:bg-gray-600"
+                    }`}
                   />
                 ))}
               </div>
@@ -508,15 +599,45 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                 <div className="grid grid-cols-2 gap-4">
                   {formSteps[0].fields.map((field) => (
                     <div key={field.name} className="relative">
-                      {field.icon && <field.icon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 dark:text-gray-500" />}
-                      <input
-                        type={field.type || 'text'}
-                        placeholder={field.label}
-                        value={newPatient[field.name]}
-                        onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
-                        className={`w-full ${field.icon ? 'pl-10' : 'pl-4'} pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100`}
-                        required={field.required}
-                      />
+                      {field.type === "select" ? (
+                        <select
+                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
+                          value={newPatient[field.name]}
+                          onChange={(e) =>
+                            setNewPatient({
+                              ...newPatient,
+                              [field.name]: e.target.value,
+                            })
+                          }
+                        >
+                          <option value="">Select {field.label}</option>
+                          {field.options.map((option) => (
+                            <option
+                              key={option}
+                              value={option}
+                              className="dark:bg-gray-700"
+                            >
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type={field.type || "text"}
+                          placeholder={field.label}
+                          value={newPatient[field.name]}
+                          onChange={(e) =>
+                            setNewPatient({
+                              ...newPatient,
+                              [field.name]: e.target.value,
+                            })
+                          }
+                          className={`w-full ${
+                            field.icon ? "pl-10" : "pl-4"
+                          } pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100`}
+                          required={field.required}
+                        />
+                      )}
                     </div>
                   ))}
                 </div>
@@ -526,22 +647,38 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                 <div className="grid grid-cols-2 gap-4">
                   {formSteps[1].fields.map((field) => (
                     <div key={field.name} className="relative">
-                      {field.type === 'select' ? (
+                      {field.type === "select" ? (
                         <select
                           className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
                           value={newPatient[field.name]}
-                          onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
+                          onChange={(e) =>
+                            setNewPatient({
+                              ...newPatient,
+                              [field.name]: e.target.value,
+                            })
+                          }
                         >
                           <option value="">Select {field.label}</option>
-                          {field.options.map(option => (
-                            <option key={option} value={option} className="dark:bg-gray-700">{option}</option>
+                          {field.options.map((option) => (
+                            <option
+                              key={option}
+                              value={option}
+                              className="dark:bg-gray-700"
+                            >
+                              {option}
+                            </option>
                           ))}
                         </select>
-                      ) : field.type === 'textarea' ? (
+                      ) : field.type === "textarea" ? (
                         <textarea
                           placeholder={field.label}
                           value={newPatient[field.name]}
-                          onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
+                          onChange={(e) =>
+                            setNewPatient({
+                              ...newPatient,
+                              [field.name]: e.target.value,
+                            })
+                          }
                           className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
                         />
                       ) : (
@@ -549,7 +686,12 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                           type="text"
                           placeholder={field.label}
                           value={newPatient[field.name]}
-                          onChange={(e) => setNewPatient({ ...newPatient, [field.name]: e.target.value })}
+                          onChange={(e) =>
+                            setNewPatient({
+                              ...newPatient,
+                              [field.name]: e.target.value,
+                            })
+                          }
                           className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
                         />
                       )}
@@ -561,11 +703,14 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
               {currentStep === 2 && (
                 <div className="space-y-4">
                   <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <h3 className="font-semibold mb-2 dark:text-gray-100">Consent Agreement</h3>
+                    <h3 className="font-semibold mb-2 dark:text-gray-100">
+                      Consent Agreement
+                    </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                      I hereby consent to participate in the screening process and authorize
-                      the secure storage and sharing of my medical information with authorized
-                      wellness professionals in compliance with POPIA regulations.
+                      I hereby consent to participate in the screening process
+                      and authorize the secure storage and sharing of my medical
+                      information with authorized wellness professionals in
+                      compliance with POPIA regulations.
                     </p>
                     <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 w-full h-32 rounded-lg flex items-center justify-center">
                       {signature ? (
@@ -575,7 +720,9 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                           className="w-full h-full object-contain"
                         />
                       ) : (
-                        <p className="text-gray-400 dark:text-gray-500">Sign here</p>
+                        <p className="text-gray-400 dark:text-gray-500">
+                          Sign here
+                        </p>
                       )}
                     </div>
                     <button
@@ -588,212 +735,302 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                 </div>
               )}
 
-{currentStep === 3 && (
-  <div className="fixed inset-0 overflow-auto flex items-center justify-center z-50">
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl relative max-h-[90vh] flex flex-col">
-      {/* Modal Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
-          Medical Screening
-        </h2>
-        <button onClick={() => setShowForm(false)}>
-          <HiOutlineX className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-        </button>
-      </div>
+              {currentStep === 3 && (
+                <div className="fixed inset-0 overflow-auto flex items-center justify-center z-50">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl relative max-h-[90vh] flex flex-col">
+                    {/* Modal Header */}
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
+                        Medical Screening
+                      </h2>
+                      <button onClick={() => setShowForm(false)}>
+                        <HiOutlineX className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                      </button>
+                    </div>
 
-      {/* Scrollable Content */}
-      <div className="overflow-y-auto flex-1 pr-2 -mr-2">
-        <div className="space-y-6 pb-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Height */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Height (cm)
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                  value={newPatient.height}
-                  onChange={(e) => setNewPatient({ ...newPatient, height: e.target.value })}
-                  placeholder="Height"
-                />
-                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">cm</span>
-              </div>
-            </div>
+                    {/* Scrollable Content */}
+                    <div className="overflow-y-auto flex-1 pr-2 -mr-2">
+                      <div className="space-y-6 pb-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Height */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Height (cm)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                                value={newPatient.height}
+                                onChange={(e) =>
+                                  setNewPatient({
+                                    ...newPatient,
+                                    height: e.target.value,
+                                  })
+                                }
+                                placeholder="Height"
+                              />
+                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
+                                cm
+                              </span>
+                            </div>
+                          </div>
 
-            {/* Weight */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Weight (kg)
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                  value={newPatient.weight}
-                  onChange={(e) => setNewPatient({ ...newPatient, weight: e.target.value })}
-                  placeholder="Weight"
-                />
-                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">kg</span>
-              </div>
-            </div>
+                          {/* Weight */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Weight (kg)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                                value={newPatient.weight}
+                                onChange={(e) =>
+                                  setNewPatient({
+                                    ...newPatient,
+                                    weight: e.target.value,
+                                  })
+                                }
+                                placeholder="Weight"
+                              />
+                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
+                                kg
+                              </span>
+                            </div>
+                          </div>
 
-            {/* Total Cholesterol */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Total Cholesterol (mg/dL) {/* Updated label */}
-              </label>
-              <input
-                type="number"
-                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                value={newPatient.cholesterol}
-                onChange={(e) => setNewPatient({ ...newPatient, cholesterol: e.target.value })}
-                placeholder="Total Cholesterol Level"
-              />
-            </div>
+                          {/* Total Cholesterol */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Total Cholesterol (mg/dL) {/* Updated label */}
+                            </label>
+                            <input
+                              type="number"
+                              className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                              value={newPatient.cholesterol}
+                              onChange={(e) =>
+                                setNewPatient({
+                                  ...newPatient,
+                                  cholesterol: e.target.value,
+                                })
+                              }
+                              placeholder="Total Cholesterol Level"
+                            />
+                          </div>
 
-            {/* Blood Pressure */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Blood Pressure (mmHg)
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="\d+/\d+"
-                  placeholder="120/80"
-                  value={newPatient.bloodPressure}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9/]/g, '');
-                    setNewPatient({ ...newPatient, bloodPressure: value });
-                  }}
-                  className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getBloodPressureColor(newPatient.bloodPressure)} ${!newPatient.bloodPressure ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
-                />
-                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">mmHg</span>
-              </div>
-            </div>
+                          {/* Blood Pressure */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Blood Pressure (mmHg)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                pattern="\d+/\d+"
+                                placeholder="120/80"
+                                value={newPatient.bloodPressure}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(
+                                    /[^0-9/]/g,
+                                    ""
+                                  );
+                                  setNewPatient({
+                                    ...newPatient,
+                                    bloodPressure: value,
+                                  });
+                                }}
+                                className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getBloodPressureColor(
+                                  newPatient.bloodPressure
+                                )} ${
+                                  !newPatient.bloodPressure
+                                    ? "border-2 border-gray-200 dark:border-gray-600"
+                                    : "border-transparent"
+                                }`}
+                              />
+                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
+                                mmHg
+                              </span>
+                            </div>
+                          </div>
 
-            {/* HbA1c */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                HbA1c (%)
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="20"
-                  placeholder="HbA1c Level"
-                  value={newPatient.hba1c}
-                  onChange={(e) => setNewPatient({ ...newPatient, hba1c: e.target.value })}
-                  className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getHbA1cColor(newPatient.hba1c)} ${!newPatient.hba1c ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
-                />
-                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">%</span>
-              </div>
-            </div>
+                          {/* HbA1c */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              HbA1c (%)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                max="20"
+                                placeholder="HbA1c Level"
+                                value={newPatient.hba1c}
+                                onChange={(e) =>
+                                  setNewPatient({
+                                    ...newPatient,
+                                    hba1c: e.target.value,
+                                  })
+                                }
+                                className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getHbA1cColor(
+                                  newPatient.hba1c
+                                )} ${
+                                  !newPatient.hba1c
+                                    ? "border-2 border-gray-200 dark:border-gray-600"
+                                    : "border-transparent"
+                                }`}
+                              />
+                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
+                                %
+                              </span>
+                            </div>
+                          </div>
 
-            {/* HIV Screening */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                HIV Screening Result
-              </label>
-              <select
-                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                value={newPatient.hiv}
-                onChange={(e) => setNewPatient({ ...newPatient, hiv: e.target.value })}
-              >
-                <option value="">Select Result</option>
-                <option value="Negative">Negative</option>
-                <option value="Positive">Positive</option>
-                <option value="Inconclusive">Inconclusive</option>
-              </select>
-            </div>
+                          {/* HIV Screening */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              HIV Screening Result
+                            </label>
+                            <select
+                              className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                              value={newPatient.hiv}
+                              onChange={(e) =>
+                                setNewPatient({
+                                  ...newPatient,
+                                  hiv: e.target.value,
+                                })
+                              }
+                            >
+                              <option value="">Select Result</option>
+                              <option value="Negative">Negative</option>
+                              <option value="Positive">Positive</option>
+                              <option value="Inconclusive">Inconclusive</option>
+                            </select>
+                          </div>
 
-            {/* Glucose Type */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Blood Glucose Type
-              </label>
-              <select
-                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                value={newPatient.glucoseType}
-                onChange={(e) => setNewPatient({ ...newPatient, glucoseType: e.target.value })}
-              >
-                <option value="">Select Type</option>
-                <option value="Fasting">Fasting</option>
-                <option value="Random">Random</option>
-                <option value="Postprandial">Postprandial</option>
-              </select>
-            </div>
+                          {/* Glucose Type */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Blood Glucose Type
+                            </label>
+                            <select
+                              className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                              value={newPatient.glucoseType}
+                              onChange={(e) =>
+                                setNewPatient({
+                                  ...newPatient,
+                                  glucoseType: e.target.value,
+                                })
+                              }
+                            >
+                              <option value="">Select Type</option>
+                              <option value="Fasting">Fasting</option>
+                              <option value="Random">Random</option>
+                              <option value="Postprandial">Postprandial</option>
+                            </select>
+                          </div>
 
-            {/* Glucose Level */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Glucose Level (mmol/L)
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="Glucose Level"
-                  value={newPatient.glucose}
-                  onChange={(e) => setNewPatient({ ...newPatient, glucose: e.target.value })}
-                  className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getGlucoseColor(newPatient.glucoseType, newPatient.glucose)} ${!newPatient.glucoseType ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
-                />
-                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">mmol/L</span>
-              </div>
-            </div>
-          </div>
+                          {/* Glucose Level */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Glucose Level (mmol/L)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                step="0.1"
+                                placeholder="Glucose Level"
+                                value={newPatient.glucose}
+                                onChange={(e) =>
+                                  setNewPatient({
+                                    ...newPatient,
+                                    glucose: e.target.value,
+                                  })
+                                }
+                                className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getGlucoseColor(
+                                  newPatient.glucoseType,
+                                  newPatient.glucose
+                                )} ${
+                                  !newPatient.glucoseType
+                                    ? "border-2 border-gray-200 dark:border-gray-600"
+                                    : "border-transparent"
+                                }`}
+                              />
+                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
+                                mmol/L
+                              </span>
+                            </div>
+                          </div>
+                        </div>
 
-          {/* BMI Display */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Body Mass Index (BMI)
-            </label>
-            <div className={`p-4 rounded-lg text-center text-sm md:text-base ${getBmiColor(calculateBMI(newPatient.height, newPatient.weight))}`}>
-              {calculateBMI(newPatient.height, newPatient.weight) !== null ? (
-                <>
-                  <span className="font-semibold">
-                    {calculateBMI(newPatient.height, newPatient.weight).toFixed(1)}
-                  </span>
-                  {/* <span className="block text-xs mt-1 opacity-80">
+                        {/* BMI Display */}
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Body Mass Index (BMI)
+                          </label>
+                          <div
+                            className={`p-4 rounded-lg text-center text-sm md:text-base ${getBmiColor(
+                              calculateBMI(newPatient.height, newPatient.weight)
+                            )}`}
+                          >
+                            {calculateBMI(
+                              newPatient.height,
+                              newPatient.weight
+                            ) !== null ? (
+                              <>
+                                <span className="font-semibold">
+                                  {calculateBMI(
+                                    newPatient.height,
+                                    newPatient.weight
+                                  ).toFixed(1)}
+                                </span>
+                                {/* <span className="block text-xs mt-1 opacity-80">
                     {getBmiCategory(calculateBMI(newPatient.height, newPatient.weight))}
                   </span> */}
-                </>
-              ) : (
-                'Enter height and weight to calculate BMI'
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+                              </>
+                            ) : (
+                              "Enter height and weight to calculate BMI"
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <button
-          onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
-          className="px-6 py-2 text-gray-600 dark:text-gray-300 hover:text-[#992787] dark:hover:text-purple-400 transition-colors"
-        >
-          <HiOutlineArrowLeft className="inline mr-2" /> Back
-        </button>
-        <button
-          onClick={() => currentStep === formSteps.length - 1 ? handleAddPatient() : setCurrentStep(prev => prev + 1)}
-          className="px-6 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
-        >
-          {currentStep === formSteps.length - 1 ? 'Submit' : 'Next'}
-          <HiOutlineArrowRight className="inline ml-2" />
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                    {/* Navigation Buttons */}
+                    <div className="flex justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <button
+                        onClick={() =>
+                          setCurrentStep((prev) => Math.max(0, prev - 1))
+                        }
+                        className="px-6 py-2 text-gray-600 dark:text-gray-300 hover:text-[#992787] dark:hover:text-purple-400 transition-colors"
+                      >
+                        <HiOutlineArrowLeft className="inline mr-2" /> Back
+                      </button>
+                      <button
+                        onClick={() =>
+                          currentStep === formSteps.length - 1
+                            ? handleAddPatient()
+                            : setCurrentStep((prev) => prev + 1)
+                        }
+                        className="px-6 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
+                      >
+                        {currentStep === formSteps.length - 1
+                          ? "Submit"
+                          : "Next"}
+                        <HiOutlineArrowRight className="inline ml-2" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
               {currentStep === 4 && (
                 <div className="space-y-6">
                   <div className="border-t pt-4 dark:border-gray-700">
-                    <h3 className="font-semibold mb-4 dark:text-gray-100">Mental Health Assessment</h3>
+                    <h3 className="font-semibold mb-4 dark:text-gray-100">
+                      Mental Health Assessment
+                    </h3>
                     {questions.map((q, index) => (
                       <div key={index} className="mb-4 space-y-2">
                         <div className="flex gap-2 items-center">
@@ -801,7 +1038,13 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                             type="text"
                             placeholder="Enter health question"
                             value={q.question}
-                            onChange={(e) => handleQuestionChange(index, 'question', e.target.value)}
+                            onChange={(e) =>
+                              handleQuestionChange(
+                                index,
+                                "question",
+                                e.target.value
+                              )
+                            }
                             className="flex-1 px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           />
                           <button
@@ -818,14 +1061,25 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                         <textarea
                           placeholder="Patient's response"
                           value={q.answer}
-                          onChange={(e) => handleQuestionChange(index, 'answer', e.target.value)}
+                          onChange={(e) =>
+                            handleQuestionChange(
+                              index,
+                              "answer",
+                              e.target.value
+                            )
+                          }
                           className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           rows={2}
                         />
                       </div>
                     ))}
                     <button
-                      onClick={() => setQuestions([...questions, { question: '', answer: '' }])}
+                      onClick={() =>
+                        setQuestions([
+                          ...questions,
+                          { question: "", answer: "" },
+                        ])
+                      }
                       className="flex items-center gap-2 text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 text-sm"
                     >
                       <HiOutlinePlus className="w-5 h-5" />
@@ -838,17 +1092,23 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
               {/* Navigation buttons */}
               <div className="flex justify-between mt-6">
                 <button
-                  onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+                  onClick={() =>
+                    setCurrentStep((prev) => Math.max(0, prev - 1))
+                  }
                   disabled={currentStep === 0}
                   className="px-6 py-2 text-gray-600 dark:text-gray-300 disabled:opacity-50"
                 >
                   <HiOutlineArrowLeft className="inline mr-2" /> Back
                 </button>
                 <button
-                  onClick={() => currentStep === formSteps.length - 1 ? handleAddPatient() : setCurrentStep(prev => prev + 1)}
+                  onClick={() =>
+                    currentStep === formSteps.length - 1
+                      ? handleAddPatient()
+                      : setCurrentStep((prev) => prev + 1)
+                  }
                   className="px-6 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700"
                 >
-                  {currentStep === formSteps.length - 1 ? 'Submit' : 'Next'}
+                  {currentStep === formSteps.length - 1 ? "Submit" : "Next"}
                   <HiOutlineArrowRight className="inline ml-2" />
                 </button>
               </div>
@@ -875,36 +1135,80 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                 <div className="grid grid-cols-2 gap-4 pb-4">
                   {/* Personal Information */}
                   <div className="space-y-2">
-                    <h3 className="font-semibold dark:text-gray-100">Personal Information</h3>
-                    <p className="dark:text-gray-300">ID: {selectedDetails.idNumber}</p>
-                    <p className="dark:text-gray-300">Date of Birth: {new Date(selectedDetails.dateOfBirth).toLocaleDateString()}</p>
-                    <p className="dark:text-gray-300">Email: {selectedDetails.email}</p>
-                    <p className="dark:text-gray-300">Phone: {selectedDetails.cellPhone}</p>
+                    <h3 className="font-semibold dark:text-gray-100">
+                      Personal Information
+                    </h3>
+                    <p className="dark:text-gray-300">
+                      ID: {selectedDetails.idNumber}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Date of Birth:{" "}
+                      {new Date(
+                        selectedDetails.dateOfBirth
+                      ).toLocaleDateString()}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Email: {selectedDetails.email}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Phone: {selectedDetails.cellPhone}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Sex: {selectedDetails.sex || "N/A"}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Age: {selectedDetails.age || "N/A"}
+                    </p>
                   </div>
 
                   {/* Medical Aid Details */}
                   <div className="space-y-2">
-                    <h3 className="font-semibold dark:text-gray-100">Medical Aid Details</h3>
-                    <p className="dark:text-gray-300">Scheme: {selectedDetails.schemeName || 'N/A'}</p>
-                    <p className="dark:text-gray-300">Plan: {selectedDetails.planOption || 'N/A'}</p>
-                    <p className="dark:text-gray-300">Member #: {selectedDetails.membershipNumber || 'N/A'}</p>
-                    <p className="dark:text-gray-300">Main Member: {selectedDetails.mainMemberNames || 'N/A'}</p>
-                    <p className="dark:text-gray-300">Address: {selectedDetails.mainMemberAddress || 'N/A'}</p>
-                    <p className="dark:text-gray-300">Dependent Code: {selectedDetails.dependentCode || 'N/A'}</p>
+                    <h3 className="font-semibold dark:text-gray-100">
+                      Medical Aid Details
+                    </h3>
+                    <p className="dark:text-gray-300">
+                      Scheme: {selectedDetails.schemeName || "N/A"}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Plan: {selectedDetails.planOption || "N/A"}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Member #: {selectedDetails.membershipNumber || "N/A"}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Main Member: {selectedDetails.mainMemberNames || "N/A"}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Address: {selectedDetails.mainMemberAddress || "N/A"}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Dependent Code: {selectedDetails.dependentCode || "N/A"}
+                    </p>
                   </div>
 
                   {/* Medical Information */}
                   <div className="col-span-2 space-y-2">
-                    <h3 className="font-semibold dark:text-gray-100">Medical Information</h3>
+                    <h3 className="font-semibold dark:text-gray-100">
+                      Medical Information
+                    </h3>
 
                     <p className="dark:text-gray-300">
-                      BMI: <span className={`${getBmiColor(selectedDetails.bmi)} px-2 py-1 rounded`}>
+                      BMI:{" "}
+                      <span
+                        className={`${getBmiColor(
+                          selectedDetails.bmi
+                        )} px-2 py-1 rounded`}
+                      >
                         {selectedDetails.bmi}
                       </span>
                     </p>
 
-                    <p className="dark:text-gray-300">Cholesterol: {selectedDetails.cholesterol} mg/dL</p>
-                    <p className="dark:text-gray-300">HIV Status: {selectedDetails.hiv}</p>
+                    <p className="dark:text-gray-300">
+                      Cholesterol: {selectedDetails.cholesterol} mg/dL
+                    </p>
+                    <p className="dark:text-gray-300">
+                      HIV Status: {selectedDetails.hiv}
+                    </p>
 
                     {/* Blood Glucose Value */}
                     <p className="dark:text-gray-300">
@@ -912,31 +1216,50 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                     </p>
                   </div>
                   <p className="dark:text-gray-300">
-  HbA1c: <span className={`${getHbA1cColor(selectedDetails.hba1c)} px-2 py-1 rounded`}>
-    {selectedDetails.hba1c ? `${selectedDetails.hba1c}%` : 'N/A'}
-  </span>
-</p>
+                    HbA1c:{" "}
+                    <span
+                      className={`${getHbA1cColor(
+                        selectedDetails.hba1c
+                      )} px-2 py-1 rounded`}
+                    >
+                      {selectedDetails.hba1c
+                        ? `${selectedDetails.hba1c}%`
+                        : "N/A"}
+                    </span>
+                  </p>
                   <p className="dark:text-gray-300">
-                    Blood Pressure: <span className={`${getBloodPressureColor(selectedDetails.bloodPressure)} px-2 py-1 rounded`}>
-                      {selectedDetails.bloodPressure || 'N/A'}
+                    Blood Pressure:{" "}
+                    <span
+                      className={`${getBloodPressureColor(
+                        selectedDetails.bloodPressure
+                      )} px-2 py-1 rounded`}
+                    >
+                      {selectedDetails.bloodPressure || "N/A"}
                     </span>
                   </p>
                   {/* Mental Health Assessment */}
                   <div className="col-span-2">
-                    <h3 className="font-semibold mt-4 dark:text-gray-100">Mental Health Assessment</h3>
+                    <h3 className="font-semibold mt-4 dark:text-gray-100">
+                      Mental Health Assessment
+                    </h3>
                     {selectedDetails.questions?.map((q, index) => (
                       <div key={index} className="mb-2">
-                        <p className="font-medium dark:text-gray-300">{q.question}</p>
-                        <p className="text-gray-600 dark:text-gray-400">{q.answer || 'No response'}</p>
+                        <p className="font-medium dark:text-gray-300">
+                          {q.question}
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          {q.answer || "No response"}
+                        </p>
                       </div>
                     ))}
                   </div>
 
-
                   {/* Signature */}
                   {selectedDetails.signature && (
                     <div className="col-span-2 mt-4">
-                      <h3 className="font-semibold dark:text-gray-100">Consent Signature</h3>
+                      <h3 className="font-semibold dark:text-gray-100">
+                        Consent Signature
+                      </h3>
                       <img
                         src={selectedDetails.signature}
                         alt="Consent signature"
@@ -952,89 +1275,95 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
 
         {/* Referral Modal */}
         {showReferralForm && selectedPatient && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
-                New Referral for {selectedPatient.name}
-              </h2>
-              <button
-                onClick={() => setShowReferralForm(false)}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-              >
-                <HiOutlineX className="w-6 h-6" />
-              </button>
-            </div>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
+                  New Referral for {selectedPatient.name}
+                </h2>
+                <button
+                  onClick={() => setShowReferralForm(false)}
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                >
+                  <HiOutlineX className="w-6 h-6" />
+                </button>
+              </div>
 
-            <div className="space-y-6">
-              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-500 dark:text-gray-400">Patient ID</p>
-                    <p className="font-medium dark:text-gray-300">{selectedPatient.idNumber}</p>
+              <div className="space-y-6">
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-500 dark:text-gray-400">
+                        Patient ID
+                      </p>
+                      <p className="font-medium dark:text-gray-300">
+                        {selectedPatient.idNumber}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 dark:text-gray-400">Email</p>
+                      <p className="font-medium dark:text-gray-300">
+                        {selectedPatient.email}
+                      </p>
+                    </div>
                   </div>
+                </div>
+
+                <div className="space-y-4">
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400">Email</p>
-                    <p className="font-medium dark:text-gray-300">{selectedPatient.email}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Health Practitioner's Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Dr. John Smith"
+                      value={practitionerName}
+                      onChange={(e) => setPractitionerName(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 dark:bg-gray-700 dark:text-gray-100"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Health Practitioner's Email
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="practitioner@clinic.com"
+                      value={practitionerEmail}
+                      onChange={(e) => setPractitionerEmail(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 dark:bg-gray-700 dark:text-gray-100"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Referral Comments
+                    </label>
+                    <textarea
+                      placeholder="Enter detailed referral comments..."
+                      value={referralComment}
+                      onChange={(e) => setReferralComment(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 h-32 resize-none dark:bg-gray-700 dark:text-gray-100"
+                    />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Health Practitioner's Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Dr. John Smith"
-                    value={practitionerName}
-                    onChange={(e) => setPractitionerName(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 dark:bg-gray-700 dark:text-gray-100"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Health Practitioner's Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="practitioner@clinic.com"
-                    value={practitionerEmail}
-                    onChange={(e) => setPractitionerEmail(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 dark:bg-gray-700 dark:text-gray-100"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Referral Comments
-                  </label>
-                  <textarea
-                    placeholder="Enter detailed referral comments..."
-                    value={referralComment}
-                    onChange={(e) => setReferralComment(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 h-32 resize-none dark:bg-gray-700 dark:text-gray-100"
-                  />
-                </div>
+              <div className="flex justify-end gap-4 mt-6">
+                <button
+                  onClick={handleAddReferral}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
+                >
+                  Submit Referral
+                  <HiOutlineArrowRight className="w-5 h-5" />
+                </button>
               </div>
-            </div>
-
-            <div className="flex justify-end gap-4 mt-6">
-              <button
-                onClick={handleAddReferral}
-                className="flex items-center gap-2 px-6 py-2.5 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
-              >
-                Submit Referral
-                <HiOutlineArrowRight className="w-5 h-5" />
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );
