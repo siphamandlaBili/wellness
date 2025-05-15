@@ -1,10 +1,6 @@
-// Importing React and its hooks for component state and lifecycle management
 import React, { useState, useEffect } from 'react';
-// Axios is used for making HTTP requests
 import axios from 'axios';
-// useNavigate is a React Router hook for programmatic navigation
 import { useNavigate } from 'react-router-dom';
-// Importing various icons from react-icons/hi (Heroicons) for UI enhancement
 import {
   HiOutlineUser,
   HiOutlineMail,
@@ -18,13 +14,11 @@ import {
   HiOutlineEye,
   HiOutlineSearch
 } from 'react-icons/hi';
-// Additional icons from Feather Icons (react-icons/fi)
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-// Importing toast functionality for showing notifications
 import { toast, ToastContainer } from 'react-toastify';
-// Importing required styles for react-toastify notifications
 import 'react-toastify/dist/ReactToastify.css';
 
+import { useNurseEvent } from '../../../context/NurseEventContext';
 const formSteps = [
   {
     title: "Patient Registration",
@@ -119,7 +113,7 @@ const PatientList = () => {
     idNumber: '',
     email: '',
     cellPhone: '',
-     hba1c: '',
+    hba1c: '',
     schemeName: '',
     planOption: '',
     membershipNumber: '',
@@ -133,7 +127,7 @@ const PatientList = () => {
     hiv: '',
     glucose: '',
   });
-
+  
   const [signature, setSignature] = useState('');
   const [questions, setQuestions] = useState([
     { question: "How often do you feel anxious?", answer: '' },
@@ -141,14 +135,16 @@ const PatientList = () => {
   ]);
   const [showReferralForm, setShowReferralForm] = useState(false);
   const [referralComment, setReferralComment] = useState('');
-const [practitionerName, setPractitionerName] = useState('');
-const [practitionerEmail, setPractitionerEmail] = useState('');
+  const [practitionerName, setPractitionerName] = useState('');
+  const [practitionerEmail, setPractitionerEmail] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [selectedDetails, setSelectedDetails] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
+  const {eventData,isloading,error} = useNurseEvent();
   const navigate = useNavigate();
-
+  
+  const eventCode = eventData.eventCode;
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -246,7 +242,7 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
   const getHbA1cColor = (value) => {
     const numericValue = parseFloat(value);
     if (isNaN(numericValue)) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
-    
+
     if (numericValue < 5.7) return 'bg-green-500 text-white';
     if (numericValue < 6.5) return 'bg-yellow-400 text-black';
     return 'bg-red-500 text-white';
@@ -316,7 +312,7 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
       toast.error('Please enter referral comments');
       return;
     }
-  
+
     const referralData = {
       id: selectedPatient.id,
       name: selectedPatient.name,
@@ -327,21 +323,26 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
       referralComment,
       date: new Date().toISOString()
     };
-  
+
     const existingReferrals = JSON.parse(localStorage.getItem('referrals')) || [];
     localStorage.setItem('referrals', JSON.stringify([...existingReferrals, referralData]));
-  
+
     // Reset states
     setShowReferralForm(false);
     setReferralComment('');
     setPractitionerName('');
     setPractitionerEmail('');
     setSelectedPatient(null);
-  
+
     toast.success('Referral added successfully!');
     navigate('/nurse/referrals');
   };
 
+
+
+
+  
+  
   return (
     <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
       <ToastContainer />
@@ -397,55 +398,55 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-  {currentPatients.map(patient => (
-    <tr
-      key={patient.id}
-      className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group"
-    >
-      <td className="p-4">
-        <div className="font-medium text-gray-900 dark:text-gray-100">{patient.name}</div>
-        <div className="text-sm text-gray-500 dark:text-gray-400">{patient.surname}</div>
-      </td>
-      <td className="p-4 max-md:hidden">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            <HiOutlineMail className="w-4 h-4 text-[#992787] dark:text-purple-400" />
-            {patient.email}
-          </div>
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            <HiOutlinePhone className="w-4 h-4 text-[#992787] dark:text-purple-400" />
-            {patient.cellPhone}
-          </div>
-        </div>
-      </td>
-      <td className="p-4">
-        <div className="flex justify-center gap-4">
-          {/* Referrals Button */}
-          <button
-            onClick={() => {
-              setSelectedPatient(patient);
-              setShowReferralForm(true);
-            }}
-            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
-          >
-            Referrals {/* Replaced the icon with the word "Referrals" */}
-          </button>
+                  {currentPatients.map(patient => (
+                    <tr
+                      key={patient.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group"
+                    >
+                      <td className="p-4">
+                        <div className="font-medium text-gray-900 dark:text-gray-100">{patient.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{patient.surname}</div>
+                      </td>
+                      <td className="p-4 max-md:hidden">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                            <HiOutlineMail className="w-4 h-4 text-[#992787] dark:text-purple-400" />
+                            {patient.email}
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                            <HiOutlinePhone className="w-4 h-4 text-[#992787] dark:text-purple-400" />
+                            {patient.cellPhone}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex justify-center gap-4">
+                          {/* Referrals Button */}
+                          <button
+                            onClick={() => {
+                              setSelectedPatient(patient);
+                              setShowReferralForm(true);
+                            }}
+                            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
+                          >
+                            Referrals {/* Replaced the icon with the word "Referrals" */}
+                          </button>
 
-          {/* View Details Button (unchanged) */}
-          <button
-            onClick={() => {
-              setSelectedDetails(patient);
-              setShowDetails(true);
-            }}
-            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
-          >
-            <HiOutlineEye className="w-5 h-5" />
-          </button>
-        </div>
-      </td>
-    </tr>
-  ))}
-</tbody>
+                          {/* View Details Button (unchanged) */}
+                          <button
+                            onClick={() => {
+                              setSelectedDetails(patient);
+                              setShowDetails(true);
+                            }}
+                            className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
+                          >
+                            <HiOutlineEye className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           )}
@@ -475,7 +476,7 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
 
         {/* Add Patient Modal */}
         {showForm && (
-          <div className="fixed inset-0 overflow-auto bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="fixed   inset-0 overflow-auto bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 overflow-auto rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl">
               {/* Modal header */}
               <div className="flex justify-between items-center mb-6">
@@ -505,9 +506,9 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
 
               {/* Form steps */}
               {currentStep === 0 && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 ">
                   {formSteps[0].fields.map((field) => (
-                    <div key={field.name} className="relative">
+                    <div key={field.name} className="relative ">
                       {field.icon && <field.icon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 dark:text-gray-500" />}
                       <input
                         type={field.type || 'text'}
@@ -588,245 +589,247 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                 </div>
               )}
 
-{currentStep === 3 && (
-  <div className="fixed inset-0 overflow-auto flex items-center justify-center z-50">
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl relative max-h-[90vh] flex flex-col">
-      {/* Modal Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
-          Medical Screening
-        </h2>
-        <button onClick={() => setShowForm(false)}>
-          <HiOutlineX className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-        </button>
-      </div>
+              {currentStep === 3 && (
+                <div className="fixed inset-0 overflow-auto flex items-center justify-center z-50">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl relative max-h-[90vh] flex flex-col">
+                    {/* Modal Header */}
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
+                        Medical Screening
+                      </h2>
+                      <button onClick={() => setShowForm(false)}>
+                        <HiOutlineX className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                      </button>
+                    </div>
 
-      {/* Scrollable Content */}
-      <div className="overflow-y-auto flex-1 pr-2 -mr-2">
-        <div className="space-y-6 pb-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Height */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Height (cm)
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                  value={newPatient.height}
-                  onChange={(e) => setNewPatient({ ...newPatient, height: e.target.value })}
-                  placeholder="Height"
-                />
-                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">cm</span>
-              </div>
-            </div>
+                    {/* Scrollable Content */}
+                    <div className="overflow-y-auto flex-1 pr-2 -mr-2">
+                      <div className="space-y-6 pb-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Height */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Height (cm)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                                value={newPatient.height}
+                                onChange={(e) => setNewPatient({ ...newPatient, height: e.target.value })}
+                                placeholder="Height"
+                              />
+                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">cm</span>
+                            </div>
+                          </div>
 
-            {/* Weight */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Weight (kg)
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                  value={newPatient.weight}
-                  onChange={(e) => setNewPatient({ ...newPatient, weight: e.target.value })}
-                  placeholder="Weight"
-                />
-                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">kg</span>
-              </div>
-            </div>
+                          {/* Weight */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Weight (kg)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                                value={newPatient.weight}
+                                onChange={(e) => setNewPatient({ ...newPatient, weight: e.target.value })}
+                                placeholder="Weight"
+                              />
+                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">kg</span>
+                            </div>
+                          </div>
 
-            {/* Total Cholesterol */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Total Cholesterol (mg/dL) {/* Updated label */}
-              </label>
-              <input
-                type="number"
-                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                value={newPatient.cholesterol}
-                onChange={(e) => setNewPatient({ ...newPatient, cholesterol: e.target.value })}
-                placeholder="Total Cholesterol Level"
-              />
-            </div>
+                          {/* Total Cholesterol */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Total Cholesterol (mg/dL) {/* Updated label */}
+                            </label>
+                            <input
+                              type="number"
+                              className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                              value={newPatient.cholesterol}
+                              onChange={(e) => setNewPatient({ ...newPatient, cholesterol: e.target.value })}
+                              placeholder="Total Cholesterol Level"
+                            />
+                          </div>
 
-            {/* Blood Pressure */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Blood Pressure (mmHg)
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="\d+/\d+"
-                  placeholder="120/80"
-                  value={newPatient.bloodPressure}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9/]/g, '');
-                    setNewPatient({ ...newPatient, bloodPressure: value });
-                  }}
-                  className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getBloodPressureColor(newPatient.bloodPressure)} ${!newPatient.bloodPressure ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
-                />
-                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">mmHg</span>
-              </div>
-            </div>
+                          {/* Blood Pressure */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Blood Pressure (mmHg)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                pattern="\d+/\d+"
+                                placeholder="120/80"
+                                value={newPatient.bloodPressure}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/[^0-9/]/g, '');
+                                  setNewPatient({ ...newPatient, bloodPressure: value });
+                                }}
+                                className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getBloodPressureColor(newPatient.bloodPressure)} ${!newPatient.bloodPressure ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
+                              />
+                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">mmHg</span>
+                            </div>
+                          </div>
 
-            {/* HbA1c */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                HbA1c (%)
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="20"
-                  placeholder="HbA1c Level"
-                  value={newPatient.hba1c}
-                  onChange={(e) => setNewPatient({ ...newPatient, hba1c: e.target.value })}
-                  className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getHbA1cColor(newPatient.hba1c)} ${!newPatient.hba1c ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
-                />
-                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">%</span>
-              </div>
-            </div>
+                          {/* HbA1c */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              HbA1c (%)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                max="20"
+                                placeholder="HbA1c Level"
+                                value={newPatient.hba1c}
+                                onChange={(e) => setNewPatient({ ...newPatient, hba1c: e.target.value })}
+                                className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getHbA1cColor(newPatient.hba1c)} ${!newPatient.hba1c ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
+                              />
+                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">%</span>
+                            </div>
+                          </div>
 
-            {/* HIV Screening */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                HIV Screening Result
-              </label>
-              <select
-                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                value={newPatient.hiv}
-                onChange={(e) => setNewPatient({ ...newPatient, hiv: e.target.value })}
-              >
-                <option value="">Select Result</option>
-                <option value="Negative">Negative</option>
-                <option value="Positive">Positive</option>
-                <option value="Inconclusive">Inconclusive</option>
-              </select>
-            </div>
+                          {/* HIV Screening */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              HIV Screening Result
+                            </label>
+                            <select
+                              className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                              value={newPatient.hiv}
+                              onChange={(e) => setNewPatient({ ...newPatient, hiv: e.target.value })}
+                            >
+                              <option value="">Select Result</option>
+                              <option value="Negative">Negative</option>
+                              <option value="Positive">Positive</option>
+                              <option value="Inconclusive">Inconclusive</option>
+                            </select>
+                          </div>
 
-            {/* Glucose Type */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Blood Glucose Type
-              </label>
-              <select
-                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                value={newPatient.glucoseType}
-                onChange={(e) => setNewPatient({ ...newPatient, glucoseType: e.target.value })}
-              >
-                <option value="">Select Type</option>
-                <option value="Fasting">Fasting</option>
-                <option value="Random">Random</option>
-                <option value="Postprandial">Postprandial</option>
-              </select>
-            </div>
+                          {/* Glucose Type */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Blood Glucose Type
+                            </label>
+                            <select
+                              className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                              value={newPatient.glucoseType}
+                              onChange={(e) => setNewPatient({ ...newPatient, glucoseType: e.target.value })}
+                            >
+                              <option value="">Select Type</option>
+                              <option value="Fasting">Fasting</option>
+                              <option value="Random">Random</option>
+                              <option value="Postprandial">Postprandial</option>
+                            </select>
+                          </div>
 
-            {/* Glucose Level */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Glucose Level (mmol/L)
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="Glucose Level"
-                  value={newPatient.glucose}
-                  onChange={(e) => setNewPatient({ ...newPatient, glucose: e.target.value })}
-                  className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getGlucoseColor(newPatient.glucoseType, newPatient.glucose)} ${!newPatient.glucoseType ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
-                />
-                <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">mmol/L</span>
-              </div>
-            </div>
-          </div>
+                          {/* Glucose Level */}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Glucose Level (mmol/L)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                step="0.1"
+                                placeholder="Glucose Level"
+                                value={newPatient.glucose}
+                                onChange={(e) => setNewPatient({ ...newPatient, glucose: e.target.value })}
+                                className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getGlucoseColor(newPatient.glucoseType, newPatient.glucose)} ${!newPatient.glucoseType ? 'border-2 border-gray-200 dark:border-gray-600' : 'border-transparent'}`}
+                              />
+                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">mmol/L</span>
+                            </div>
+                          </div>
+                        </div>
 
-          {/* BMI Display */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Body Mass Index (BMI)
-            </label>
-            <div className={`p-4 rounded-lg text-center text-sm md:text-base ${getBmiColor(calculateBMI(newPatient.height, newPatient.weight))}`}>
-              {calculateBMI(newPatient.height, newPatient.weight) !== null ? (
-                <>
-                  <span className="font-semibold">
-                    {calculateBMI(newPatient.height, newPatient.weight).toFixed(1)}
-                  </span>
-                  {/* <span className="block text-xs mt-1 opacity-80">
+                        {/* BMI Display */}
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Body Mass Index (BMI)
+                          </label>
+                          <div className={`p-4 rounded-lg text-center text-sm md:text-base ${getBmiColor(calculateBMI(newPatient.height, newPatient.weight))}`}>
+                            {calculateBMI(newPatient.height, newPatient.weight) !== null ? (
+                              <>
+                                <span className="font-semibold">
+                                  {calculateBMI(newPatient.height, newPatient.weight).toFixed(1)}
+                                </span>
+                                {/* <span className="block text-xs mt-1 opacity-80">
                     {getBmiCategory(calculateBMI(newPatient.height, newPatient.weight))}
                   </span> */}
-                </>
-              ) : (
-                'Enter height and weight to calculate BMI'
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+                              </>
+                            ) : (
+                              'Enter height and weight to calculate BMI'
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <button
-          onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
-          className="px-6 py-2 text-gray-600 dark:text-gray-300 hover:text-[#992787] dark:hover:text-purple-400 transition-colors"
-        >
-          <HiOutlineArrowLeft className="inline mr-2" /> Back
-        </button>
-        <button
-          onClick={() => currentStep === formSteps.length - 1 ? handleAddPatient() : setCurrentStep(prev => prev + 1)}
-          className="px-6 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
-        >
-          {currentStep === formSteps.length - 1 ? 'Submit' : 'Next'}
-          <HiOutlineArrowRight className="inline ml-2" />
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                    {/* Navigation Buttons */}
+                    <div className="flex justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <button
+                        onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+                        className="px-6 py-2 text-gray-600 dark:text-gray-300 hover:text-[#992787] dark:hover:text-purple-400 transition-colors"
+                      >
+                        <HiOutlineArrowLeft className="inline mr-2" /> Back
+                      </button>
+                      <button
+                        onClick={() => currentStep === formSteps.length - 1 ? handleAddPatient() : setCurrentStep(prev => prev + 1)}
+                        className="px-6 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
+                      >
+                        {currentStep === formSteps.length - 1 ? 'Submit' : 'Next'}
+                        <HiOutlineArrowRight className="inline ml-2" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
               {currentStep === 4 && (
                 <div className="space-y-6">
                   <div className="border-t pt-4 dark:border-gray-700">
                     <h3 className="font-semibold mb-4 dark:text-gray-100">Mental Health Assessment</h3>
-                    {questions.map((q, index) => (
-                      <div key={index} className="mb-4 space-y-2">
-                        <div className="flex gap-2 items-center">
-                          <input
-                            type="text"
-                            placeholder="Enter health question"
-                            value={q.question}
-                            onChange={(e) => handleQuestionChange(index, 'question', e.target.value)}
-                            className="flex-1 px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    <div className="max-h-[400px] overflow-y-auto pr-2"> {/* Scrollable container */}
+                      {questions.map((q, index) => (
+                        <div key={index} className="mb-4 space-y-2">
+                          <div className="flex gap-2 items-center">
+                            <input
+                              type="text"
+                              placeholder="Enter health question"
+                              value={q.question}
+                              onChange={(e) => handleQuestionChange(index, 'question', e.target.value)}
+                              className="flex-1 px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                            />
+                            <button
+                              onClick={() => {
+                                const newQuestions = [...questions];
+                                newQuestions.splice(index, 1);
+                                setQuestions(newQuestions);
+                              }}
+                              className="text-red-500 hover:text-red-700 dark:hover:text-red-400 p-2"
+                            >
+                              <HiOutlineX className="w-5 h-5" />
+                            </button>
+                          </div>
+                          <textarea
+                            placeholder="Patient's response"
+                            value={q.answer}
+                            onChange={(e) => handleQuestionChange(index, 'answer', e.target.value)}
+                            className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                            rows={2}
                           />
-                          <button
-                            onClick={() => {
-                              const newQuestions = [...questions];
-                              newQuestions.splice(index, 1);
-                              setQuestions(newQuestions);
-                            }}
-                            className="text-red-500 hover:text-red-700 dark:hover:text-red-400 p-2"
-                          >
-                            <HiOutlineX className="w-5 h-5" />
-                          </button>
                         </div>
-                        <textarea
-                          placeholder="Patient's response"
-                          value={q.answer}
-                          onChange={(e) => handleQuestionChange(index, 'answer', e.target.value)}
-                          className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                          rows={2}
-                        />
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                     <button
                       onClick={() => setQuestions([...questions, { question: '', answer: '' }])}
-                      className="flex items-center gap-2 text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 text-sm"
+                      className="mt-4 flex items-center gap-2 text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 text-sm"
                     >
                       <HiOutlinePlus className="w-5 h-5" />
                       Add Custom Question
@@ -912,10 +915,10 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                     </p>
                   </div>
                   <p className="dark:text-gray-300">
-  HbA1c: <span className={`${getHbA1cColor(selectedDetails.hba1c)} px-2 py-1 rounded`}>
-    {selectedDetails.hba1c ? `${selectedDetails.hba1c}%` : 'N/A'}
-  </span>
-</p>
+                    HbA1c: <span className={`${getHbA1cColor(selectedDetails.hba1c)} px-2 py-1 rounded`}>
+                      {selectedDetails.hba1c ? `${selectedDetails.hba1c}%` : 'N/A'}
+                    </span>
+                  </p>
                   <p className="dark:text-gray-300">
                     Blood Pressure: <span className={`${getBloodPressureColor(selectedDetails.bloodPressure)} px-2 py-1 rounded`}>
                       {selectedDetails.bloodPressure || 'N/A'}
@@ -925,7 +928,7 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
                   <div className="col-span-2">
                     <h3 className="font-semibold mt-4 dark:text-gray-100">Mental Health Assessment</h3>
                     {selectedDetails.questions?.map((q, index) => (
-                      <div key={index} className="mb-2">
+                      <div key={index} className="mb-2 overflow-y">
                         <p className="font-medium dark:text-gray-300">{q.question}</p>
                         <p className="text-gray-600 dark:text-gray-400">{q.answer || 'No response'}</p>
                       </div>
@@ -952,89 +955,89 @@ const [practitionerEmail, setPractitionerEmail] = useState('');
 
         {/* Referral Modal */}
         {showReferralForm && selectedPatient && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
-                New Referral for {selectedPatient.name}
-              </h2>
-              <button
-                onClick={() => setShowReferralForm(false)}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-              >
-                <HiOutlineX className="w-6 h-6" />
-              </button>
-            </div>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
+                  New Referral for {selectedPatient.name}
+                </h2>
+                <button
+                  onClick={() => setShowReferralForm(false)}
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                >
+                  <HiOutlineX className="w-6 h-6" />
+                </button>
+              </div>
 
-            <div className="space-y-6">
-              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-500 dark:text-gray-400">Patient ID</p>
-                    <p className="font-medium dark:text-gray-300">{selectedPatient.idNumber}</p>
+              <div className="space-y-6">
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-500 dark:text-gray-400">Patient ID</p>
+                      <p className="font-medium dark:text-gray-300">{selectedPatient.idNumber}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 dark:text-gray-400">Email</p>
+                      <p className="font-medium dark:text-gray-300">{selectedPatient.email}</p>
+                    </div>
                   </div>
+                </div>
+
+                <div className="space-y-4">
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400">Email</p>
-                    <p className="font-medium dark:text-gray-300">{selectedPatient.email}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Health Practitioner's Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Dr. John Smith"
+                      value={practitionerName}
+                      onChange={(e) => setPractitionerName(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 dark:bg-gray-700 dark:text-gray-100"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Health Practitioner's Email
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="practitioner@clinic.com"
+                      value={practitionerEmail}
+                      onChange={(e) => setPractitionerEmail(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 dark:bg-gray-700 dark:text-gray-100"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Referral Comments
+                    </label>
+                    <textarea
+                      placeholder="Enter detailed referral comments..."
+                      value={referralComment}
+                      onChange={(e) => setReferralComment(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 h-32 resize-none dark:bg-gray-700 dark:text-gray-100"
+                    />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Health Practitioner's Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Dr. John Smith"
-                    value={practitionerName}
-                    onChange={(e) => setPractitionerName(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 dark:bg-gray-700 dark:text-gray-100"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Health Practitioner's Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="practitioner@clinic.com"
-                    value={practitionerEmail}
-                    onChange={(e) => setPractitionerEmail(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 dark:bg-gray-700 dark:text-gray-100"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Referral Comments
-                  </label>
-                  <textarea
-                    placeholder="Enter detailed referral comments..."
-                    value={referralComment}
-                    onChange={(e) => setReferralComment(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-[#992787]/20 dark:focus:ring-purple-400/20 h-32 resize-none dark:bg-gray-700 dark:text-gray-100"
-                  />
-                </div>
+              <div className="flex justify-end gap-4 mt-6">
+                <button
+                  onClick={handleAddReferral}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
+                >
+                  Submit Referral
+                  <HiOutlineArrowRight className="w-5 h-5" />
+                </button>
               </div>
-            </div>
-
-            <div className="flex justify-end gap-4 mt-6">
-              <button
-                onClick={handleAddReferral}
-                className="flex items-center gap-2 px-6 py-2.5 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
-              >
-                Submit Referral
-                <HiOutlineArrowRight className="w-5 h-5" />
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );
