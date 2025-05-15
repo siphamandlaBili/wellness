@@ -1,72 +1,240 @@
-import React, { useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { HiOutlineUser, HiOutlineClipboardList, HiOutlineAnnotation } from 'react-icons/hi';
-
-// Dummy Data
-const dummyPatients = [
-  {
-    id: 1,
-    name: "John Doe",
-    bloodPressure: "130/85",
-    bmi: 25.4,
-    cholesterol: "200",
-    glucose: "5.8",
-    hba1c: "5.9",
-    hiv: "Negative",
-    dateOfBirth: "1985-04-23",
-    cellPhone: "+27 123 456 789"
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    bloodPressure: "145/95",
-    bmi: 28.7,
-    cholesterol: "220",
-    glucose: "6.7",
-    hba1c: "6.1",
-    hiv: "Negative",
-    dateOfBirth: "1990-11-15",
-    cellPhone: "+27 987 654 321"
-  }
-];
-
-const dummyOpinions = [
-  {
-    id: 1,
-    content: "Patient shows signs of pre-diabetes, recommend lifestyle changes.",
-    author: "Dr. Sarah Johnson",
-    date: "2023-08-01"
-  }
-];
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import {
+  HiOutlineUser,
+  HiOutlineClipboardList,
+  HiOutlineAnnotation,
+} from "react-icons/hi";
+import { Bar } from "react-chartjs-2";
+import PieChart from "../../components/PieChart";
+import {
+  calculateAgeStats,
+  calculateSexStats,
+  calculateBloodPressureStats,
+  calculateBmiStats,
+  calculateHba1cStats,
+  calculateCholesterolStats,
+  calculateHivStats,
+  calculateGlucoseStats,
+} from "../../utils/statsUtils";
+import {
+  calculateAverageBloodPressure,
+  calculateAverageBmi,
+  calculateAverageCholesterol,
+  calculateAverageHba1c,
+  calculateAverageGlucose,
+} from "../../utils/averageUtils";
 
 const ReportPage = ({ role }) => {
-  const [patients] = useState(dummyPatients);
-  const [medicalOpinions, setMedicalOpinions] = useState(dummyOpinions);
-  const [newOpinion, setNewOpinion] = useState('');
+  const [patients, setPatients] = useState([
+    {
+      id: 1,
+      name: "John Doe",
+      medicalInfo: {
+        bloodPressure: "120/80",
+        bmi: 22.5,
+        hba1c: 5.6,
+        cholesterol: 180,
+        hiv: "Negative",
+        glucoseType: "Fasting",
+        sex: "Male",
+        age: 30,
+      },
+    },
+    {
+      id: 2,
+      name: "Jane Smith",
+      medicalInfo: {
+        bloodPressure: "140/90",
+        bmi: 27.8,
+        hba1c: 6.2,
+        cholesterol: 220,
+        hiv: "Positive",
+        glucoseType: "Random",
+        sex: "Female",
+        age: 45,
+      },
+    },
+    {
+      id: 3,
+      name: "Alice Johnson",
+      medicalInfo: {
+        bloodPressure: "110/70",
+        bmi: 18.4,
+        hba1c: 5.4,
+        cholesterol: 250,
+        hiv: "Inconclusive",
+        glucoseType: "Postprandial",
+        sex: "Female",
+        age: 25,
+      },
+    },
+    {
+      id: 4,
+      name: "Bob Brown",
+      medicalInfo: {
+        bloodPressure: "160/100",
+        bmi: 32.1,
+        hba1c: 7.1,
+        cholesterol: 300,
+        hiv: "Negative",
+        glucoseType: "Fasting",
+        sex: "Male",
+        age: 55,
+      },
+    },
+    {
+      id: 5,
+      name: "Charlie Davis",
+      medicalInfo: {
+        bloodPressure: "130/85",
+        bmi: 24.9,
+        hba1c: 5.8,
+        cholesterol: 190,
+        hiv: "Positive",
+        glucoseType: "Random",
+        sex: "Male",
+        age: 40,
+      },
+    },
+  ]);
+  const [medicalOpinions, setMedicalOpinions] = useState([]);
+  const [newOpinion, setNewOpinion] = useState("");
 
-  // Statistics calculations
-  const averageBMI = patients.reduce((acc, p) => acc + (p.bmi || 0), 0) / patients.length || 0;
-  
-  const bloodPressureStats = patients.reduce((acc, p) => {
-    const [systolic, diastolic] = p.bloodPressure.split('/').map(Number);
-    if (systolic < 120 && diastolic < 80) acc.normal++;
-    else if (systolic < 139 && diastolic < 89) acc.elevated++;
-    else acc.high++;
-    return acc;
-  }, { normal: 0, elevated: 0, high: 0 });
+  // Fetch patient data from backend
+  // useEffect(() => {
+  //   const fetchPatients = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         "https://wellness-temporary-db-2.onrender.com/patients"
+  //       );
+  //       setPatients(response.data);
+  //     } catch (error) {
+  //       console.error("Error fetching patients:", error);
+  //       toast.error("Failed to load patient data");
+  //     }
+  //   };
 
-  const hba1cStats = patients.reduce((acc, p) => {
-    const val = parseFloat(p.hba1c);
-    if (val < 5.7) acc.normal++;
-    else if (val < 6.5) acc.prediabetes++;
-    else acc.diabetes++;
-    return acc;
-  }, { normal: 0, prediabetes: 0, diabetes: 0 });
+  //   fetchPatients();
+  // }, []);
+
+  //Statistics
+  const bloodPressureStats = calculateBloodPressureStats(patients);
+  const bmiStats = calculateBmiStats(patients);
+  const hba1cStats = calculateHba1cStats(patients);
+  const cholesterolStats = calculateCholesterolStats(patients);
+  const hivStats = calculateHivStats(patients);
+  const glucoseStats = calculateGlucoseStats(patients);
+  const sexStats = calculateSexStats(patients);
+  const ageStats = calculateAgeStats(patients);
+
+  // Averages
+  const averageBloodPressure = calculateAverageBloodPressure(patients);
+  const averageBmi = calculateAverageBmi(patients);
+  const averageCholesterol = calculateAverageCholesterol(patients);
+  const averageHba1c = calculateAverageHba1c(patients);
+  const averageGlucose = calculateAverageGlucose(patients);
+
+  //  Pie Chart Data
+  const bloodPressurePieData = {
+    labels: ["Normal", "Elevated", "High"],
+    datasets: [
+      {
+        data: [
+          bloodPressureStats.normal,
+          bloodPressureStats.elevated,
+          bloodPressureStats.high,
+        ],
+        backgroundColor: ["#81c784", "#ffb74d", "#e57373"],
+        borderColor: "white",
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const bmiPieData = {
+    labels: ["Underweight", "Normal", "Overweight", "Obese"],
+    datasets: [
+      {
+        data: [
+          bmiStats.underweight,
+          bmiStats.normal,
+          bmiStats.overweight,
+          bmiStats.obese,
+        ],
+        backgroundColor: ["#4fc3f7", "#81c784", "#ffb74d", "#e57373"],
+        borderColor: "white",
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const hba1cPieData = {
+    labels: ["Normal", "Prediabetes", "Diabetes"],
+    datasets: [
+      {
+        data: [hba1cStats.normal, hba1cStats.prediabetes, hba1cStats.diabetes],
+        backgroundColor: ["#81c784", "#ffb74d", "#e57373"],
+        borderColor: "white",
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const cholesterolPieData = {
+    labels: ["Normal (<200)", "Borderline (200-239)", "High (≥240)"],
+    datasets: [
+      {
+        data: [
+          cholesterolStats.normal,
+          cholesterolStats.borderline,
+          cholesterolStats.high,
+        ],
+        backgroundColor: ["#81c784", "#ffb74d", "#e57373"],
+        borderColor: "white",
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  // Bar Chart Data
+  const glucoseBarData = {
+    labels: ["Fasting", "Random", "Postprandial", "Unknown"],
+    datasets: [
+      {
+        label: "Glucose Levels",
+        data: [
+          glucoseStats.fasting,
+          glucoseStats.random,
+          glucoseStats.postprandial,
+          glucoseStats.unknown,
+        ],
+        backgroundColor: ["#4fc3f7", "#ffb74d", "#e57373", "#bdbdbd"],
+      },
+    ],
+  };
+
+  const hivBarData = {
+    labels: ["Negative", "Positive", "Inconclusive", "Unknown"],
+    datasets: [
+      {
+        label: "HIV Status",
+        data: [
+          hivStats.negative,
+          hivStats.positive,
+          hivStats.inconclusive,
+          hivStats.unknown,
+        ],
+        backgroundColor: ["#81c784", "#e57373", "#ffb74d", "#bdbdbd"],
+      },
+    ],
+  };
 
   const handleOpinionSubmit = () => {
     if (!newOpinion.trim()) {
-      toast.error('Please enter an opinion before submitting');
+      toast.error("Please enter an opinion before submitting");
       return;
     }
 
@@ -74,12 +242,12 @@ const ReportPage = ({ role }) => {
       id: medicalOpinions.length + 1,
       content: newOpinion,
       author: "Nurse Name",
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split("T")[0],
     };
 
     setMedicalOpinions([...medicalOpinions, newEntry]);
-    setNewOpinion('');
-    toast.success('Opinion submitted successfully');
+    setNewOpinion("");
+    toast.success("Opinion submitted successfully");
   };
 
   return (
@@ -87,63 +255,177 @@ const ReportPage = ({ role }) => {
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-[#9927a6] mb-8 flex items-center gap-2">
-          
           Patient Health Analytics
         </h1>
 
         {/* Statistics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard 
-            title="Total Patients" 
-            value={patients.length} 
+          <StatCard
+            title="Total Patients"
+            value={patients.length}
             icon={<HiOutlineUser className="w-6 h-6" />}
           />
-          <StatCard 
-            title="Average BMI" 
-            value={averageBMI.toFixed(1)}
-            color={getBmiColor(averageBMI)}
+
+          <StatCard
+            title="Average Blood Pressure"
+            value={averageBloodPressure}
+            color="bg-blue-100 text-blue-800"
+            icon={<HiOutlineClipboardList className="w-6 h-6" />}
           />
-          <StatCard 
-            title="Normal BP" 
-            value={bloodPressureStats.normal}
+
+          <StatCard
+            title="Average BMI"
+            value={averageBmi}
             color="bg-green-100 text-green-800"
+            icon={<HiOutlineClipboardList className="w-6 h-6" />}
           />
-          <StatCard 
-            title="High HbA1c" 
-            value={hba1cStats.diabetes}
+
+          <StatCard
+            title="Average HbA1c"
+            value={`${averageHba1c}%`}
             color="bg-red-100 text-red-800"
+            icon={<HiOutlineClipboardList className="w-6 h-6" />}
+          />
+
+          <StatCard
+            title="Average Cholesterol"
+            value={`${averageCholesterol} mg/dL`}
+            color="bg-yellow-100 text-yellow-800"
+            icon={<HiOutlineClipboardList className="w-6 h-6" />}
+          />
+          <StatCard
+            title="Average Glucose"
+            value={`${averageGlucose} mmol/L`}
+            color="bg-purple-100 text-purple-800"
+            icon={<HiOutlineClipboardList className="w-6 h-6" />}
           />
         </div>
 
         {/* Detailed Statistics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <HealthMetricChart
+          {/* Sex Pie chart */}
+          <PieChart
+            title="Sex Distribution"
+            data={{
+              labels: ["Male", "Female", "Unknown"],
+              datasets: [
+                {
+                  data: [sexStats.male, sexStats.female, sexStats.unknown],
+                  backgroundColor: ["#4fc3f7", "#ffb74d", "#bdbdbd"],
+                  borderColor: "white",
+                  borderWidth: 2,
+                },
+              ],
+            }}
+          />
+          {/* age pie chart */}
+          <PieChart
+            title="Age Distribution"
+            data={{
+              labels: [
+                "Adults (18-39)",
+                "Middle-Aged (40-59)",
+                "Seniors (60+)",
+              ],
+              datasets: [
+                {
+                  data: [
+                    ageStats.adults,
+                    ageStats.middleAged,
+                    ageStats.seniors,
+                  ],
+                  backgroundColor: ["#4fc3f7", "#81c784", "#ffb74d", "#e57373"],
+                  borderColor: "white",
+                  borderWidth: 2,
+                },
+              ],
+            }}
+          />
+          {/* Blood Pressure Pie Chart */}
+          <PieChart
             title="Blood Pressure Distribution"
-            data={[
-              { label: 'Normal', value: bloodPressureStats.normal, color: 'bg-green-500' },
-              { label: 'Elevated', value: bloodPressureStats.elevated, color: 'bg-yellow-500' },
-              { label: 'High', value: bloodPressureStats.high, color: 'bg-red-500' },
-            ]}
+            data={bloodPressurePieData}
           />
-          
-          <HealthMetricChart
-            title="HbA1c Levels"
-            data={[
-              { label: 'Normal', value: hba1cStats.normal, color: 'bg-green-500' },
-              { label: 'Prediabetes', value: hba1cStats.prediabetes, color: 'bg-yellow-500' },
-              { label: 'Diabetes', value: hba1cStats.diabetes, color: 'bg-red-500' },
-            ]}
+
+          {/* BMI Distribution Pie Chart */}
+          <PieChart title="BMI Distribution" data={bmiPieData} />
+
+          {/* HbA1c Distribution Pie Chart */}
+          <PieChart title="HbA1c Distribution" data={hba1cPieData} />
+
+          <PieChart
+            title="Cholesterol Distribution"
+            data={cholesterolPieData}
           />
+
+          {/* Glucose Level Bar Chart */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h3 className="font-semibold mb-4 text-lg text-gray-800">
+              Glucose Level Distribution
+            </h3>
+            <Bar
+              data={{
+                labels: ["Fasting", "Random", "Postprandial", "Unknown"],
+                datasets: [
+                  {
+                    label: "Glucose Levels",
+                    data: [
+                      glucoseStats.fasting,
+                      glucoseStats.random,
+                      glucoseStats.postprandial,
+                      glucoseStats.unknown,
+                    ],
+                    backgroundColor: [
+                      "#4fc3f7",
+                      "#ffb74d",
+                      "#e57373",
+                      "#bdbdbd",
+                    ],
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: { display: false },
+                },
+                scales: {
+                  x: { title: { display: true, text: "Glucose Type" } },
+                  y: { title: { display: true, text: "Number of Patients" } },
+                },
+              }}
+            />
+          </div>
+
+          {/* HIV Status Bar Chart */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h3 className="font-semibold mb-4 text-lg text-gray-800">
+              HIV Status Distribution
+            </h3>
+            <Bar
+              data={hivBarData}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: { display: false },
+                },
+                scales: {
+                  x: { title: { display: true, text: "HIV Status" } },
+                  y: { title: { display: true, text: "Number of Patients" } },
+                },
+              }}
+            />
+          </div>
         </div>
 
         {/* Medical Opinions Section */}
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <HiOutlineAnnotation className="w-6 h-6" />
-            {role === 'nurse' ? 'Add Medical Opinion' : 'Medical Opinions'}
+            {role === "nurse" ? "Add Medical Opinion" : "Medical Opinions"}
           </h2>
 
-          {role === 'nurse' ? (
+          {role === "nurse" ? (
             <div className="space-y-4">
               <textarea
                 value={newOpinion}
@@ -167,7 +449,9 @@ const ReportPage = ({ role }) => {
                     <span className="font-medium">{opinion.author}</span>
                     <span>{new Date(opinion.date).toLocaleDateString()}</span>
                   </div>
-                  <p className="text-gray-700 whitespace-pre-wrap">{opinion.content}</p>
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {opinion.content}
+                  </p>
                 </div>
               ))}
             </div>
@@ -179,7 +463,7 @@ const ReportPage = ({ role }) => {
 };
 
 // Reusable Components
-const StatCard = ({ title, value, icon, color = 'bg-gray-100' }) => (
+const StatCard = ({ title, value, icon, color = "bg-gray-100" }) => (
   <div className={`p-4 rounded-xl ${color} transition-all hover:scale-[1.02]`}>
     <div className="flex justify-between items-center">
       <div>
@@ -192,8 +476,8 @@ const StatCard = ({ title, value, icon, color = 'bg-gray-100' }) => (
 );
 
 const HealthMetricChart = ({ title, data }) => {
-  const maxValue = Math.max(...data.map(d => d.value)) || 1;
-  
+  const maxValue = Math.max(...data.map((d) => d.value)) || 1;
+
   return (
     <div className="bg-white p-4 rounded-xl shadow-sm">
       <h3 className="font-semibold mb-4 text-lg text-gray-800">{title}</h3>
@@ -205,8 +489,8 @@ const HealthMetricChart = ({ title, data }) => {
               <span className="text-sm text-gray-600">{item.label}</span>
             </div>
             <div className="flex-1 bg-gray-100 h-4 rounded-full overflow-hidden">
-              <div 
-                className={`h-full ${item.color} rounded-full transition-all duration-500`} 
+              <div
+                className={`h-full ${item.color} rounded-full transition-all duration-500`}
                 style={{ width: `${(item.value / maxValue) * 100}%` }}
               ></div>
             </div>
@@ -220,11 +504,11 @@ const HealthMetricChart = ({ title, data }) => {
 
 // Helper Functions
 const getBmiColor = (bmi) => {
-  if (typeof bmi !== 'number') return 'bg-gray-100 text-gray-800';
-  if (bmi < 18.5) return 'bg-blue-100 text-blue-800';
-  if (bmi < 25) return 'bg-green-100 text-green-800';
-  if (bmi < 30) return 'bg-yellow-100 text-yellow-800';
-  return 'bg-red-100 text-red-800';
+  if (typeof bmi !== "number") return "bg-gray-100 text-gray-800";
+  if (bmi < 18.5) return "bg-blue-100 text-blue-800";
+  if (bmi < 25) return "bg-green-100 text-green-800";
+  if (bmi < 30) return "bg-yellow-100 text-yellow-800";
+  return "bg-red-100 text-red-800";
 };
 
 export const NurseReport = () => <ReportPage role="nurse" />;
