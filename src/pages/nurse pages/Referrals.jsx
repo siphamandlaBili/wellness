@@ -19,12 +19,12 @@ const Referrals = () => {
           <table className="w-full">
             <thead className="bg-[#992787] dark:bg-purple-800">
               <tr>
-                <th className="py-4 px-6 text-left text-white dark:text-purple-200 font-semibold uppercase tracking-wider text-sm rounded-tl-2xl">
+                {/* <th className="py-4 px-6 text-left text-white dark:text-purple-200 font-semibold uppercase tracking-wider text-sm rounded-tl-2xl">
                   Name
                 </th>
                 <th className="py-4 px-6 text-left text-white dark:text-purple-200 font-semibold uppercase tracking-wider text-sm">
                   client Email
-                </th>
+                </th> */}
                 <th className="py-4 px-6 text-left  text-white dark:text-purple-200 font-semibold uppercase tracking-wider text-sm">
                   doctor Name
                 </th>
@@ -51,12 +51,12 @@ const Referrals = () => {
                     key={referral.id} 
                     className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
                   >
-                    <td className="py-4 px-6 font-medium text-gray-900 dark:text-gray-100">
+                    {/* <td className="py-4 px-6 font-medium text-gray-900 dark:text-gray-100">
                       {`${referral.name} ${referral.surname}`}
                     </td>
                     <td className="py-4 px-6 text-gray-600 dark:text-gray-300">
                       {referral.email}
-                    </td>
+                    </td> */}
                     <td className="py-4 px-6 text-gray-600 dark:text-gray-300">
                       {referral.practitionerName}
                     </td>
