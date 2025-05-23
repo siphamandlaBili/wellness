@@ -185,6 +185,7 @@ const PatientList = () => {
     sex: "",
     age: "",
   });
+   
 
   const [signature, setSignature] = useState("");
   const [questions, setQuestions] = useState([
@@ -199,18 +200,24 @@ const PatientList = () => {
   const [selectedDetails, setSelectedDetails] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
-  const {eventData,isloading,error} = useNurseEvent();
+  const { eventData, isloading, error } = useNurseEvent();
   const navigate = useNavigate();
-  
-  const eventCode = eventData.eventCode;
+
+  const eventCode = eventData?.eventCode;
+  console.log(eventData?._id);
   useEffect(() => {
     const fetchPatients = async () => {
       try {
         const res = await axios.get(
-          "https://wellness-temporary-db-2.onrender.com/patients"
+          `https://wellness-backend-ntls.onrender.com/api/v1/patients/event/${eventData?._id}`,
+          {
+            withCredentials: true
+          }
         );
-        setPatients(res.data);
-        setFilteredPatients(res.data);
+
+        console.log(res.data.data);
+        setPatients(res.data.data);
+        setFilteredPatients(res.data.data);
       } catch (error) {
         console.error("Error fetching patients:", error);
         toast.error("Failed to load patients");
@@ -220,18 +227,24 @@ const PatientList = () => {
   }, []);
 
   useEffect(() => {
-    const filtered = patients.filter((patient) => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        patient.name?.toLowerCase().includes(searchLower) ||
-        patient.surname?.toLowerCase().includes(searchLower) ||
-        patient.idNumber?.includes(searchTerm) ||
-        patient.email?.toLowerCase().includes(searchLower)
-      );
-    });
-    setFilteredPatients(filtered);
-    setCurrentPage(1);
-  }, [searchTerm, patients]);
+  const filtered = patients.filter((patient) => {
+    const searchLower = searchTerm.toLowerCase();
+    const fullName = patient.personalInfo?.fullName?.toLowerCase() || '';
+    const surname = patient.personalInfo?.surname?.toLowerCase() || '';
+    const idNumber = patient.personalInfo?.idNumber?.toString() || '';
+    const email = patient.personalInfo?.email?.toLowerCase() || '';
+
+    return (
+      fullName.includes(searchLower) ||
+      surname.includes(searchLower) ||
+      idNumber.includes(searchTerm) ||
+      email.includes(searchLower)
+    );
+  });
+  
+  setFilteredPatients(filtered);
+  setCurrentPage(1);
+}, [searchTerm, patients]);
 
   useEffect(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -320,54 +333,101 @@ const PatientList = () => {
     return "bg-red-500 text-white";
   };
 
-  const handleAddPatient = async () => {
-    try {
-      const bmiCalc = calculateBMI(newPatient.height, newPatient.weight);
-      const ageCalc = calculateAge(newPatient.dateOfBirth);
+const handleAddPatient = async () => {
+  try {
+    // Calculate BMI and age from form data
+    const bmiCalc = calculateBMI(newPatient.height, newPatient.weight);
+    const ageCalc = calculateAge(newPatient.dateOfBirth);
 
-      const patientData = {
-        ...newPatient,
-        id: patients.length + 1,
+    // Construct the patient data according to API requirements
+    const patientData = {
+      eventId: eventData?._id, // Using event ID from context
+      personalInfo: {
+        fullName: newPatient.name,
+        surname: newPatient.surname,
+        dateOfBirth: newPatient.dateOfBirth,
+        idNumber: newPatient.idNumber,
+        email: newPatient.email,
+        phone: newPatient.cellPhone,
+      },
+      medicalInfo: {
+        bloodPressure: newPatient.bloodPressure,
+        height: parseFloat(newPatient.height) / 100, // Convert cm to meters
+        weight: parseFloat(newPatient.weight),
+        cholesterol: parseFloat(newPatient.cholesterol),
+        hivStatus: newPatient.hiv,
+        glucoseLevel: parseFloat(newPatient.glucose),
+        hba1c: parseFloat(newPatient.hba1c),
         bmi: bmiCalc,
-        age: ageCalc,
-        signature,
-        questions,
-        createdAt: new Date().toISOString(),
-      };
+      },
+      medicalAidDetails: {
+        schemeName: newPatient.schemeName,
+        planOption: newPatient.planOption,
+        membershipNumber: newPatient.membershipNumber,
+        mainMemberNames: newPatient.mainMemberNames,
+        mainMemberAddress: newPatient.mainMemberAddress,
+        dependentCode: newPatient.dependentCode,
+      },
+      mentalHealthAssessment: questions.map((q) => ({
+        question: q.question,
+        answer: q.answer,
+      })),
+    };
 
-      setPatients((prev) => [...prev, patientData]);
-      setFilteredPatients((prev) => [...prev, patientData]);
-      setShowForm(false);
-      setCurrentStep(0);
-      setNewPatient({
-        name: "",
-        surname: "",
-        dateOfBirth: "",
-        idNumber: "",
-        email: "",
-        cellPhone: "",
-        schemeName: "",
-        planOption: "",
-        membershipNumber: "",
-        mainMemberNames: "",
-        mainMemberAddress: "",
-        dependentCode: "",
-        bmi: bmiCalc,
-        cholesterol: "",
-        hiv: "",
-        glucose: "",
-        sex: "",
-        age: "",
-      });
-      setSignature("");
-      setQuestions([]);
-      console.log(newPatient);
-      toast.success("Patient registered successfully!");
-    } catch (error) {
-      console.error("Error adding patient:", error);
-      toast.error("Failed to add patient");
-    }
-  };
+    // Send POST request to the API
+    const response = await axios.post(
+      "https://wellness-backend-ntls.onrender.com/api/v1/patients",
+      patientData,
+      { withCredentials: true }
+    );
+    console.log("Patient added successfully:", response);
+    // Show success notification
+    toast.success("Patient registered successfully!");
+
+    // Close the form and reset states
+    setShowForm(false);
+    setCurrentStep(0);
+    setNewPatient({
+      name: "",
+      surname: "",
+      dateOfBirth: "",
+      idNumber: "",
+      email: "",
+      cellPhone: "",
+      schemeName: "",
+      planOption: "",
+      membershipNumber: "",
+      mainMemberNames: "",
+      mainMemberAddress: "",
+      dependentCode: "",
+      height: "",
+      weight: "",
+      cholesterol: "",
+      hiv: "",
+      glucose: "",
+      hba1c: "",
+      bloodPressure: "",
+    });
+    setSignature("");
+    setQuestions([
+      { question: "How often do you feel anxious?", answer: "" },
+      { question: "Do you have trouble sleeping?", answer: "" },
+    ]);
+
+    // Refetch the updated patient list
+    const res = await axios.get(
+      `https://wellness-backend-ntls.onrender.com/api/v1/patients/event/${eventData?._id}`,
+      { withCredentials: true }
+    );
+    setPatients(res.data.data);
+    setFilteredPatients(res.data.data);
+  } catch (error) {
+    console.error("Error adding patient:", error);
+    toast.error(
+      error.response?.data?.message || "Failed to register patient"
+    );
+  }
+};
 
   const handleQuestionChange = (index, field, value) => {
     const newQuestions = [...questions];
@@ -418,19 +478,21 @@ const PatientList = () => {
     navigate("/nurse/referrals");
   };
 
-  // calculate age from date of birth
-  const calculateAge = (dateOfBirth) => {
-    const dob = new Date(dateOfBirth);
-    const diff = Date.now() - dob.getTime();
-    const ageDate = new Date(diff);
-    return Math.abs(ageDate.getUTCFullYear() - 1970);
-  };
+ const calculateAge = (birthDateString) => {
+  const today = new Date();
+  const birthDate = new Date(birthDateString);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  const dayDiff = today.getDate() - birthDate.getDate();
 
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age--;
+  }
 
+  return age;
+};
 
-
-  
-  
+console.log(filteredPatients);
   return (
     <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
       <ToastContainer />
@@ -499,21 +561,21 @@ const PatientList = () => {
                     >
                       <td className="p-4">
                         <div className="font-medium text-gray-900 dark:text-gray-100">
-                          {patient.name}
+                          {patient?.personalInfo?.fullName}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {patient.surname}
+                          {patient?.personalInfo?.surname}
                         </div>
                       </td>
                       <td className="p-4 max-md:hidden">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                             <HiOutlineMail className="w-4 h-4 text-[#992787] dark:text-purple-400" />
-                            {patient.email}
+                            {patient?.personalInfo?.email}
                           </div>
                           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                             <HiOutlinePhone className="w-4 h-4 text-[#992787] dark:text-purple-400" />
-                            {patient.cellPhone}
+                            {patient?.personalInfo?.phone}
                           </div>
                         </div>
                       </td>
@@ -593,11 +655,10 @@ const PatientList = () => {
                 {formSteps.map((_, index) => (
                   <div
                     key={index}
-                    className={`w-3 h-3 rounded-full ${
-                      index === currentStep
+                    className={`w-3 h-3 rounded-full ${index === currentStep
                         ? "bg-[#992787] dark:bg-purple-400"
                         : "bg-gray-300 dark:bg-gray-600"
-                    }`}
+                      }`}
                   />
                 ))}
               </div>
@@ -640,9 +701,8 @@ const PatientList = () => {
                               [field.name]: e.target.value,
                             })
                           }
-                          className={`w-full ${
-                            field.icon ? "pl-10" : "pl-4"
-                          } pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100`}
+                          className={`w-full ${field.icon ? "pl-10" : "pl-4"
+                            } pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100`}
                           required={field.required}
                         />
                       )}
@@ -851,11 +911,10 @@ const PatientList = () => {
                                 }}
                                 className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getBloodPressureColor(
                                   newPatient.bloodPressure
-                                )} ${
-                                  !newPatient.bloodPressure
+                                )} ${!newPatient.bloodPressure
                                     ? "border-2 border-gray-200 dark:border-gray-600"
                                     : "border-transparent"
-                                }`}
+                                  }`}
                               />
                               <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
                                 mmHg
@@ -884,11 +943,10 @@ const PatientList = () => {
                                 }
                                 className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getHbA1cColor(
                                   newPatient.hba1c
-                                )} ${
-                                  !newPatient.hba1c
+                                )} ${!newPatient.hba1c
                                     ? "border-2 border-gray-200 dark:border-gray-600"
                                     : "border-transparent"
-                                }`}
+                                  }`}
                               />
                               <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
                                 %
@@ -960,11 +1018,10 @@ const PatientList = () => {
                                 className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getGlucoseColor(
                                   newPatient.glucoseType,
                                   newPatient.glucose
-                                )} ${
-                                  !newPatient.glucoseType
+                                )} ${!newPatient.glucoseType
                                     ? "border-2 border-gray-200 dark:border-gray-600"
                                     : "border-transparent"
-                                }`}
+                                  }`}
                               />
                               <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
                                 mmol/L
@@ -1131,7 +1188,7 @@ const PatientList = () => {
               {/* Header */}
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
-                  Patient Details - {selectedDetails.name}
+                  Patient Details - {selectedDetails?.personalInfo?.fullName}
                 </h2>
                 <button onClick={() => setShowDetails(false)}>
                   <HiOutlineX className="w-6 h-6 text-gray-500 dark:text-gray-400" />
@@ -1147,25 +1204,27 @@ const PatientList = () => {
                       Personal Information
                     </h3>
                     <p className="dark:text-gray-300">
-                      ID: {selectedDetails.idNumber}
+                      ID: {selectedDetails?.personalInfo?.idNumber}
                     </p>
                     <p className="dark:text-gray-300">
                       Date of Birth:{" "}
                       {new Date(
-                        selectedDetails.dateOfBirth
+                        selectedDetails?.personalInfo?.dateOfBirth
                       ).toLocaleDateString()}
                     </p>
                     <p className="dark:text-gray-300">
-                      Email: {selectedDetails.email}
+                      Email: {selectedDetails?.personalInfo?.email}
                     </p>
                     <p className="dark:text-gray-300">
-                      Phone: {selectedDetails.cellPhone}
+                      Phone: {selectedDetails?.personalInfo?.phone}
                     </p>
                     <p className="dark:text-gray-300">
                       Sex: {selectedDetails.sex || "N/A"}
                     </p>
                     <p className="dark:text-gray-300">
-                      Age: {selectedDetails.age || "N/A"}
+                      Age: {calculateAge(new Date(
+                        selectedDetails?.personalInfo?.dateOfBirth
+                      ).toLocaleDateString())}
                     </p>
                   </div>
 
@@ -1175,22 +1234,22 @@ const PatientList = () => {
                       Medical Aid Details
                     </h3>
                     <p className="dark:text-gray-300">
-                      Scheme: {selectedDetails.schemeName || "N/A"}
+                      Scheme: {selectedDetails?.medicalAidDetails?.schemeName || "N/A"}
                     </p>
                     <p className="dark:text-gray-300">
-                      Plan: {selectedDetails.planOption || "N/A"}
+                      Plan: {selectedDetails?.medicalAidDetails?.planOption || "N/A"}
                     </p>
                     <p className="dark:text-gray-300">
-                      Member #: {selectedDetails.membershipNumber || "N/A"}
+                      Member #: {selectedDetails?.medicalAidDetails?.membershipNumber || "N/A"}
                     </p>
                     <p className="dark:text-gray-300">
-                      Main Member: {selectedDetails.mainMemberNames || "N/A"}
+                      Main Member: {selectedDetails?.medicalAidDetails?.mainMemberNames || "N/A"}
                     </p>
                     <p className="dark:text-gray-300">
-                      Address: {selectedDetails.mainMemberAddress || "N/A"}
+                      Address: {selectedDetails?.medicalAidDetails?.mainMemberAddress || "N/A"}
                     </p>
                     <p className="dark:text-gray-300">
-                      Dependent Code: {selectedDetails.dependentCode || "N/A"}
+                      Dependent Code: {selectedDetails?.medicalAidDetails?.dependentCode || "N/A"}
                     </p>
                   </div>
 
@@ -1207,20 +1266,20 @@ const PatientList = () => {
                           selectedDetails.bmi
                         )} px-2 py-1 rounded`}
                       >
-                        {selectedDetails.bmi}
+                        {selectedDetails?.medicalInfo.bmi}
                       </span>
                     </p>
 
                     <p className="dark:text-gray-300">
-                      Cholesterol: {selectedDetails.cholesterol} mg/dL
+                      Cholesterol: {selectedDetails?.medicalInfo.bmi.cholesterol} mg/dL
                     </p>
                     <p className="dark:text-gray-300">
-                      HIV Status: {selectedDetails.hiv}
+                      HIV Status: {selectedDetails?.medicalInfo.hivStatus}
                     </p>
 
                     {/* Blood Glucose Value */}
                     <p className="dark:text-gray-300">
-                      Glucose: {selectedDetails.glucose}
+                      Glucose: {selectedDetails?.medicalInfo.glucoseLevel}
                     </p>
                   </div>
                   <p className="dark:text-gray-300">
@@ -1230,8 +1289,8 @@ const PatientList = () => {
                         selectedDetails.hba1c
                       )} px-2 py-1 rounded`}
                     >
-                      {selectedDetails.hba1c
-                        ? `${selectedDetails.hba1c}%`
+                      {selectedDetails?.medicalInfo.hba1c
+                        ? `${selectedDetails?.medicalInfo.hba1c}%`
                         : "N/A"}
                     </span>
                   </p>
@@ -1242,7 +1301,7 @@ const PatientList = () => {
                         selectedDetails.bloodPressure
                       )} px-2 py-1 rounded`}
                     >
-                      {selectedDetails.bloodPressure || "N/A"}
+                      {selectedDetails?.medicalInfo.bloodPressure || "N/A"}
                     </span>
                   </p>
                   {/* Mental Health Assessment */}
@@ -1250,7 +1309,7 @@ const PatientList = () => {
                     <h3 className="font-semibold mt-4 dark:text-gray-100">
                       Mental Health Assessment
                     </h3>
-                    {selectedDetails.questions?.map((q, index) => (
+                    {selectedDetails.mentalHealthAssessment?.map((q, index) => (
                       <div key={index} className="mb-2">
                         <p className="font-medium dark:text-gray-300">
                           {q.question}
@@ -1287,7 +1346,7 @@ const PatientList = () => {
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
-                  New Referral for {selectedPatient.name}
+                  New Referral for {selectedPatient?.personalInfo?.fullName}
                 </h2>
                 <button
                   onClick={() => setShowReferralForm(false)}
@@ -1305,13 +1364,13 @@ const PatientList = () => {
                         Patient ID
                       </p>
                       <p className="font-medium dark:text-gray-300">
-                        {selectedPatient.idNumber}
+                        {selectedPatient?.personalInfo.idNumber}
                       </p>
                     </div>
                     <div>
                       <p className="text-gray-500 dark:text-gray-400">Email</p>
                       <p className="font-medium dark:text-gray-300">
-                        {selectedPatient.email}
+                        {selectedPatient?.personalInfo.email}
                       </p>
                     </div>
                   </div>

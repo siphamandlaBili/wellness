@@ -44,7 +44,9 @@ const Referrals = () => {
                   </td>
                 </tr>
               ) : (
-                referrals.map((referral) => (
+                referrals.map((referral) => {
+                  console.log(referral);
+                  return <>
                   <tr 
                     key={referral.id} 
                     className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
@@ -66,8 +68,8 @@ const Referrals = () => {
                         {referral.referralComment}
                       </p>
                     </td>
-                  </tr>
-                ))
+                  </tr></>
+})
               )}
             </tbody>
           </table>
