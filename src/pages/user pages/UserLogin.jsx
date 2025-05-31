@@ -92,7 +92,7 @@ export default function AuthForm() {
       {/* Left Side Image */}
       <div className="hidden md:block w-1/2 relative">
         <img
-          src="https://www.parihomehealthcare.in/wp-content/uploads/2023/05/medium-shot-middle-aged-doctor-explaining-diagnosis-via-tablet-pc.jpg"
+          src="https://th.bing.com/th/id/OIP.OpA3AOEKV2e1-3OMEPOoYgHaEc?rs=1&pid=ImgDetMain"
           alt="Auth background"
           className="w-full h-full object-cover rounded-l-xl"
         />

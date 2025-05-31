@@ -1,515 +1,523 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
+
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  HiOutlineUser,
-  HiOutlineClipboardList,
-  HiOutlineAnnotation,
+import { 
+  HiOutlineDocumentText, 
+  HiOutlinePencil, 
+  HiOutlineSave,
+  HiOutlineChartBar,
+  HiOutlineRefresh
 } from "react-icons/hi";
-import { Bar } from "react-chartjs-2";
-import PieChart from "../../components/PieChart";
-import {
-  calculateAgeStats,
-  calculateSexStats,
-  calculateBloodPressureStats,
-  calculateBmiStats,
-  calculateHba1cStats,
-  calculateCholesterolStats,
-  calculateHivStats,
-  calculateGlucoseStats,
-} from "../../utils/statsUtils";
-import {
-  calculateAverageBloodPressure,
-  calculateAverageBmi,
-  calculateAverageCholesterol,
-  calculateAverageHba1c,
-  calculateAverageGlucose,
-} from "../../utils/averageUtils";
+import { Bar, Pie } from "react-chartjs-2";
+import { Chart, registerables } from 'chart.js';
+import { useNurseEvent } from "../../../context/NurseEventContext";
 
-const ReportPage = ({ role }) => {
-  const [patients, setPatients] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      medicalInfo: {
-        bloodPressure: "120/80",
-        bmi: 22.5,
-        hba1c: 5.6,
-        cholesterol: 180,
-        hiv: "Negative",
-        glucoseType: "Fasting",
-        sex: "Male",
-        age: 30,
-      },
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      medicalInfo: {
-        bloodPressure: "140/90",
-        bmi: 27.8,
-        hba1c: 6.2,
-        cholesterol: 220,
-        hiv: "Positive",
-        glucoseType: "Random",
-        sex: "Female",
-        age: 45,
-      },
-    },
-    {
-      id: 3,
-      name: "Alice Johnson",
-      medicalInfo: {
-        bloodPressure: "110/70",
-        bmi: 18.4,
-        hba1c: 5.4,
-        cholesterol: 250,
-        hiv: "Inconclusive",
-        glucoseType: "Postprandial",
-        sex: "Female",
-        age: 25,
-      },
-    },
-    {
-      id: 4,
-      name: "Bob Brown",
-      medicalInfo: {
-        bloodPressure: "160/100",
-        bmi: 32.1,
-        hba1c: 7.1,
-        cholesterol: 300,
-        hiv: "Negative",
-        glucoseType: "Fasting",
-        sex: "Male",
-        age: 55,
-      },
-    },
-    {
-      id: 5,
-      name: "Charlie Davis",
-      medicalInfo: {
-        bloodPressure: "130/85",
-        bmi: 24.9,
-        hba1c: 5.8,
-        cholesterol: 190,
-        hiv: "Positive",
-        glucoseType: "Random",
-        sex: "Male",
-        age: 40,
-      },
-    },
-  ]);
-  const [medicalOpinions, setMedicalOpinions] = useState([]);
-  const [newOpinion, setNewOpinion] = useState("");
+// Register Chart.js components
+Chart.register(...registerables);
 
-  // Fetch patient data from backend
-  // useEffect(() => {
-  //   const fetchPatients = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         "https://wellness-temporary-db-2.onrender.com/patients"
-  //       );
-  //       setPatients(response.data);
-  //     } catch (error) {
-  //       console.error("Error fetching patients:", error);
-  //       toast.error("Failed to load patient data");
-  //     }
-  //   };
+const EventReport = () => {
+  const { eventData } = useNurseEvent();
+  const [report, setReport] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [opinion, setOpinion] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  //   fetchPatients();
-  // }, []);
-
-  //Statistics
-  const bloodPressureStats = calculateBloodPressureStats(patients);
-  const bmiStats = calculateBmiStats(patients);
-  const hba1cStats = calculateHba1cStats(patients);
-  const cholesterolStats = calculateCholesterolStats(patients);
-  const hivStats = calculateHivStats(patients);
-  const glucoseStats = calculateGlucoseStats(patients);
-  const sexStats = calculateSexStats(patients);
-  const ageStats = calculateAgeStats(patients);
-
-  // Averages
-  const averageBloodPressure = calculateAverageBloodPressure(patients);
-  const averageBmi = calculateAverageBmi(patients);
-  const averageCholesterol = calculateAverageCholesterol(patients);
-  const averageHba1c = calculateAverageHba1c(patients);
-  const averageGlucose = calculateAverageGlucose(patients);
-
-  //  Pie Chart Data
-  const bloodPressurePieData = {
-    labels: ["Normal", "Elevated", "High"],
-    datasets: [
-      {
-        data: [
-          bloodPressureStats.normal,
-          bloodPressureStats.elevated,
-          bloodPressureStats.high,
-        ],
-        backgroundColor: ["#81c784", "#ffb74d", "#e57373"],
-        borderColor: "white",
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  const bmiPieData = {
-    labels: ["Underweight", "Normal", "Overweight", "Obese"],
-    datasets: [
-      {
-        data: [
-          bmiStats.underweight,
-          bmiStats.normal,
-          bmiStats.overweight,
-          bmiStats.obese,
-        ],
-        backgroundColor: ["#4fc3f7", "#81c784", "#ffb74d", "#e57373"],
-        borderColor: "white",
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  const hba1cPieData = {
-    labels: ["Normal", "Prediabetes", "Diabetes"],
-    datasets: [
-      {
-        data: [hba1cStats.normal, hba1cStats.prediabetes, hba1cStats.diabetes],
-        backgroundColor: ["#81c784", "#ffb74d", "#e57373"],
-        borderColor: "white",
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  const cholesterolPieData = {
-    labels: ["Normal (<200)", "Borderline (200-239)", "High (≥240)"],
-    datasets: [
-      {
-        data: [
-          cholesterolStats.normal,
-          cholesterolStats.borderline,
-          cholesterolStats.high,
-        ],
-        backgroundColor: ["#81c784", "#ffb74d", "#e57373"],
-        borderColor: "white",
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  // Bar Chart Data
-  const glucoseBarData = {
-    labels: ["Fasting", "Random", "Postprandial", "Unknown"],
-    datasets: [
-      {
-        label: "Glucose Levels",
-        data: [
-          glucoseStats.fasting,
-          glucoseStats.random,
-          glucoseStats.postprandial,
-          glucoseStats.unknown,
-        ],
-        backgroundColor: ["#4fc3f7", "#ffb74d", "#e57373", "#bdbdbd"],
-      },
-    ],
-  };
-
-  const hivBarData = {
-    labels: ["Negative", "Positive", "Inconclusive", "Unknown"],
-    datasets: [
-      {
-        label: "HIV Status",
-        data: [
-          hivStats.negative,
-          hivStats.positive,
-          hivStats.inconclusive,
-          hivStats.unknown,
-        ],
-        backgroundColor: ["#81c784", "#e57373", "#ffb74d", "#bdbdbd"],
-      },
-    ],
-  };
-
-  const handleOpinionSubmit = () => {
-    if (!newOpinion.trim()) {
-      toast.error("Please enter an opinion before submitting");
-      return;
-    }
-
-    const newEntry = {
-      id: medicalOpinions.length + 1,
-      content: newOpinion,
-      author: "Nurse Name",
-      date: new Date().toISOString().split("T")[0],
+  useEffect(() => {
+    const fetchReportData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `https://wellness-backend-ntls.onrender.com/api/v1/reports/event/${eventData?._id}`,
+          { withCredentials: true }
+        );
+        
+        if (response.data.success && response.data.report) {
+          setReport(response.data.report);
+          setOpinion(
+            response.data.report.editedOpinion || 
+            response.data.report.generatedOpinion || 
+            ""
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching report:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setMedicalOpinions([...medicalOpinions, newEntry]);
-    setNewOpinion("");
-    toast.success("Opinion submitted successfully");
+    if (eventData?._id) {
+      fetchReportData();
+    }
+  }, [eventData]);
+
+  const fetchStatistics = async () => {
+    try {
+      setLoadingStats(true);
+      const response = await axios.get(
+        `https://wellness-backend-ntls.onrender.com/api/v1/reports/stats/${eventData?._id}`,
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        setStats(response.data.stats);
+      }
+    } catch (error) {
+      toast.error("Failed to load statistics");
+      console.error("Error fetching stats:", error);
+    } finally {
+      setLoadingStats(false);
+    }
   };
 
+  useEffect(() => {
+    if (eventData?._id) {
+      fetchStatistics();
+    }
+  }, [eventData]);
+
+  const generateOpinion = async () => {
+    try {
+      setIsGenerating(true);
+      const response = await axios.post(
+        `https://wellness-backend-ntls.onrender.com/api/v1/reports/generate/${eventData?._id}`,
+        {},
+        { withCredentials: true }
+      );
+      setReport(response.data.report);
+      setOpinion(response.data.report.generatedOpinion);
+      setEditing(true);
+      toast.success("AI opinion generated successfully");
+    } catch (error) {
+      toast.error("Failed to generate opinion");
+      console.error("Generate opinion error:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const saveOpinion = async () => {
+    try {
+      setIsSaving(true);
+      const response = await axios.put(
+        `https://wellness-backend-ntls.onrender.com/api/v1/reports/${report._id}`,
+        { editedOpinion: opinion },
+        { withCredentials: true }
+      );
+      setReport(response.data.report);
+      setEditing(false);
+      toast.success("Opinion saved successfully");
+    } catch (error) {
+      toast.error("Failed to save opinion");
+      console.error("Save opinion error:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const renderBloodPressureChart = () => (
+    <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm p-4">
+      <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
+        Blood Pressure Distribution
+      </h3>
+      <Pie
+        data={{
+          labels: ["Normal", "Elevated", "High", "Unknown"],
+          datasets: [{
+            data: [
+              stats.bloodPressure.normal,
+              stats.bloodPressure.elevated,
+              stats.bloodPressure.high,
+              stats.bloodPressure.unknown
+            ],
+            backgroundColor: ["#81c784", "#ffb74d", "#e57373", "#bdbdbd"]
+          }]
+        }}
+        options={{
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#333',
+                font: {
+                  size: 11
+                }
+              }
+            }
+          }
+        }}
+        height={250}
+      />
+    </div>
+  );
+
+  const renderBMIChart = () => (
+    <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm p-4">
+      <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
+        BMI Distribution
+      </h3>
+      <Pie
+        data={{
+          labels: ["Underweight", "Normal", "Overweight", "Obese", "Unknown"],
+          datasets: [{
+            data: [
+              stats.bmi.underweight,
+              stats.bmi.normal,
+              stats.bmi.overweight,
+              stats.bmi.obese,
+              stats.bmi.unknown
+            ],
+            backgroundColor: ["#4fc3f7", "#81c784", "#ffb74d", "#e57373", "#bdbdbd"]
+          }]
+        }}
+        options={{
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#333',
+                font: {
+                  size: 11
+                }
+              }
+            }
+          }
+        }}
+        height={250}
+      />
+    </div>
+  );
+
+  const renderGlucoseChart = () => (
+    <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm p-4">
+      <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
+        Glucose Level Distribution
+      </h3>
+      <Bar
+        data={{
+          labels: ["Fasting", "Random", "Postprandial", "Unknown"],
+          datasets: [{
+            label: "Patients",
+            data: [
+              stats.glucose.fasting,
+              stats.glucose.random,
+              stats.glucose.postprandial,
+              stats.glucose.unknown
+            ],
+            backgroundColor: ["#4fc3f7", "#ffb74d", "#e57373", "#bdbdbd"]
+          }]
+        }}
+        options={{
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            x: { 
+              title: { 
+                display: true, 
+                text: "Glucose Type",
+                color: '#666'
+              },
+              ticks: {
+                color: '#666'
+              }
+            },
+            y: { 
+              title: { 
+                display: true, 
+                text: "Number of Patients",
+                color: '#666'
+              },
+              ticks: {
+                color: '#666',
+                precision: 0
+              },
+              beginAtZero: true
+            }
+          }
+        }}
+        height={250}
+      />
+    </div>
+  );
+
+  const renderCholesterolChart = () => (
+    <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm p-4">
+      <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
+        Cholesterol Distribution
+      </h3>
+      <Bar
+        data={{
+          labels: ["Normal", "Borderline", "High", "Unknown"],
+          datasets: [{
+            label: "Patients",
+            data: [
+              stats.cholesterol.normal,
+              stats.cholesterol.borderline,
+              stats.cholesterol.high,
+              stats.cholesterol.unknown
+            ],
+            backgroundColor: ["#81c784", "#ffb74d", "#e57373", "#bdbdbd"]
+          }]
+        }}
+        options={{
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            x: { 
+              title: { 
+                display: true, 
+                text: "Cholesterol Level",
+                color: '#666'
+              },
+              ticks: {
+                color: '#666'
+              }
+            },
+            y: { 
+              title: { 
+                display: true, 
+                text: "Number of Patients",
+                color: '#666'
+              },
+              ticks: {
+                color: '#666',
+                precision: 0
+              },
+              beginAtZero: true
+            }
+          }
+        }}
+        height={250}
+      />
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 min-h-screen">
-      <ToastContainer position="top-right" autoClose={3000} />
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-[#9927a6] mb-8 flex items-center gap-2">
-          Patient Health Analytics
-        </h1>
-
-        {/* Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            title="Total Patients"
-            value={patients.length}
-            icon={<HiOutlineUser className="w-6 h-6" />}
-          />
-
-          <StatCard
-            title="Average Blood Pressure"
-            value={averageBloodPressure}
-            color="bg-blue-100 text-blue-800"
-            icon={<HiOutlineClipboardList className="w-6 h-6" />}
-          />
-
-          <StatCard
-            title="Average BMI"
-            value={averageBmi}
-            color="bg-green-100 text-green-800"
-            icon={<HiOutlineClipboardList className="w-6 h-6" />}
-          />
-
-          <StatCard
-            title="Average HbA1c"
-            value={`${averageHba1c}%`}
-            color="bg-red-100 text-red-800"
-            icon={<HiOutlineClipboardList className="w-6 h-6" />}
-          />
-
-          <StatCard
-            title="Average Cholesterol"
-            value={`${averageCholesterol} mg/dL`}
-            color="bg-yellow-100 text-yellow-800"
-            icon={<HiOutlineClipboardList className="w-6 h-6" />}
-          />
-          <StatCard
-            title="Average Glucose"
-            value={`${averageGlucose} mmol/L`}
-            color="bg-purple-100 text-purple-800"
-            icon={<HiOutlineClipboardList className="w-6 h-6" />}
-          />
-        </div>
-
-        {/* Detailed Statistics */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Sex Pie chart */}
-          <PieChart
-            title="Sex Distribution"
-            data={{
-              labels: ["Male", "Female", "Unknown"],
-              datasets: [
-                {
-                  data: [sexStats.male, sexStats.female, sexStats.unknown],
-                  backgroundColor: ["#4fc3f7", "#ffb74d", "#bdbdbd"],
-                  borderColor: "white",
-                  borderWidth: 2,
-                },
-              ],
-            }}
-          />
-          {/* age pie chart */}
-          <PieChart
-            title="Age Distribution"
-            data={{
-              labels: [
-                "Adults (18-39)",
-                "Middle-Aged (40-59)",
-                "Seniors (60+)",
-              ],
-              datasets: [
-                {
-                  data: [
-                    ageStats.adults,
-                    ageStats.middleAged,
-                    ageStats.seniors,
-                  ],
-                  backgroundColor: ["#4fc3f7", "#81c784", "#ffb74d", "#e57373"],
-                  borderColor: "white",
-                  borderWidth: 2,
-                },
-              ],
-            }}
-          />
-          {/* Blood Pressure Pie Chart */}
-          <PieChart
-            title="Blood Pressure Distribution"
-            data={bloodPressurePieData}
-          />
-
-          {/* BMI Distribution Pie Chart */}
-          <PieChart title="BMI Distribution" data={bmiPieData} />
-
-          {/* HbA1c Distribution Pie Chart */}
-          <PieChart title="HbA1c Distribution" data={hba1cPieData} />
-
-          <PieChart
-            title="Cholesterol Distribution"
-            data={cholesterolPieData}
-          />
-
-          {/* Glucose Level Bar Chart */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="font-semibold mb-4 text-lg text-gray-800">
-              Glucose Level Distribution
-            </h3>
-            <Bar
-              data={{
-                labels: ["Fasting", "Random", "Postprandial", "Unknown"],
-                datasets: [
-                  {
-                    label: "Glucose Levels",
-                    data: [
-                      glucoseStats.fasting,
-                      glucoseStats.random,
-                      glucoseStats.postprandial,
-                      glucoseStats.unknown,
-                    ],
-                    backgroundColor: [
-                      "#4fc3f7",
-                      "#ffb74d",
-                      "#e57373",
-                      "#bdbdbd",
-                    ],
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: { display: false },
-                },
-                scales: {
-                  x: { title: { display: true, text: "Glucose Type" } },
-                  y: { title: { display: true, text: "Number of Patients" } },
-                },
-              }}
-            />
-          </div>
-
-          {/* HIV Status Bar Chart */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="font-semibold mb-4 text-lg text-gray-800">
-              HIV Status Distribution
-            </h3>
-            <Bar
-              data={hivBarData}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: { display: false },
-                },
-                scales: {
-                  x: { title: { display: true, text: "HIV Status" } },
-                  y: { title: { display: true, text: "Number of Patients" } },
-                },
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Medical Opinions Section */}
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <HiOutlineAnnotation className="w-6 h-6" />
-            {role === "nurse" ? "Add Medical Opinion" : "Medical Opinions"}
-          </h2>
-
-          {role === "nurse" ? (
-            <div className="space-y-4">
-              <textarea
-                value={newOpinion}
-                onChange={(e) => setNewOpinion(e.target.value)}
-                className="w-full p-4 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                placeholder="Enter your professional opinion..."
-                rows="4"
-              />
-              <button
-                onClick={handleOpinionSubmit}
-                className="bg-[#9927a6] text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-              >
-                Submit Opinion
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {medicalOpinions.map((opinion) => (
-                <div key={opinion.id} className="border-b pb-4 last:border-b-0">
-                  <div className="flex justify-between text-sm text-gray-500 mb-2">
-                    <span className="font-medium">{opinion.author}</span>
-                    <span>{new Date(opinion.date).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-gray-700 whitespace-pre-wrap">
-                    {opinion.content}
-                  </p>
-                </div>
-              ))}
-            </div>
+    <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+      <ToastContainer position="top-right" />
+      
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-[#992787] dark:text-purple-400 flex items-center gap-2">
+          <HiOutlineDocumentText className="w-6 h-6" />
+          Event Health Report
+        </h2>
+        
+        <div className="flex gap-2">
+          <button
+            onClick={fetchStatistics}
+            disabled={loadingStats}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+              loadingStats
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+            } text-gray-800 dark:text-gray-100 transition-colors`}
+          >
+            <HiOutlineRefresh className="w-5 h-5" />
+            Refresh Stats
+          </button>
+          
+          {!report && (
+            <button
+              onClick={generateOpinion}
+              disabled={isGenerating}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                isGenerating
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#992787] hover:bg-[#7a1f6e]"
+              } text-white transition-colors`}
+            >
+              {isGenerating ? "Generating..." : "Generate AI Opinion"}
+            </button>
           )}
         </div>
       </div>
+
+      <div className="mb-4">
+        <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-2">
+          {eventData?.eventName} - {new Date(eventData?.eventDate).toLocaleDateString()}
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400">
+          {report?.status === "finalized" ? "Final Report" : "Draft Report"}
+        </p>
+      </div>
+
+      {/* Health Statistics Section */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <HiOutlineChartBar className="w-6 h-6 text-[#992787] dark:text-purple-400" />
+          <h3 className="text-xl font-bold text-[#992787] dark:text-purple-400">
+            Health Statistics
+          </h3>
+        </div>
+        
+        {loadingStats ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
+          </div>
+        ) : stats ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="bg-[#992787]/10 dark:bg-purple-900/20 p-4 rounded-xl">
+              <h4 className="font-semibold text-[#992787] dark:text-purple-400 mb-2">Summary</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <StatCard title="Total Patients" value={stats.patientCount} />
+                <StatCard title="Avg Blood Pressure" value={stats.averageBloodPressure} />
+                <StatCard title="Avg BMI" value={stats.averageBmi} />
+                <StatCard title="Avg HbA1c" value={`${stats.averageHba1c}%`} />
+                <StatCard title="Avg Cholesterol" value={`${stats.averageCholesterol} mg/dL`} />
+                <StatCard title="Avg Glucose" value={`${stats.averageGlucose} mmol/L`} />
+              </div>
+            </div>
+            
+            <div className="bg-[#992787]/10 dark:bg-purple-900/20 p-4 rounded-xl">
+              <h4 className="font-semibold text-[#992787] dark:text-purple-400 mb-2">Demographics</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <StatCard title="Male" value={stats.sex.male} />
+                <StatCard title="Female" value={stats.sex.female} />
+                <StatCard title="Adults (18-39)" value={stats.age.adults} />
+                <StatCard title="Middle-Aged (40-59)" value={stats.age.middleAged} />
+                <StatCard title="Seniors (60+)" value={stats.age.seniors} />
+                <StatCard title="HIV Positive" value={stats.hiv.positive} />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-gray-100 dark:bg-gray-700 rounded-xl p-8 text-center">
+            <p className="text-gray-500 dark:text-gray-400">
+              No statistics available. Click "Refresh Stats" to load health data.
+            </p>
+          </div>
+        )}
+
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderBloodPressureChart()}
+            {renderBMIChart()}
+            {renderGlucoseChart()}
+            {renderCholesterolChart()}
+          </div>
+        )}
+      </div>
+
+      {/* Medical Opinion Section */}
+      {report ? (
+        <div className="space-y-6">
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-medium text-gray-700 dark:text-gray-300">
+                Medical Opinion
+              </h4>
+              {report.status !== "finalized" && (
+                <button
+                  onClick={() => setEditing(!editing)}
+                  className="flex items-center gap-1 text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300"
+                >
+                  <HiOutlinePencil className="w-4 h-4" />
+                  {editing ? "Cancel" : "Edit"}
+                </button>
+              )}
+            </div>
+
+            {editing ? (
+              <div className="space-y-4">
+                <textarea
+                  value={opinion}
+                  onChange={(e) => setOpinion(e.target.value)}
+                  className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                  rows={10}
+                  placeholder="Enter your medical opinion..."
+                />
+                <button
+                  onClick={saveOpinion}
+                  disabled={isSaving}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                    isSaving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-[#992787] hover:bg-[#7a1f6e]"
+                  } text-white transition-colors`}
+                >
+                  <HiOutlineSave className="w-5 h-5" />
+                  {isSaving ? "Saving..." : "Save Final Opinion"}
+                </button>
+              </div>
+            ) : (
+              <div className="prose dark:prose-invert max-w-none p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                {opinion.split("\n").map((paragraph, index) => (
+                  <p key={index} className="mb-4 last:mb-0">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {report.status === "finalized" && !editing && (
+            <div className="mt-6 p-4 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Report finalized by {report.nurse?.fullName || "you"} on{" "}
+                {new Date(report.updatedAt).toLocaleDateString()}
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <HiOutlineDocumentText className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
+            No report generated yet for this event
+          </p>
+          <button
+            onClick={generateOpinion}
+            disabled={isGenerating}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+              isGenerating
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#992787] hover:bg-[#7a1f6e]"
+            } text-white transition-colors`}
+          >
+            {isGenerating ? "Generating..." : "Generate AI Opinion"}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
-// Reusable Components
-const StatCard = ({ title, value, icon, color = "bg-gray-100" }) => (
-  <div className={`p-4 rounded-xl ${color} transition-all hover:scale-[1.02]`}>
-    <div className="flex justify-between items-center">
-      <div>
-        <p className="text-sm text-gray-600 mb-1">{title}</p>
-        <p className="text-2xl font-bold text-gray-800">{value}</p>
-      </div>
-      <div className="text-gray-500">{icon}</div>
-    </div>
+// Reusable Stat Card Component
+const StatCard = ({ title, value }) => (
+  <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+    <p className="text-sm text-gray-600 dark:text-gray-400">{title}</p>
+    <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+      {value || "N/A"}
+    </p>
   </div>
 );
 
-const HealthMetricChart = ({ title, data }) => {
-  const maxValue = Math.max(...data.map((d) => d.value)) || 1;
-
-  return (
-    <div className="bg-white p-4 rounded-xl shadow-sm">
-      <h3 className="font-semibold mb-4 text-lg text-gray-800">{title}</h3>
-      <div className="space-y-2">
-        {data.map((item) => (
-          <div key={item.label} className="flex items-center gap-4">
-            <div className="w-24 flex items-center gap-2">
-              <div className={`w-4 h-4 rounded-full ${item.color}`}></div>
-              <span className="text-sm text-gray-600">{item.label}</span>
-            </div>
-            <div className="flex-1 bg-gray-100 h-4 rounded-full overflow-hidden">
-              <div
-                className={`h-full ${item.color} rounded-full transition-all duration-500`}
-                style={{ width: `${(item.value / maxValue) * 100}%` }}
-              ></div>
-            </div>
-            <span className="w-12 text-right font-medium">{item.value}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// Helper Functions
-const getBmiColor = (bmi) => {
-  if (typeof bmi !== "number") return "bg-gray-100 text-gray-800";
-  if (bmi < 18.5) return "bg-blue-100 text-blue-800";
-  if (bmi < 25) return "bg-green-100 text-green-800";
-  if (bmi < 30) return "bg-yellow-100 text-yellow-800";
-  return "bg-red-100 text-red-800";
-};
-
-export const NurseReport = () => <ReportPage role="nurse" />;
-export const AdminReport = () => <ReportPage role="admin" />;
+export default EventReport;

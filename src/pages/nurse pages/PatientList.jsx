@@ -185,7 +185,7 @@ const PatientList = () => {
     sex: "",
     age: "",
   });
-   
+const [referralLoading, setReferralLoading] = useState(false);   
 
   const [signature, setSignature] = useState("");
   const [questions, setQuestions] = useState([
@@ -439,44 +439,52 @@ const handleAddPatient = async () => {
     setSignature("");
   };
 
-  const handleAddReferral = () => {
-    if (!practitionerName.trim() || !practitionerEmail.trim()) {
-      toast.error("Please enter practitioner name and email");
-      return;
-    }
-    if (!referralComment.trim()) {
-      toast.error("Please enter referral comments");
-      return;
-    }
+  const handleAddReferral = async () => {
+  if (!practitionerName.trim() || !practitionerEmail.trim()) {
+    toast.error("Please enter practitioner name and email");
+    return;
+  }
+  if (!referralComment.trim()) {
+    toast.error("Please enter referral comments");
+    return;
+  }
+  if (!eventData?._id) {
+    toast.error("No active event selected");
+    return;
+  }
+
+  try {
+    setReferralLoading(true);
 
     const referralData = {
-      id: selectedPatient.id,
-      name: selectedPatient.name,
-      surname: selectedPatient.surname,
-      email: selectedPatient.email,
+      idNumber: selectedPatient.personalInfo.idNumber,
+      eventId: eventData._id,
       practitionerName,
       practitionerEmail,
-      referralComment,
-      date: new Date().toISOString(),
+      comments: referralComment,
     };
 
-    const existingReferrals =
-      JSON.parse(localStorage.getItem("referrals")) || [];
-    localStorage.setItem(
-      "referrals",
-      JSON.stringify([...existingReferrals, referralData])
+    const response = await axios.post(
+      "https://wellness-backend-ntls.onrender.com/api/v1/refferals",
+      referralData,
+      { withCredentials: true }
     );
 
-    // Reset states
+    toast.success("Referral created successfully!");
     setShowReferralForm(false);
     setReferralComment("");
     setPractitionerName("");
     setPractitionerEmail("");
     setSelectedPatient(null);
-
-    toast.success("Referral added successfully!");
-    navigate("/nurse/referrals");
-  };
+  } catch (error) {
+    console.error("Error creating referral:", error);
+    toast.error(
+      error.response?.data?.message || "Failed to create referral"
+    );
+  } finally {
+    setReferralLoading(false);
+  }
+};
 
  const calculateAge = (birthDateString) => {
   const today = new Date();
@@ -1421,12 +1429,29 @@ console.log(filteredPatients);
 
               <div className="flex justify-end gap-4 mt-6">
                 <button
-                  onClick={handleAddReferral}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
-                >
-                  Submit Referral
-                  <HiOutlineArrowRight className="w-5 h-5" />
-                </button>
+  onClick={handleAddReferral}
+  disabled={referralLoading}
+  className={`flex items-center gap-2 px-6 py-2.5 ${
+    referralLoading 
+      ? "bg-gray-400 cursor-not-allowed" 
+      : "bg-[#992787] dark:bg-purple-600 hover:bg-[#7a1f6e] dark:hover:bg-purple-700"
+  } text-white rounded-lg transition-colors`}
+>
+  {referralLoading ? (
+    <span className="flex items-center">
+      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      Processing...
+    </span>
+  ) : (
+    <>
+      Submit Referral
+      <HiOutlineArrowRight className="w-5 h-5" />
+    </>
+  )}
+</button>
               </div>
             </div>
           </div>
