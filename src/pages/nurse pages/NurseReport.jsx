@@ -10,8 +10,8 @@ import {
   HiOutlineRefresh,
   HiOutlineDownload
 } from "react-icons/hi";
-import { Bar, Pie } from "react-chartjs-2";
-import { Chart, registerables } from 'chart.js';
+import { Pie, Bar } from "react-chartjs-2";
+import { Chart, registerables } from "chart.js";
 import { useNurseEvent } from "../../../context/NurseEventContext";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -91,6 +91,7 @@ const EventReport = () => {
       );
       
       if (response.data.success) {
+        console.log(response.data.stats); // Debugging
         setStats(response.data.stats);
       }
     } catch (error) {
@@ -208,6 +209,23 @@ const EventReport = () => {
     setIsExporting(true);
     try {
       const input = reportRef.current;
+      
+      // Force override before rendering to canvas
+      input.style.backgroundColor = "#ffffff";
+      input.style.color = "#000000";
+
+      // Walk through children and remove `oklch` background (basic fix)
+      input.querySelectorAll("*").forEach((child) => {
+        const bg = window.getComputedStyle(child).backgroundColor;
+        if (bg.includes("oklch")) {
+          child.style.backgroundColor = "#ffffff";
+        }
+        const color = window.getComputedStyle(child).color;
+        if (color.includes("oklch")) {
+          child.style.color = "#000000";
+        }
+      });
+
       const canvas = await html2canvas(input, {
         scale: 2,
         useCORS: true,
@@ -420,81 +438,20 @@ const EventReport = () => {
     }
   };
 
-  const renderBMIChart = () => (
-    <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm p-4">
-      <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
-        BMI Distribution
-      </h3>
-      <div className="h-64">
-        <Pie
-          data={{
-            labels: ["Underweight", "Normal", "Overweight", "Obese", "Unknown"],
-            datasets: [{
-              data: [
-                stats.bmi.underweight,
-                stats.bmi.normal,
-                stats.bmi.overweight,
-                stats.bmi.obese,
-                stats.bmi.unknown
-              ],
-              backgroundColor: [
-                CHART_COLORS.underweight,
-                CHART_COLORS.normal,
-                CHART_COLORS.overweight,
-                CHART_COLORS.obese,
-                CHART_COLORS.unknown
-              ],
-              borderWidth: 0
-            }]
-          }}
-          options={{
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  color: '#6b7280',
-                  font: {
-                    size: window.innerWidth < 768 ? 10 : 11
-                  },
-                  padding: 15
-                }
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    const label = context.label || '';
-                    const value = context.raw || 0;
-                    const total = context.chart.getDatasetMeta(0).total;
-                    const percentage = Math.round((value / total) * 100);
-                    return `${label}: ${value} (${percentage}%)`;
-                  }
-                }
-              }
-            }
-          }}
-        />
-      </div>
-    </div>
-  );
-
   const renderGlucoseChart = () => (
-    <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm p-4">
-      <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
-        Glucose Level Distribution
-      </h3>
-      <div className="h-64">
-        <Bar
-          data={{
-            labels: ["Fasting", "Random", "Postprandial", "Unknown"],
-            datasets: [{
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <h3 className="font-semibold mb-4">Glucose Level Distribution</h3>
+      <Bar
+        data={{
+          labels: ["Fasting", "Random", "Postprandial", "Unknown"],
+          datasets: [
+            {
               label: "Patients",
               data: [
                 stats.glucose.fasting,
                 stats.glucose.random,
                 stats.glucose.postprandial,
-                stats.glucose.unknown
+                stats.glucose.unknown,
               ],
               backgroundColor: [
                 CHART_COLORS.fasting,
@@ -504,75 +461,62 @@ const EventReport = () => {
               ],
               borderRadius: 6,
               borderSkipped: false,
-            }]
-          }}
-          options={{
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: false
-              }
             },
-            scales: {
-              x: { 
-                grid: {
-                  display: false
-                },
-                title: { 
-                  display: true, 
-                  text: "Glucose Type",
-                  color: '#6b7280',
-                  font: {
-                    weight: 'bold'
-                  }
-                },
-                ticks: {
-                  color: '#6b7280'
-                }
+          ],
+        }}
+        options={{
+          responsive: false,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false,
+            },
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Glucose Type",
+                color: "#666",
               },
-              y: { 
-                grid: {
-                  color: 'rgba(0, 0, 0, 0.05)',
-                  drawBorder: false
-                },
-                title: { 
-                  display: true, 
-                  text: "Number of Patients",
-                  color: '#6b7280',
-                  font: {
-                    weight: 'bold'
-                  }
-                },
-                ticks: {
-                  color: '#6b7280',
-                  precision: 0
-                },
-                beginAtZero: true
-              }
-            }
-          }}
-        />
-      </div>
+              ticks: {
+                color: "#666",
+              },
+            },
+            y: {
+              title: {
+                display: true,
+                text: "Number of Patients",
+                color: "#666",
+              },
+              ticks: {
+                color: "#666",
+                precision: 0,
+              },
+              beginAtZero: true,
+            },
+          },
+        }}
+        height={350}
+        width={350}
+      />
     </div>
   );
 
   const renderCholesterolChart = () => (
-    <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm p-4">
-      <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
-        Cholesterol Distribution
-      </h3>
-      <div className="h-64">
-        <Bar
-          data={{
-            labels: ["Normal", "Borderline", "High", "Unknown"],
-            datasets: [{
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <h3 className="font-semibold mb-4">Cholesterol Distribution</h3>
+      <Bar
+        data={{
+          labels: ["Normal", "Borderline", "High", "Unknown"],
+          datasets: [
+            {
               label: "Patients",
               data: [
                 stats.cholesterol.normal,
                 stats.cholesterol.borderline,
                 stats.cholesterol.high,
-                stats.cholesterol.unknown
+                stats.cholesterol.unknown,
               ],
               backgroundColor: [
                 CHART_COLORS.normal,
@@ -582,58 +526,139 @@ const EventReport = () => {
               ],
               borderRadius: 6,
               borderSkipped: false,
-            }]
-          }}
-          options={{
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: false
-              }
             },
-            scales: {
-              x: { 
-                grid: {
-                  display: false
-                },
-                title: { 
-                  display: true, 
-                  text: "Cholesterol Level",
-                  color: '#6b7280',
-                  font: {
-                    weight: 'bold'
-                  }
-                },
-                ticks: {
-                  color: '#6b7280'
-                }
+          ],
+        }}
+        options={{
+          responsive: false,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false,
+            },
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Cholesterol Level",
+                color: "#666",
               },
-              y: { 
-                grid: {
-                  color: 'rgba(0, 0, 0, 0.05)',
-                  drawBorder: false
-                },
-                title: { 
-                  display: true, 
-                  text: "Number of Patients",
-                  color: '#6b7280',
-                  font: {
-                    weight: 'bold'
-                  }
-                },
-                ticks: {
-                  color: '#6b7280',
-                  precision: 0
-                },
-                beginAtZero: true
-              }
-            }
-          }}
-        />
-      </div>
+              ticks: {
+                color: "#666",
+              },
+            },
+            y: {
+              title: {
+                display: true,
+                text: "Number of Patients",
+                color: "#666",
+              },
+              ticks: {
+                color: "#666",
+                precision: 0,
+              },
+              beginAtZero: true,
+            },
+          },
+        }}
+        height={350}
+        width={350}
+      />
     </div>
   );
+
+  const renderPieChart = (title, labels, data, colors) => (
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <h3 className="font-semibold mb-4">{title}</h3>
+      <Pie
+        data={{
+          labels: labels,
+          datasets: [
+            {
+              data: data,
+              backgroundColor: colors,
+            },
+          ],
+        }}
+        options={{
+          responsive: false,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                color: '#6b7280',
+                font: {
+                  size: 11
+                },
+                padding: 15
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  const total = context.chart.getDatasetMeta(0).total;
+                  const percentage = Math.round((value / total) * 100);
+                  return `${label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }}
+        height={350}
+        width={350}
+      />
+    </div>
+  );
+
+  const renderBloodPressureChart = () =>
+  renderPieChart(
+    "Blood Pressure Distribution",
+    ["Normal", "Elevated", "High"],
+    [
+      stats?.bloodPressure?.normal || 0,
+      stats?.bloodPressure?.elevated || 0,
+      stats?.bloodPressure?.high || 0,
+    ],
+    [CHART_COLORS.normal, CHART_COLORS.elevated, CHART_COLORS.high]
+  );
+
+  const renderBMIChart = () =>
+    renderPieChart(
+      "BMI Distribution",
+      ["Underweight", "Normal", "Overweight", "Obese"],
+      [
+        stats.bmi.underweight,
+        stats.bmi.normal,
+        stats.bmi.overweight,
+        stats.bmi.obese,
+      ],
+      [CHART_COLORS.underweight, CHART_COLORS.normal, CHART_COLORS.overweight, CHART_COLORS.obese]
+    );
+
+  const renderHba1cChart = () =>
+    renderPieChart(
+      "HbA1c Distribution",
+      ["Normal (<5.7%)", "Prediabetes (5.7-6.4%)", "Diabetes (≥6.5%)"],
+      [stats.hba1c.normal, stats.hba1c.prediabetes, stats.hba1c.diabetes],
+      [CHART_COLORS.normal, CHART_COLORS.borderline, CHART_COLORS.high]
+    );
+
+  const renderHivChart = () =>
+    renderPieChart(
+      "HIV Results",
+      ["Negative", "Positive", "Inconclusive", "Unknown"],
+      [
+        stats.hiv.negative,
+        stats.hiv.positive,
+        stats.hiv.inconclusive,
+        stats.hiv.unknown,
+      ],
+      [CHART_COLORS.normal, CHART_COLORS.high, CHART_COLORS.borderline, CHART_COLORS.unknown]
+    );
 
   if (loading) {
     return (
@@ -644,15 +669,21 @@ const EventReport = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md" ref={reportRef}>
+    <div className="p-6 bg-white rounded-xl shadow-md space-y-8">
       <ToastContainer position="top-right" />
-      
+
+      {/* Logo Section */}
+      <div className="flex justify-center mb-6">
+        <img src="/src/assets/NEWLOGO1.png" alt="New Logo" className="h-16" />
+      </div>
+
+      {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
-        <h2 className="text-xl sm:text-2xl font-bold text-[#992787] dark:text-purple-400 flex items-center gap-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-[#992787] flex items-center gap-2">
           <HiOutlineDocumentText className="w-6 h-6" />
-          Event Health Report
+          Health Risk Assessment Report
         </h2>
-        
+
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <button
             onClick={fetchStatistics}
@@ -660,53 +691,63 @@ const EventReport = () => {
             className={`flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg ${
               loadingStats
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
-            } text-gray-800 dark:text-gray-100 transition-colors text-sm sm:text-base`}
+                : "bg-gray-200 hover:bg-gray-300"
+            } text-gray-800 transition-colors text-sm sm:text-base`}
           >
             <HiOutlineRefresh className="w-4 h-4 sm:w-5 sm:h-5" />
             Refresh Stats
           </button>
-          
+
           {report && (
             <div className="relative inline-block text-left">
               <button
-                onClick={() => document.getElementById('export-dropdown')?.classList.toggle('hidden')}
+                onClick={() =>
+                  document.getElementById("export-dropdown")?.classList.toggle(
+                    "hidden"
+                  )
+                }
                 className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg bg-[#992787] hover:bg-[#7a1f6e] text-white transition-colors text-sm sm:text-base"
                 disabled={isExporting}
               >
                 <HiOutlineDownload className="w-4 h-4 sm:w-5 sm:h-5" />
                 {isExporting ? "Exporting..." : "Export Report"}
               </button>
-              
-              <div 
-                id="export-dropdown" 
-                className="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 z-10"
+
+              <div
+                id="export-dropdown"
+                className="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
               >
                 <div className="py-1" role="none">
                   <button
                     onClick={() => {
-                      document.getElementById('export-dropdown')?.classList.add('hidden');
+                      document
+                        .getElementById("export-dropdown")
+                        ?.classList.add("hidden");
                       exportToExcel();
                     }}
-                    className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
                   >
                     Excel (.xlsx)
                   </button>
                   <button
                     onClick={() => {
-                      document.getElementById('export-dropdown')?.classList.add('hidden');
+                      document
+                        .getElementById("export-dropdown")
+                        ?.classList.add("hidden");
                       exportToPDF();
                     }}
-                    className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
                   >
                     PDF (.pdf)
                   </button>
                   <button
                     onClick={() => {
-                      document.getElementById('export-dropdown')?.classList.add('hidden');
+                      document
+                        .getElementById("export-dropdown")
+                        ?.classList.add("hidden");
                       exportToWord();
                     }}
-                    className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
                   >
                     Word (.docx)
                   </button>
@@ -714,7 +755,7 @@ const EventReport = () => {
               </div>
             </div>
           )}
-          
+
           {!report && (
             <button
               onClick={generateOpinion}
@@ -731,91 +772,174 @@ const EventReport = () => {
         </div>
       </div>
 
-      <div className="mb-4">
-        <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-1">
-          {eventData?.eventName}
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
-          {new Date(eventData?.eventDate).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+      {/* Event Details Section */}
+      <div className="bg-[#992787]/10 p-6 rounded-lg shadow-sm mb-8">
+        <h3 className="text-xl font-bold text-[#992787] mb-4">Event Details</h3>
+        <p className="text-gray-700">
+          <strong>Event Name:</strong> {eventData?.eventName}
+        </p>
+        <p className="text-gray-700">
+          <strong>Date:</strong>{" "}
+          {new Date(eventData?.eventDate).toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
           })}
         </p>
-        <div className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-xs font-medium">
-          {report?.status === "finalized" ? "Final Report" : "Draft Report"}
-        </div>
+        <p className="text-gray-700">
+          <strong>Venue:</strong> {eventData?.venue || "N/A"}
+        </p>
+        <p className="text-gray-700">
+          <strong>Company:</strong> {eventData?.company || "N/A"}
+        </p>
+      </div>
+
+      {/* Healthspace FMP Wellness Section */}
+      <div className="bg-[#992787]/10 p-6 rounded-lg shadow-sm mb-8">
+        <h3 className="text-xl font-bold text-[#992787] mb-4">
+          Healthspace FMP Wellness: Workplace Health Screenings That Drive
+          Awareness and Action
+        </h3>
+        <p className="text-gray-700">
+          At Healthspace FMP Wellness, we believe that early detection is key to
+          long-term well-being. Our onsite wellness screenings offer employees a
+          chance to better understand their health, identify risks early, and
+          take meaningful steps toward improvement. Each person receives private
+          feedback on the day of the screening, and those with concerning results
+          are, with their permission, referred for additional testing,
+          professional guidance, or ongoing health support.
+        </p>
+        <p className="text-gray-700 mt-4">
+          Many chronic health conditions—including high blood pressure, diabetes,
+          respiratory diseases, and some cancers—are linked to everyday lifestyle
+          choices such as inactivity, unhealthy eating, smoking, unmanaged stress,
+          and excess weight. These issues are widespread and affect people across
+          all industries. Including HIV screening in our assessments allows us to
+          offer a more complete picture of an individual's overall health.
+        </p>
+        <p className="text-gray-700 mt-4">
+          Our screenings are conducted face-to-face by trained professionals and
+          include, but are not limited to, the following biometric checks:
+        </p>
+        <ul className="list-disc pl-5 text-gray-700 mt-2">
+          <li>Blood pressure monitoring</li>
+          <li>Blood glucose and cholesterol levels</li>
+          <li>Body measurements: weight, height, and waist circumference</li>
+          <li>HIV testing with pre- and post-test counselling (HCT)</li>
+        </ul>
+        <p className="text-gray-700 mt-4">
+          Through these services, Healthspace FMP Wellness supports organisations
+          in building healthier, more informed, and more resilient workforces.
+        </p>
       </div>
 
       {/* Health Statistics Section */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
-          <HiOutlineChartBar className="w-6 h-6 text-[#992787] dark:text-purple-400" />
-          <h3 className="text-xl font-bold text-[#992787] dark:text-purple-400">
-            Health Statistics
-          </h3>
+          <HiOutlineChartBar className="w-6 h-6 text-[#992787]" />
+          <h3 className="text-xl font-bold text-[#992787]">Health Statistics</h3>
         </div>
-        
+
         {loadingStats ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
           </div>
         ) : stats ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="bg-[#992787]/10 dark:bg-purple-900/20 p-4 rounded-xl">
-              <h4 className="font-semibold text-[#992787] dark:text-purple-400 mb-2">Summary</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* Summary Section */}
+            <div className="bg-[#992787]/10 p-6 rounded-lg shadow-sm">
+              <h4 className="font-semibold text-[#992787] mb-4">Summary</h4>
+              <div className="grid grid-cols-2 gap-4">
                 <StatCard title="Total Patients" value={stats.patientCount} />
-                <StatCard title="Avg Blood Pressure" value={stats.averageBloodPressure} />
+                <StatCard
+                  title="Avg Blood Pressure"
+                  value={stats.averageBloodPressure}
+                />
                 <StatCard title="Avg BMI" value={stats.averageBmi} />
-                <StatCard title="Avg HbA1c" value={`${stats.averageHba1c}%`} />
-                <StatCard title="Avg Cholesterol" value={`${stats.averageCholesterol} mg/dL`} />
-                <StatCard title="Avg Glucose" value={`${stats.averageGlucose} mmol/L`} />
+                <StatCard
+                  title="Avg HbA1c"
+                  value={`${stats.averageHba1c}%`}
+                />
+                <StatCard
+                  title="Avg Cholesterol"
+                  value={`${stats.averageCholesterol} mg/dL`}
+                />
+                <StatCard
+                  title="Avg Glucose"
+                  value={`${stats.averageGlucose} mmol/L`}
+                />
               </div>
             </div>
-            
-            <div className="bg-[#992787]/10 dark:bg-purple-900/20 p-4 rounded-xl">
-              <h4 className="font-semibold text-[#992787] dark:text-purple-400 mb-2">Demographics</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+
+            {/* Demographics Section */}
+            <div className="bg-[#992787]/10 p-6 rounded-lg shadow-sm">
+              <h4 className="font-semibold text-[#992787] mb-4">Demographics</h4>
+              <div className="grid grid-cols-2 gap-4">
                 <StatCard title="Male" value={stats.sex.male} />
                 <StatCard title="Female" value={stats.sex.female} />
                 <StatCard title="Adults (18-39)" value={stats.age.adults} />
-                <StatCard title="Middle-Aged (40-59)" value={stats.age.middleAged} />
+                <StatCard
+                  title="Middle-Aged (40-59)"
+                  value={stats.age.middleAged}
+                />
                 <StatCard title="Seniors (60+)" value={stats.age.seniors} />
                 <StatCard title="HIV Positive" value={stats.hiv.positive} />
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-gray-100 dark:bg-gray-700 rounded-xl p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">
+          <div className="bg-gray-100 rounded-lg p-8 text-center">
+            <p className="text-gray-500">
               No statistics available. Click "Refresh Stats" to load health data.
             </p>
           </div>
         )}
-
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {renderBMIChart()}
-            {renderGlucoseChart()}
-            {renderCholesterolChart()}
-          </div>
-        )}
       </div>
+
+      {/* Charts Section */}
+      {stats && (
+        <div className="space-y-8">
+          {/* Bar Graphs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-[#992787]/10 p-6 rounded-lg shadow-sm flex justify-center items-center">
+              {renderGlucoseChart()}
+            </div>
+            <div className="bg-[#992787]/10 p-6 rounded-lg shadow-sm flex justify-center items-center">
+              {renderCholesterolChart()}
+            </div>
+          </div>
+
+          {/* Pie Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* <div className="bg-[#992787]/10 p-6 rounded-lg shadow-sm flex justify-center items-center">
+              {renderBloodPressureChart()}
+            </div> */}
+            <div className="bg-[#992787]/10 p-6 rounded-lg shadow-sm flex justify-center items-center">
+              {renderBMIChart()}
+            </div>
+            <div className="bg-[#992787]/10 p-6 rounded-lg shadow-sm flex justify-center items-center">
+              {renderHba1cChart()}
+            </div>
+            <div className="bg-[#992787]/10 p-6 rounded-lg shadow-sm flex justify-center items-center">
+              {renderHivChart()}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Medical Opinion Section */}
       {report ? (
-        <div className="space-y-6">
+        <div className="space-y-6 bg-[#f3e8f9] p-6 rounded-lg shadow-md">
           <div>
             <div className="flex justify-between items-center mb-2">
-              <h4 className="font-medium text-gray-700 dark:text-gray-300">
+              <h4 className="font-medium text-[#992787]">
                 Medical Opinion
               </h4>
               {report.status !== "finalized" && (
                 <button
                   onClick={() => setEditing(!editing)}
-                  className="flex items-center gap-1 text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 text-sm"
+                  className="flex items-center gap-1 text-[#992787] hover:text-[#7a1f6e] text-sm"
                 >
                   <HiOutlinePencil className="w-4 h-4" />
                   {editing ? "Cancel" : "Edit"}
@@ -828,7 +952,7 @@ const EventReport = () => {
                 <textarea
                   value={opinion}
                   onChange={(e) => setOpinion(e.target.value)}
-                  className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                  className="w-full p-4 border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787]"
                   rows={10}
                   placeholder="Enter your medical opinion..."
                 />
@@ -846,7 +970,7 @@ const EventReport = () => {
                 </button>
               </div>
             ) : (
-              <div className="prose dark:prose-invert max-w-none p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div className="prose max-w-none p-4 bg-gray-50 rounded-lg">
                 {opinion.split("\n").map((paragraph, index) => (
                   <p key={index} className="mb-4 last:mb-0">
                     {paragraph}
@@ -857,14 +981,14 @@ const EventReport = () => {
           </div>
 
           {report.status === "finalized" && !editing && (
-            <div className="mt-6 p-4 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
+            <div className="mt-6 p-4 border-t border-gray-200 text-sm text-gray-500">
               <p>
                 Report finalized by {report.nurse?.fullName || "you"} on{" "}
-                {new Date(report.updatedAt).toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
+                {new Date(report.updatedAt).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
                 })}
               </p>
             </div>
@@ -872,8 +996,8 @@ const EventReport = () => {
         </div>
       ) : (
         <div className="text-center py-12">
-          <HiOutlineDocumentText className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
+          <HiOutlineDocumentText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <p className="text-lg text-gray-600 mb-6">
             No report generated yet for this event
           </p>
           <button
@@ -895,9 +1019,9 @@ const EventReport = () => {
 
 // Reusable Stat Card Component
 const StatCard = ({ title, value }) => (
-  <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm transition-transform hover:scale-[1.02]">
-    <p className="text-sm text-gray-600 dark:text-gray-400">{title}</p>
-    <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+  <div className="bg-white p-3 rounded-lg shadow-sm transition-transform hover:scale-[1.02]">
+    <p className="text-sm text-gray-600">{title}</p>
+    <p className="text-lg font-semibold text-gray-800">
       {value || "N/A"}
     </p>
   </div>
