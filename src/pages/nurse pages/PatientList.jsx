@@ -256,12 +256,25 @@ const [referralLoading, setReferralLoading] = useState(false);
 
   const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
 
-  const calculateBMI = (height, weight) => {
-    const h = parseFloat(height);
-    const w = parseFloat(weight);
-    if (isNaN(h) || isNaN(w) || h <= 0) return null;
-    return Math.round((w / (h / 100) ** 2) * 10) / 10;
-  };
+ const calculateBMI = (height, weight) => {
+  // Return null if either value is missing
+  if (!height || !weight) return null;
+  
+  const h = parseFloat(height);
+  const w = parseFloat(weight);
+
+  // Return null for invalid values
+  if (isNaN(h) || isNaN(w) || h <= 0 || w <= 0) {
+    return null;
+  }
+
+  // Convert height from cm to meters (h/100)
+  const heightInMeters = h / 100;
+  const bmi = w / (heightInMeters * heightInMeters);
+  
+  return parseFloat(bmi.toFixed(1));
+};
+
 
   const getBmiColor = (bmi) => {
     if (bmi === undefined || bmi === null || bmi === "")
@@ -352,7 +365,7 @@ const handleAddPatient = async () => {
       },
       medicalInfo: {
         bloodPressure: newPatient.bloodPressure,
-        height: parseFloat(newPatient.height) / 100, // Convert cm to meters
+        height: parseFloat(newPatient.height),
         weight: parseFloat(newPatient.weight),
         cholesterol: parseFloat(newPatient.cholesterol),
         hivStatus: newPatient.hiv,
@@ -434,7 +447,12 @@ const handleAddPatient = async () => {
     newQuestions[index][field] = value;
     setQuestions(newQuestions);
   };
-
+const getBmiCategory = (bmi) => {
+  if (bmi < 18.5) return "Underweight";
+  if (bmi < 25) return "Normal weight";
+  if (bmi < 30) return "Overweight";
+  return "Obese";
+};
   const handleSignatureClear = () => {
     setSignature("");
   };
@@ -1059,9 +1077,9 @@ console.log(filteredPatients);
                                     newPatient.weight
                                   ).toFixed(1)}
                                 </span>
-                                {/* <span className="block text-xs mt-1 opacity-80">
+                                <span className="block text-xs mt-1 opacity-80">
                     {getBmiCategory(calculateBMI(newPatient.height, newPatient.weight))}
-                  </span> */}
+                  </span>
                               </>
                             ) : (
                               "Enter height and weight to calculate BMI"

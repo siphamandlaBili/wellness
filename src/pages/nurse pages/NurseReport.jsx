@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { 
@@ -8,14 +7,37 @@ import {
   HiOutlinePencil, 
   HiOutlineSave,
   HiOutlineChartBar,
-  HiOutlineRefresh
+  HiOutlineRefresh,
+  HiOutlineDownload
 } from "react-icons/hi";
 import { Bar, Pie } from "react-chartjs-2";
 import { Chart, registerables } from 'chart.js';
 import { useNurseEvent } from "../../../context/NurseEventContext";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
 
 // Register Chart.js components
 Chart.register(...registerables);
+
+// Color palette for charts
+const CHART_COLORS = {
+  normal: '#81c784',
+  elevated: '#ffb74d',
+  high: '#e57373',
+  underweight: '#4fc3f7',
+  overweight: '#ffb74d',
+  obese: '#e57373',
+  unknown: '#bdbdbd',
+  fasting: '#64b5f6',
+  random: '#ffd54f',
+  postprandial: '#ff8a65',
+  borderline: '#ffb74d',
+  male: '#64b5f6',
+  female: '#f06292'
+};
 
 const EventReport = () => {
   const { eventData } = useNurseEvent();
@@ -27,6 +49,9 @@ const EventReport = () => {
   const [opinion, setOpinion] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  
+  const reportRef = useRef(null);
 
   useEffect(() => {
     const fetchReportData = async () => {
@@ -87,7 +112,7 @@ const EventReport = () => {
       setIsGenerating(true);
       const response = await axios.post(
         `https://wellness-backend-ntls.onrender.com/api/v1/reports/generate/${eventData?._id}`,
-        {},
+        {"nurseId":`${eventData?.assignedNurse}`},
         { withCredentials: true }
       );
       setReport(response.data.report);
@@ -121,80 +146,336 @@ const EventReport = () => {
     }
   };
 
-  const renderBloodPressureChart = () => (
-    <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm p-4">
-      <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
-        Blood Pressure Distribution
-      </h3>
-      <Pie
-        data={{
-          labels: ["Normal", "Elevated", "High", "Unknown"],
-          datasets: [{
-            data: [
-              stats.bloodPressure.normal,
-              stats.bloodPressure.elevated,
-              stats.bloodPressure.high,
-              stats.bloodPressure.unknown
-            ],
-            backgroundColor: ["#81c784", "#ffb74d", "#e57373", "#bdbdbd"]
-          }]
-        }}
-        options={{
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: '#333',
-                font: {
-                  size: 11
-                }
-              }
-            }
-          }
-        }}
-        height={250}
-      />
-    </div>
-  );
+  // Export to Excel function
+  const exportToExcel = () => {
+    if (!stats || !report) return;
+    
+    setIsExporting(true);
+    try {
+      // Prepare data for Excel
+      const workbook = XLSX.utils.book_new();
+      
+      // Summary sheet
+      const summaryData = [
+        ['Event Name', eventData?.eventName],
+        ['Event Date', new Date(eventData?.eventDate).toLocaleDateString()],
+        ['Total Patients', stats.patientCount],
+        ['Average Blood Pressure', stats.averageBloodPressure],
+        ['Average BMI', stats.averageBmi],
+        ['Average HbA1c', `${stats.averageHba1c}%`],
+        ['Average Cholesterol', `${stats.averageCholesterol} mg/dL`],
+        ['Average Glucose', `${stats.averageGlucose} mmol/L`],
+        [],
+        ['Demographics', 'Count'],
+        ['Male', stats.sex.male],
+        ['Female', stats.sex.female],
+        ['Adults (18-39)', stats.age.adults],
+        ['Middle-Aged (40-59)', stats.age.middleAged],
+        ['Seniors (60+)', stats.age.seniors],
+        ['HIV Positive', stats.hiv.positive]
+      ];
+      
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+      
+      // Medical opinion sheet
+      const opinionData = [
+        ['Medical Opinion'],
+        ...opinion.split('\n').map(line => [line])
+      ];
+      
+      const opinionSheet = XLSX.utils.aoa_to_sheet(opinionData);
+      XLSX.utils.book_append_sheet(workbook, opinionSheet, 'Medical Opinion');
+      
+      // Generate and save Excel file
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, `${eventData?.eventName}_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      
+      toast.success("Excel report downloaded successfully");
+    } catch (error) {
+      toast.error("Failed to export to Excel");
+      console.error("Excel export error:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Export to PDF function
+  const exportToPDF = async () => {
+    if (!reportRef.current) return;
+    
+    setIsExporting(true);
+    try {
+      const input = reportRef.current;
+      const canvas = await html2canvas(input, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff"
+      });
+      
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${eventData?.eventName}_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+      
+      toast.success("PDF report downloaded successfully");
+    } catch (error) {
+      toast.error("Failed to export to PDF");
+      console.error("PDF export error:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Export to Word function
+  const exportToWord = async () => {
+    if (!stats || !report) return;
+    
+    setIsExporting(true);
+    try {
+      // Create document content
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `${eventData?.eventName} Health Report`,
+                  bold: true,
+                  size: 28,
+                })
+              ],
+              alignment: "center",
+              spacing: { after: 300 }
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Event Date: ${new Date(eventData?.eventDate).toLocaleDateString()}`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Health Statistics Summary",
+                  bold: true,
+                  size: 24,
+                  underline: true
+                })
+              ],
+              spacing: { before: 300, after: 200 }
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Total Patients: ${stats.patientCount}`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Average Blood Pressure: ${stats.averageBloodPressure}`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Average BMI: ${stats.averageBmi}`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Average HbA1c: ${stats.averageHba1c}%`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Average Cholesterol: ${stats.averageCholesterol} mg/dL`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Average Glucose: ${stats.averageGlucose} mmol/L`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Demographics",
+                  bold: true,
+                  size: 24,
+                  underline: true
+                })
+              ],
+              spacing: { before: 300, after: 200 }
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Male: ${stats.sex.male}`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Female: ${stats.sex.female}`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Adults (18-39): ${stats.age.adults}`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Middle-Aged (40-59): ${stats.age.middleAged}`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Seniors (60+): ${stats.age.seniors}`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `HIV Positive: ${stats.hiv.positive}`,
+                  size: 22,
+                })
+              ]
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Medical Opinion",
+                  bold: true,
+                  size: 24,
+                  underline: true
+                })
+              ],
+              spacing: { before: 300, after: 200 }
+            }),
+            ...opinion.split('\n').map(line => 
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: line,
+                    size: 22,
+                  })
+                ],
+                spacing: { after: 100 }
+              })
+            )
+          ]
+        }]
+      });
+
+      // Generate and save Word document
+      const buffer = await Packer.toBlob(doc);
+      saveAs(buffer, `${eventData?.eventName}_Report_${new Date().toISOString().slice(0, 10)}.docx`);
+      
+      toast.success("Word document downloaded successfully");
+    } catch (error) {
+      toast.error("Failed to export to Word");
+      console.error("Word export error:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const renderBMIChart = () => (
     <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm p-4">
       <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
         BMI Distribution
       </h3>
-      <Pie
-        data={{
-          labels: ["Underweight", "Normal", "Overweight", "Obese", "Unknown"],
-          datasets: [{
-            data: [
-              stats.bmi.underweight,
-              stats.bmi.normal,
-              stats.bmi.overweight,
-              stats.bmi.obese,
-              stats.bmi.unknown
-            ],
-            backgroundColor: ["#4fc3f7", "#81c784", "#ffb74d", "#e57373", "#bdbdbd"]
-          }]
-        }}
-        options={{
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: '#333',
-                font: {
-                  size: 11
+      <div className="h-64">
+        <Pie
+          data={{
+            labels: ["Underweight", "Normal", "Overweight", "Obese", "Unknown"],
+            datasets: [{
+              data: [
+                stats.bmi.underweight,
+                stats.bmi.normal,
+                stats.bmi.overweight,
+                stats.bmi.obese,
+                stats.bmi.unknown
+              ],
+              backgroundColor: [
+                CHART_COLORS.underweight,
+                CHART_COLORS.normal,
+                CHART_COLORS.overweight,
+                CHART_COLORS.obese,
+                CHART_COLORS.unknown
+              ],
+              borderWidth: 0
+            }]
+          }}
+          options={{
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: '#6b7280',
+                  font: {
+                    size: window.innerWidth < 768 ? 10 : 11
+                  },
+                  padding: 15
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.raw || 0;
+                    const total = context.chart.getDatasetMeta(0).total;
+                    const percentage = Math.round((value / total) * 100);
+                    return `${label}: ${value} (${percentage}%)`;
+                  }
                 }
               }
             }
-          }
-        }}
-        height={250}
-      />
+          }}
+        />
+      </div>
     </div>
   );
 
@@ -203,55 +484,76 @@ const EventReport = () => {
       <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
         Glucose Level Distribution
       </h3>
-      <Bar
-        data={{
-          labels: ["Fasting", "Random", "Postprandial", "Unknown"],
-          datasets: [{
-            label: "Patients",
-            data: [
-              stats.glucose.fasting,
-              stats.glucose.random,
-              stats.glucose.postprandial,
-              stats.glucose.unknown
-            ],
-            backgroundColor: ["#4fc3f7", "#ffb74d", "#e57373", "#bdbdbd"]
-          }]
-        }}
-        options={{
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          scales: {
-            x: { 
-              title: { 
-                display: true, 
-                text: "Glucose Type",
-                color: '#666'
-              },
-              ticks: {
-                color: '#666'
+      <div className="h-64">
+        <Bar
+          data={{
+            labels: ["Fasting", "Random", "Postprandial", "Unknown"],
+            datasets: [{
+              label: "Patients",
+              data: [
+                stats.glucose.fasting,
+                stats.glucose.random,
+                stats.glucose.postprandial,
+                stats.glucose.unknown
+              ],
+              backgroundColor: [
+                CHART_COLORS.fasting,
+                CHART_COLORS.random,
+                CHART_COLORS.postprandial,
+                CHART_COLORS.unknown
+              ],
+              borderRadius: 6,
+              borderSkipped: false,
+            }]
+          }}
+          options={{
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
               }
             },
-            y: { 
-              title: { 
-                display: true, 
-                text: "Number of Patients",
-                color: '#666'
+            scales: {
+              x: { 
+                grid: {
+                  display: false
+                },
+                title: { 
+                  display: true, 
+                  text: "Glucose Type",
+                  color: '#6b7280',
+                  font: {
+                    weight: 'bold'
+                  }
+                },
+                ticks: {
+                  color: '#6b7280'
+                }
               },
-              ticks: {
-                color: '#666',
-                precision: 0
-              },
-              beginAtZero: true
+              y: { 
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)',
+                  drawBorder: false
+                },
+                title: { 
+                  display: true, 
+                  text: "Number of Patients",
+                  color: '#6b7280',
+                  font: {
+                    weight: 'bold'
+                  }
+                },
+                ticks: {
+                  color: '#6b7280',
+                  precision: 0
+                },
+                beginAtZero: true
+              }
             }
-          }
-        }}
-        height={250}
-      />
+          }}
+        />
+      </div>
     </div>
   );
 
@@ -260,55 +562,76 @@ const EventReport = () => {
       <h3 className="font-semibold mb-4 text-gray-800 dark:text-gray-100">
         Cholesterol Distribution
       </h3>
-      <Bar
-        data={{
-          labels: ["Normal", "Borderline", "High", "Unknown"],
-          datasets: [{
-            label: "Patients",
-            data: [
-              stats.cholesterol.normal,
-              stats.cholesterol.borderline,
-              stats.cholesterol.high,
-              stats.cholesterol.unknown
-            ],
-            backgroundColor: ["#81c784", "#ffb74d", "#e57373", "#bdbdbd"]
-          }]
-        }}
-        options={{
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          scales: {
-            x: { 
-              title: { 
-                display: true, 
-                text: "Cholesterol Level",
-                color: '#666'
-              },
-              ticks: {
-                color: '#666'
+      <div className="h-64">
+        <Bar
+          data={{
+            labels: ["Normal", "Borderline", "High", "Unknown"],
+            datasets: [{
+              label: "Patients",
+              data: [
+                stats.cholesterol.normal,
+                stats.cholesterol.borderline,
+                stats.cholesterol.high,
+                stats.cholesterol.unknown
+              ],
+              backgroundColor: [
+                CHART_COLORS.normal,
+                CHART_COLORS.borderline,
+                CHART_COLORS.high,
+                CHART_COLORS.unknown
+              ],
+              borderRadius: 6,
+              borderSkipped: false,
+            }]
+          }}
+          options={{
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
               }
             },
-            y: { 
-              title: { 
-                display: true, 
-                text: "Number of Patients",
-                color: '#666'
+            scales: {
+              x: { 
+                grid: {
+                  display: false
+                },
+                title: { 
+                  display: true, 
+                  text: "Cholesterol Level",
+                  color: '#6b7280',
+                  font: {
+                    weight: 'bold'
+                  }
+                },
+                ticks: {
+                  color: '#6b7280'
+                }
               },
-              ticks: {
-                color: '#666',
-                precision: 0
-              },
-              beginAtZero: true
+              y: { 
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)',
+                  drawBorder: false
+                },
+                title: { 
+                  display: true, 
+                  text: "Number of Patients",
+                  color: '#6b7280',
+                  font: {
+                    weight: 'bold'
+                  }
+                },
+                ticks: {
+                  color: '#6b7280',
+                  precision: 0
+                },
+                beginAtZero: true
+              }
             }
-          }
-        }}
-        height={250}
-      />
+          }}
+        />
+      </div>
     </div>
   );
 
@@ -321,38 +644,86 @@ const EventReport = () => {
   }
 
   return (
-    <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+    <div className="p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md" ref={reportRef}>
       <ToastContainer position="top-right" />
       
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-[#992787] dark:text-purple-400 flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+        <h2 className="text-xl sm:text-2xl font-bold text-[#992787] dark:text-purple-400 flex items-center gap-2">
           <HiOutlineDocumentText className="w-6 h-6" />
           Event Health Report
         </h2>
         
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <button
             onClick={fetchStatistics}
             disabled={loadingStats}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+            className={`flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg ${
               loadingStats
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
-            } text-gray-800 dark:text-gray-100 transition-colors`}
+            } text-gray-800 dark:text-gray-100 transition-colors text-sm sm:text-base`}
           >
-            <HiOutlineRefresh className="w-5 h-5" />
+            <HiOutlineRefresh className="w-4 h-4 sm:w-5 sm:h-5" />
             Refresh Stats
           </button>
+          
+          {report && (
+            <div className="relative inline-block text-left">
+              <button
+                onClick={() => document.getElementById('export-dropdown')?.classList.toggle('hidden')}
+                className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg bg-[#992787] hover:bg-[#7a1f6e] text-white transition-colors text-sm sm:text-base"
+                disabled={isExporting}
+              >
+                <HiOutlineDownload className="w-4 h-4 sm:w-5 sm:h-5" />
+                {isExporting ? "Exporting..." : "Export Report"}
+              </button>
+              
+              <div 
+                id="export-dropdown" 
+                className="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 z-10"
+              >
+                <div className="py-1" role="none">
+                  <button
+                    onClick={() => {
+                      document.getElementById('export-dropdown')?.classList.add('hidden');
+                      exportToExcel();
+                    }}
+                    className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                  >
+                    Excel (.xlsx)
+                  </button>
+                  <button
+                    onClick={() => {
+                      document.getElementById('export-dropdown')?.classList.add('hidden');
+                      exportToPDF();
+                    }}
+                    className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                  >
+                    PDF (.pdf)
+                  </button>
+                  <button
+                    onClick={() => {
+                      document.getElementById('export-dropdown')?.classList.add('hidden');
+                      exportToWord();
+                    }}
+                    className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                  >
+                    Word (.docx)
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           
           {!report && (
             <button
               onClick={generateOpinion}
               disabled={isGenerating}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+              className={`flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg ${
                 isGenerating
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-[#992787] hover:bg-[#7a1f6e]"
-              } text-white transition-colors`}
+              } text-white transition-colors text-sm sm:text-base flex-1 sm:flex-initial`}
             >
               {isGenerating ? "Generating..." : "Generate AI Opinion"}
             </button>
@@ -361,12 +732,20 @@ const EventReport = () => {
       </div>
 
       <div className="mb-4">
-        <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-2">
-          {eventData?.eventName} - {new Date(eventData?.eventDate).toLocaleDateString()}
+        <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-1">
+          {eventData?.eventName}
         </h3>
-        <p className="text-gray-600 dark:text-gray-400">
-          {report?.status === "finalized" ? "Final Report" : "Draft Report"}
+        <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+          {new Date(eventData?.eventDate).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
         </p>
+        <div className="inline-block px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-xs font-medium">
+          {report?.status === "finalized" ? "Final Report" : "Draft Report"}
+        </div>
       </div>
 
       {/* Health Statistics Section */}
@@ -386,7 +765,7 @@ const EventReport = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="bg-[#992787]/10 dark:bg-purple-900/20 p-4 rounded-xl">
               <h4 className="font-semibold text-[#992787] dark:text-purple-400 mb-2">Summary</h4>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <StatCard title="Total Patients" value={stats.patientCount} />
                 <StatCard title="Avg Blood Pressure" value={stats.averageBloodPressure} />
                 <StatCard title="Avg BMI" value={stats.averageBmi} />
@@ -398,7 +777,7 @@ const EventReport = () => {
             
             <div className="bg-[#992787]/10 dark:bg-purple-900/20 p-4 rounded-xl">
               <h4 className="font-semibold text-[#992787] dark:text-purple-400 mb-2">Demographics</h4>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <StatCard title="Male" value={stats.sex.male} />
                 <StatCard title="Female" value={stats.sex.female} />
                 <StatCard title="Adults (18-39)" value={stats.age.adults} />
@@ -418,7 +797,6 @@ const EventReport = () => {
 
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {renderBloodPressureChart()}
             {renderBMIChart()}
             {renderGlucoseChart()}
             {renderCholesterolChart()}
@@ -437,7 +815,7 @@ const EventReport = () => {
               {report.status !== "finalized" && (
                 <button
                   onClick={() => setEditing(!editing)}
-                  className="flex items-center gap-1 text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300"
+                  className="flex items-center gap-1 text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 text-sm"
                 >
                   <HiOutlinePencil className="w-4 h-4" />
                   {editing ? "Cancel" : "Edit"}
@@ -479,10 +857,15 @@ const EventReport = () => {
           </div>
 
           {report.status === "finalized" && !editing && (
-            <div className="mt-6 p-4 border-t border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="mt-6 p-4 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
+              <p>
                 Report finalized by {report.nurse?.fullName || "you"} on{" "}
-                {new Date(report.updatedAt).toLocaleDateString()}
+                {new Date(report.updatedAt).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
               </p>
             </div>
           )}
@@ -496,11 +879,11 @@ const EventReport = () => {
           <button
             onClick={generateOpinion}
             disabled={isGenerating}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg ${
               isGenerating
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-[#992787] hover:bg-[#7a1f6e]"
-            } text-white transition-colors`}
+            } text-white transition-colors mx-auto`}
           >
             {isGenerating ? "Generating..." : "Generate AI Opinion"}
           </button>
@@ -512,7 +895,7 @@ const EventReport = () => {
 
 // Reusable Stat Card Component
 const StatCard = ({ title, value }) => (
-  <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+  <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm transition-transform hover:scale-[1.02]">
     <p className="text-sm text-gray-600 dark:text-gray-400">{title}</p>
     <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">
       {value || "N/A"}

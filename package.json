@@ -17,7 +17,10 @@
     "@tanstack/react-query": "^5.74.8",
     "axios": "^1.9.0",
     "chart.js": "^4.4.9",
+    "docx": "^9.5.0",
+    "file-saver": "^2.0.5",
     "framer-motion": "^12.6.1",
+    "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.484.0",
     "moment": "^2.30.1",
@@ -30,7 +33,8 @@
     "react-router-dom": "^7.4.0",
     "react-toastify": "^11.0.5",
     "tailwindcss": "^4.0.17",
-    "xero-node": "^11.0.0"
+    "xero-node": "^11.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
