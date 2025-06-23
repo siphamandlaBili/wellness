@@ -39,13 +39,15 @@ const EventBooking = () => {
   
 
   const eventTypes = [
-    "Corporate Event",
-    "Wedding",
-    "Birthday Party",
-    "Conference",
-    "Seminar",
-    "Networking Event",
-    "Other"
+    "Body Mass Index (BMI) Assessment",
+    "Random Blood Glucose Testing",
+    "Blood Pressure Testing",
+    "Total Cholesterol Testing",
+    "HIV Counseling and Testing (HCT)",
+    "Oral Health Education",
+    "TB Screening questionnaire",
+    "Lifestyle questionnaire",
+    "Waste Disposal - Post Event"
   ];
 
   const handleChange = (e) => {
