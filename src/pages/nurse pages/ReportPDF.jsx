@@ -36,7 +36,7 @@ const CHART_COLORS = {
   female: "#f06292",
 };
 
-const EventReport = () => {
+const ReportPDF = () => {
   const { eventData } = useNurseEvent();
   const [report, setReport] = useState(null);
   const [stats, setStats] = useState(null);
@@ -229,139 +229,157 @@ const EventReport = () => {
     }
   };
 
-  const renderGlucoseChart = () => (
-    <div className="bg-white p-4 rounded-lg shadow-md">
-      <h3 className="font-semibold mb-4 text-black">
-        Glucose Level Distribution
-      </h3>
-      <Bar
-        data={{
-          labels: ["Fasting", "Random", "Postprandial", "Unknown"],
-          datasets: [
-            {
-              label: "Patients",
-              data: [
-                stats.glucose.fasting,
-                stats.glucose.random,
-                stats.glucose.postprandial,
-                stats.glucose.unknown,
-              ],
-              backgroundColor: [
-                CHART_COLORS.fasting,
-                CHART_COLORS.random,
-                CHART_COLORS.postprandial,
-                CHART_COLORS.unknown,
-              ],
-              borderRadius: 6,
-              borderSkipped: false,
-            },
-          ],
-        }}
-        options={{
-          responsive: false,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false,
-            },
-          },
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: "Glucose Type",
-                color: "#666",
-              },
-              ticks: {
-                color: "#666",
-              },
-            },
-            y: {
-              title: {
-                display: true,
-                text: "Number of Patients",
-                color: "#666",
-              },
-              ticks: {
-                color: "#666",
-                precision: 0,
-              },
-              beginAtZero: true,
-            },
-          },
-        }}
-        height={350}
-        width={350}
-      />
-    </div>
-  );
+  const renderGlucoseChart = () => {
+    // Calculate total for percentage
+    const total =
+      stats.glucose.fasting +
+      stats.glucose.random +
+      stats.glucose.postprandial +
+      stats.glucose.unknown;
 
-  const renderCholesterolChart = () => (
-    <div className="bg-white p-4 rounded-lg shadow-md">
-      <h3 className="font-semibold mb-4 text-black">
-        Cholesterol Distribution
-      </h3>
-      <Bar
-        data={{
-          labels: ["Normal", "Borderline", "High", "Unknown"],
-          datasets: [
-            {
-              label: "Patients",
-              data: [
-                stats.cholesterol.normal,
-                stats.cholesterol.borderline,
-                stats.cholesterol.high,
-                stats.cholesterol.unknown,
-              ],
-              backgroundColor: [
-                CHART_COLORS.normal,
-                CHART_COLORS.borderline,
-                CHART_COLORS.high,
-                CHART_COLORS.unknown,
-              ],
-              borderRadius: 6,
-              borderSkipped: false,
-            },
-          ],
-        }}
-        options={{
-          responsive: false,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false,
-            },
-          },
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: "Cholesterol Level",
-                color: "#666",
+    // Helper to get percent string
+    const percent = (val) =>
+      total && val > 0 ? ` (${Math.round((val / total) * 100)}%)` : "";
+
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-md">
+        <h3 className="font-semibold mb-4 text-black">
+          Glucose Level Distribution
+        </h3>
+        <Bar
+          data={{
+            labels: [
+              `Fasting${percent(stats.glucose.fasting)}`,
+              `Random${percent(stats.glucose.random)}`,
+              `Postprandial${percent(stats.glucose.postprandial)}`,
+              `Unknown${percent(stats.glucose.unknown)}`,
+            ],
+            datasets: [
+              {
+                label: "Patients",
+                data: [
+                  stats.glucose.fasting,
+                  stats.glucose.random,
+                  stats.glucose.postprandial,
+                  stats.glucose.unknown,
+                ],
+                backgroundColor: [
+                  CHART_COLORS.fasting,
+                  CHART_COLORS.random,
+                  CHART_COLORS.postprandial,
+                  CHART_COLORS.unknown,
+                ],
+                borderRadius: 6,
+                borderSkipped: false,
               },
-              ticks: {
-                color: "#666",
+            ],
+          }}
+          options={{
+            responsive: false,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }, // Remove hover tooltips
+            },
+            scales: {
+              x: {
+                title: { display: true, text: "Glucose Type", color: "#666" },
+                ticks: { color: "#666" },
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Number of Patients",
+                  color: "#666",
+                },
+                ticks: { color: "#666", precision: 0 },
+                beginAtZero: true,
               },
             },
-            y: {
-              title: {
-                display: true,
-                text: "Number of Patients",
-                color: "#666",
+          }}
+          height={350}
+          width={350}
+        />
+      </div>
+    );
+  };
+
+  const renderCholesterolChart = () => {
+    const total =
+      stats.cholesterol.normal +
+      stats.cholesterol.borderline +
+      stats.cholesterol.high +
+      stats.cholesterol.unknown;
+
+    const percent = (val) =>
+      total && val > 0 ? ` (${Math.round((val / total) * 100)}%)` : "";
+
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-md">
+        <h3 className="font-semibold mb-4 text-black">
+          Cholesterol Distribution
+        </h3>
+        <Bar
+          data={{
+            labels: [
+              `Normal${percent(stats.cholesterol.normal)}`,
+              `Borderline${percent(stats.cholesterol.borderline)}`,
+              `High${percent(stats.cholesterol.high)}`,
+              `Unknown${percent(stats.cholesterol.unknown)}`,
+            ],
+            datasets: [
+              {
+                label: "Patients",
+                data: [
+                  stats.cholesterol.normal,
+                  stats.cholesterol.borderline,
+                  stats.cholesterol.high,
+                  stats.cholesterol.unknown,
+                ],
+                backgroundColor: [
+                  CHART_COLORS.normal,
+                  CHART_COLORS.borderline,
+                  CHART_COLORS.high,
+                  CHART_COLORS.unknown,
+                ],
+                borderRadius: 6,
+                borderSkipped: false,
               },
-              ticks: {
-                color: "#666",
-                precision: 0,
-              },
-              beginAtZero: true,
+            ],
+          }}
+          options={{
+            responsive: false,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }, // Remove hover tooltips
             },
-          },
-        }}
-        height={350}
-        width={350}
-      />
-    </div>
-  );
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Cholesterol Level",
+                  color: "#666",
+                },
+                ticks: { color: "#666" },
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Number of Patients",
+                  color: "#666",
+                },
+                ticks: { color: "#666", precision: 0 },
+                beginAtZero: true,
+              },
+            },
+          }}
+          height={350}
+          width={350}
+        />
+      </div>
+    );
+  };
 
   const renderPieChart = (title, labels, data, colors) => (
     <div className="bg-white p-4 rounded-lg shadow-md">
@@ -771,4 +789,4 @@ const StatCard = ({ title, value }) => (
   </div>
 );
 
-export default EventReport;
+export default ReportPDF;
