@@ -23,13 +23,13 @@ const generateEventCode = () => {
   return `${letters}-${yearNow}${monthNow}${dayNow}-${randomNumbers}`;
 };
 
-const professionalOptions = [
-  { value: "Registered Nurses", label: "Registered Nurses" },
-  { value: "Podiatrist", label: "Podiatrist" },
-  { value: "Physio", label: "Physio" },
-  { value: "Massage Therapist", label: "Massage Therapist" },
-  { value: "Psychology", label: "Psychology" },
-  { value: "Other", label: "Other" },
+const medicalProfessionalsOptions = [
+  "Registered Nurses",
+  "Podiatrist",
+  "Physio",
+  "Massage Therapist",
+  "Psychology",
+  "Other",
 ];
 
 const EventBooking = () => {
@@ -43,10 +43,11 @@ const EventBooking = () => {
     eventLocation: "",
     numberOfAttendees: "",
     additionalNotes: "",
-    medicalProfessionals: [], // <-- new field
+    medicalProfessionalsNeeded: [], // <-- new field
   });
 
   const [errors, setErrors] = useState({});
+  const [otherMedicalProfessional, setOtherMedicalProfessional] = useState("");
 
   const eventTypes = [
     "Body Mass Index (BMI) Assessment",
@@ -70,12 +71,13 @@ const EventBooking = () => {
 
   // Handler for multi-select
   const handleProfessionalsChange = (selectedOptions) => {
+    const values = selectedOptions ? selectedOptions.map((opt) => opt.value) : [];
     setFormData({
       ...formData,
-      medicalProfessionals: selectedOptions
-        ? selectedOptions.map((opt) => opt.value)
-        : [],
+      medicalProfessionalsNeeded: values,
     });
+    // Reset otherProfessional if "Other" is deselected
+    if (!values.includes("Other")) setOtherMedicalProfessional("");
   };
 
   const validateForm = () => {
@@ -101,6 +103,12 @@ const EventBooking = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
+      let professionals = formData.medicalProfessionalsNeeded;
+      if (professionals.includes("Other") && otherMedicalProfessional.trim()) {
+        professionals = professionals
+          .filter((p) => p !== "Other")
+          .concat(otherMedicalProfessional.trim());
+      }
       const eventData = {
         eventCode: formData?.eventCode,
         clientName: user?.fullName,
@@ -114,6 +122,7 @@ const EventBooking = () => {
         additionalNotes: formData.additionalNotes,
         status: null,
         role: "user",
+        medicalProfessionalsNeeded: professionals,
       };
 
       try {
@@ -134,7 +143,7 @@ const EventBooking = () => {
           eventLocation: "",
           numberOfAttendees: "",
           additionalNotes: "",
-          medicalProfessionals: [], // Reset new field
+          medicalProfessionalsNeeded: [], // Reset new field
         });
       } catch (error) {
         console.error("Error adding user:", error);
@@ -286,24 +295,83 @@ const EventBooking = () => {
                 </p>
               )}
             </div>
-          </div>
 
-          {/* Medical Professionals Needed */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Medical Professionals Needed
-            </label>
-            <Select
-              isMulti
-              options={professionalOptions}
-              className="basic-multi-select"
-              classNamePrefix="select"
-              value={professionalOptions.filter((opt) =>
-                formData.medicalProfessionals.includes(opt.value)
+            {/* Medical Professionals Needed */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Medical Professionals Needed
+              </label>
+              <div className="relative">
+                <HiOutlineUserGroup className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400 pointer-events-none" />
+                <div className="w-full">
+                  <Select
+                    isMulti
+                    options={medicalProfessionalsOptions.map((option) => ({
+                      value: option,
+                      label: option,
+                    }))}
+                    classNamePrefix="select"
+                    value={medicalProfessionalsOptions
+                      .map((opt) => ({ value: opt, label: opt }))
+                      .filter((opt) => formData.medicalProfessionalsNeeded.includes(opt.value))}
+                    onChange={handleProfessionalsChange}
+                    placeholder="Select professionals needed"
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        minHeight: '48px',
+                        borderColor: state.isFocused ? '#992787' : '#e5e7eb',
+                        boxShadow: state.isFocused ? '0 0 0 2px #e9d5ff' : undefined,
+                        backgroundColor: state.isFocused ? '#fff' : undefined,
+                        color: '#111827',
+                        fontSize: '1rem',
+                        borderRadius: '0.5rem',
+                        paddingLeft: '2.75rem', // matches pl-12
+                        paddingRight: '1rem',   // matches pr-4
+                      }),
+                      multiValue: (base) => ({
+                        ...base,
+                        backgroundColor: '#f3e8ff',
+                        color: '#7c3aed',
+                      }),
+                      placeholder: (base) => ({
+                        ...base,
+                        color: '#6b7280',
+                      }),
+                      menu: (base) => ({
+                        ...base,
+                        zIndex: 50,
+                      }),
+                    }}
+                  />
+                </div>
+              </div>
+              {errors.medicalProfessionalsNeeded && (
+                <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center">
+                  <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
+                  {errors.medicalProfessionalsNeeded}
+                </p>
               )}
-              onChange={handleProfessionalsChange}
-              placeholder="Select professionals needed"
-            />
+
+              {/* Other Medical Professional (if "Other" is selected) */}
+              {formData.medicalProfessionalsNeeded.includes("Other") && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Please specify
+                  </label>
+                  <div className="relative">
+                    <HiOutlineUserGroup className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
+                    <input
+                      type="text"
+                      value={otherMedicalProfessional}
+                      onChange={(e) => setOtherMedicalProfessional(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="Specify other medical professional"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Additional Notes */}
