@@ -20,6 +20,15 @@ import AdminAnalytics from "../src/pages/admin pages/AdminAnalytics";
 import ManageAdmins from "./components/ManageAdmins";
 import NurseReport from "./pages/nurse pages/NurseReport";
 import ReportPDF from "./pages/nurse pages/ReportPDF";
+import ViewReport from "./pages/super admin/ViewReport";
+import ReportsList from "./pages/super admin/ReportsList";
+
+// Wrapper to extract eventId from URL params
+import { useParams } from "react-router-dom";
+const ViewReportWrapper = () => {
+  const { eventId } = useParams();
+  return <ViewReport eventId={eventId} />;
+};
 
 const router = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
@@ -70,8 +79,8 @@ const router = createBrowserRouter([
     element: <SuperAdminDashboard />,
     children: [
       { path: "manage-admins", element: <ManageAdmins /> },
-      { path: "reports", element: "repors" }, // Replace with actual component
-      { path: "settings", element: "setting" }, // Replace with actual component
+      { path: "reports", element: <ReportsList /> }, // <-- Use the new component
+      { path: "settings", element: "setting" },
     ],
   },
   {
@@ -86,6 +95,10 @@ const router = createBrowserRouter([
       { path: "reports", element: <NurseReport /> },
       { path: "report-pdf", element: <ReportPDF /> }, // New route for ReportPDF
     ],
+  },
+  {
+    path: "/superadmin/reports/:eventId",
+    element: <ViewReportWrapper />,
   },
 ]);
 
