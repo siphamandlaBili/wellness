@@ -9,46 +9,58 @@ import SuperAdminDashboard from "../src/pages/super admin/SuperAdminDashboard";
 import AuthForm from "./pages/user pages/UserLogin";
 import UserDashboard from "./pages/user pages/UserDashBoard";
 import AdminManageApplications from "../src/pages/admin pages/AdminManageApplications";
-import AssignEventToNurse from './pages/admin pages/AssignEventToNurse';
-import NurseDashboard from "../src/pages/nurse pages/NurseDashboard"
+import AssignEventToNurse from "./pages/admin pages/AssignEventToNurse";
+import NurseDashboard from "../src/pages/nurse pages/NurseDashboard";
 import NurseEvent from "./pages/nurse pages/NurseEvent";
 import PatientList from "./pages/nurse pages/PatientList";
-import Analytics from './pages/Analytics';
-import Referrals from './pages/nurse pages/Referrals';
-import NurseAnalytics from '../src/pages/nurse pages/NurseAnalytics';
-import AdminAnalytics from '../src/pages/admin pages/AdminAnalytics';
+import Analytics from "./pages/Analytics";
+import Referrals from "./pages/nurse pages/Referrals";
+import NurseAnalytics from "../src/pages/nurse pages/NurseAnalytics";
+import AdminAnalytics from "../src/pages/admin pages/AdminAnalytics";
 import ManageAdmins from "./components/ManageAdmins";
 import NurseReport from "./pages/nurse pages/NurseReport";
+import ReportPDF from "./pages/nurse pages/ReportPDF";
+import ViewReport from "./pages/super admin/ViewReport";
+import ReportsList from "./pages/super admin/ReportsList";
+
+// Wrapper to extract eventId from URL params
+import { useParams } from "react-router-dom";
+const ViewReportWrapper = () => {
+  const { eventId } = useParams();
+  return <ViewReport eventId={eventId} />;
+};
 
 const router = createBrowserRouter([
   { path: "/", element: <LandingPage /> },
   { path: "/login", element: <AuthForm /> },
-  { path: "/user-dashboard", element: <UserDashboard />,
+  {
+    path: "/user-dashboard",
+    element: <UserDashboard />,
     children: [
       {
         path: "profile",
-        element: <UserProfilePage />
+        element: <UserProfilePage />,
       },
       {
         path: "applications",
-        element: <ManageApplications />
+        element: <ManageApplications />,
       },
       {
         index: true,
         path: "apply-for-event",
-        element: <EventBooking />
+        element: <EventBooking />,
       },
       {
         index: true,
         path: "reports",
-        element: 'admin report'
+        element: "admin report",
       },
       {
         index: true,
         path: "analytics",
-        element: <Analytics />
-      }
-    ]
+        element: <Analytics />,
+      },
+    ],
   },
   {
     path: "/admin",
@@ -58,30 +70,35 @@ const router = createBrowserRouter([
       { path: "profile", element: <UserProfilePage /> },
       { path: "past-events", element: <PastEvents /> },
       { path: "assign-event", element: <AssignEventToNurse /> },
-      { path: "analytics", element: <AdminAnalytics /> }, 
-      { path: "reports", element: 'admin' }
+      { path: "analytics", element: <AdminAnalytics /> },
+      { path: "reports", element: "admin" },
     ],
   },
   {
     path: "/superadmin",
     element: <SuperAdminDashboard />,
     children: [
-      { path: "manage-admins", element: <ManageAdmins/> },
-      { path: "reports", element: 'repors' }, // Replace with actual component
-      { path: "settings", element: 'setting' }, // Replace with actual component
+      { path: "manage-admins", element: <ManageAdmins /> },
+      { path: "reports", element: <ReportsList /> }, // <-- Use the new component
+      { path: "settings", element: "setting" },
     ],
   },
   {
     path: "/nurse",
-    element: <NurseDashboard/>,
+    element: <NurseDashboard />,
     children: [
-      { path: "events", element: <NurseEvent/> },
-      { path: "patients", element: <PatientList/> }, 
+      { path: "events", element: <NurseEvent /> },
+      { path: "patients", element: <PatientList /> },
       { path: "referrals", element: <Referrals /> }, // New Referrals route
       { path: "analytics", element: <NurseAnalytics /> }, // New NurseAnalytics route
-      { path: "referrals", element: <Referrals /> }, 
-      { path: "reports", element: <NurseReport/> },
+      { path: "referrals", element: <Referrals /> },
+      { path: "reports", element: <NurseReport /> },
+      { path: "report-pdf", element: <ReportPDF /> }, // New route for ReportPDF
     ],
+  },
+  {
+    path: "/superadmin/reports/:eventId",
+    element: <ViewReportWrapper />,
   },
 ]);
 
