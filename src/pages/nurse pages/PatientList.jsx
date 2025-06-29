@@ -153,6 +153,7 @@ const formSteps = [
   },
 ];
 
+const Backend= import.meta.env.BACKEND_URL;
 const PatientList = () => {
   const [patients, setPatients] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]);
@@ -209,7 +210,7 @@ const [referralLoading, setReferralLoading] = useState(false);
     const fetchPatients = async () => {
       try {
         const res = await axios.get(
-          `https://wellness-backend-ntls.onrender.com/api/v1/patients/event/${eventData?._id}`,
+          `${Backend}/api/v1/patients/event/${eventData?._id}`,
           {
             withCredentials: true
           }
@@ -389,7 +390,7 @@ const handleAddPatient = async () => {
 
     // Send POST request to the API
     const response = await axios.post(
-      "https://wellness-backend-ntls.onrender.com/api/v1/patients",
+      `${Backend}/api/v1/patients`,
       patientData,
       { withCredentials: true }
     );
@@ -429,7 +430,7 @@ const handleAddPatient = async () => {
 
     // Refetch the updated patient list
     const res = await axios.get(
-      `https://wellness-backend-ntls.onrender.com/api/v1/patients/event/${eventData?._id}`,
+      `${Backend}/api/v1/patients/event/${eventData?._id}`,
       { withCredentials: true }
     );
     setPatients(res.data.data);
@@ -483,7 +484,7 @@ const getBmiCategory = (bmi) => {
     };
 
     const response = await axios.post(
-      "https://wellness-backend-ntls.onrender.com/api/v1/refferals",
+      `${Backend}/api/v1/refferals`,
       referralData,
       { withCredentials: true }
     );

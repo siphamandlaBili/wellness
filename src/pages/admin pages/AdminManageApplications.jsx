@@ -25,6 +25,7 @@ const AdminManageApplications = () => {
   const [itemsPerPage] = useState(6);
   const [invoiceItems, setInvoiceItems] = useState([{ description: '', amount: '' }]);
 
+  const Backend= import.meta.env.BACKEND_URL;
   // Cache functions
   const getCachedEvents = () => {
     const cache = localStorage.getItem(CACHE_KEY);
@@ -59,7 +60,7 @@ const AdminManageApplications = () => {
     try {
       if (!cached) setLoading(true);
       const { data } = await axios.get(
-        'https://wellness-backend-ntls.onrender.com/api/v1/events',
+        '${Backend}/api/v1/events',
         { withCredentials: true }
       );
       setCachedEvents(data.events);
@@ -79,7 +80,7 @@ const AdminManageApplications = () => {
     try {
       const event = eventStorage[selectedEventIndex];
       const { data } = await axios.put(
-        `https://wellness-backend-ntls.onrender.com/api/v1/events/${event._id}/status`,
+        `${Backend}/api/v1/events/${event._id}/status`,
         { 
           status: 'Rejected',
           reason: rejectionReason 
@@ -110,7 +111,7 @@ const AdminManageApplications = () => {
     try {
       const event = eventStorage[selectedEventIndex];
       const { data } = await axios.put(
-        `https://wellness-backend-ntls.onrender.com/api/v1/events/${event._id}/status`,
+        `${Backend}/api/v1/events/${event._id}/status`,
         { 
           status: 'Accepted',
           invoiceItems: invoiceItems.filter(item => item.description && item.amount)

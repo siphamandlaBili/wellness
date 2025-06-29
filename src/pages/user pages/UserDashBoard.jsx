@@ -5,6 +5,8 @@ import Navbar from '../../components/Navbar';
 import { CgProfile } from "react-icons/cg";
 import axios from 'axios';
 
+const Backend= import.meta.env.BACKEND_URL;
+
 const UserDashboard = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -25,7 +27,7 @@ const UserDashboard = () => {
         e.preventDefault();
         try {
             await axios.post(
-                'https://wellness-backend-ntls.onrender.com/api/v1/logout',
+                `${Backend}/api/v1/logout`,
                 {},
                 { withCredentials: true }
             );

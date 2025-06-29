@@ -21,7 +21,7 @@ import { Document, Packer, Paragraph, TextRun } from 'docx';
 
 // Register Chart.js components
 Chart.register(...registerables);
-
+const Backend= import.meta.env.BACKEND_URL;
 // Color palette for charts
 const CHART_COLORS = {
   normal: '#81c784',
@@ -58,7 +58,7 @@ const EventReport = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://wellness-backend-ntls.onrender.com/api/v1/reports/event/${eventData?._id}`,
+          `${Backend}/api/v1/reports/event/${eventData?._id}`,
           { withCredentials: true }
         );
         
@@ -86,7 +86,7 @@ const EventReport = () => {
     try {
       setLoadingStats(true);
       const response = await axios.get(
-        `https://wellness-backend-ntls.onrender.com/api/v1/reports/stats/${eventData?._id}`,
+        `${Backend}/api/v1/reports/stats/${eventData?._id}`,
         { withCredentials: true }
       );
       
@@ -111,7 +111,7 @@ const EventReport = () => {
     try {
       setIsGenerating(true);
       const response = await axios.post(
-        `https://wellness-backend-ntls.onrender.com/api/v1/reports/generate/${eventData?._id}`,
+        `${Backend}/api/v1/reports/generate/${eventData?._id}`,
         {"nurseId":`${eventData?.assignedNurse}`},
         { withCredentials: true }
       );
@@ -131,7 +131,7 @@ const EventReport = () => {
     try {
       setIsSaving(true);
       const response = await axios.put(
-        `https://wellness-backend-ntls.onrender.com/api/v1/reports/${report._id}`,
+        `${Backend}/api/v1/reports/${report._id}`,
         { editedOpinion: opinion },
         { withCredentials: true }
       );

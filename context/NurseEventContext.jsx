@@ -7,11 +7,11 @@ export const NurseEventProvider = ({ children }) => {
   const [eventData, setEventData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
+const Backend= import.meta.env.BACKEND_URL;
   const fetchEventData = async () => {
     try {
       const { data } = await axios.get(
-        'https://wellness-backend-ntls.onrender.com/api/v1/events/nurse/next-event',
+        `${Backend}/api/v1/events/nurse/next-event`,
         { withCredentials: true }
       );
       

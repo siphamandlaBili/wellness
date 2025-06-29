@@ -5,6 +5,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../../../context/authContext";
 
+const Backend= import.meta.env.BACKEND_URL;
+
 export default function AuthForm() {
   const { login, user } = useContext(UserContext);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +45,7 @@ export default function AuthForm() {
         };
 
         const response = await axios.post(
-          "https://wellness-backend-ntls.onrender.com/api/v1/register",
+          `${Backend}/api/v1/register`,
           payload,
           { withCredentials: true }
         );
@@ -59,7 +61,7 @@ export default function AuthForm() {
         };
         
         const response = await axios.post(
-          "https://wellness-backend-ntls.onrender.com/api/v1/login",
+          `${Backend}/api/v1/login`,
           payload,
           { withCredentials: true }
         );

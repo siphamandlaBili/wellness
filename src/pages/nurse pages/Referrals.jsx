@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNurseEvent } from '../../../context/NurseEventContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+const Backend= import.meta.env.BACKEND_URL;
 const Referrals = () => {
   const [referrals, setReferrals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,7 @@ const Referrals = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://wellness-backend-ntls.onrender.com/api/v1/refferals/event/${eventData._id}`,
+          `${Backend}/api/v1/refferals/event/${eventData._id}`,
           { withCredentials: true }
         );
         

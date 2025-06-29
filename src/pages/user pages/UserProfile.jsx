@@ -5,6 +5,8 @@ import { toast, ToastContainer } from 'react-toastify';
 
 axios.defaults.withCredentials = true;
 
+const Backend= import.meta.env.BACKEND_URL;
+
 const EditProfileModal = ({ isOpen, onClose, onSave, isLoading }) => {
   const { user } = useContext(UserContext);
   const [formData, setFormData] = useState({
@@ -193,7 +195,7 @@ const UserProfilePage = () => {
       }
 
       const response = await axios.put(
-        'https://wellness-backend-ntls.onrender.com/api/v1/profile',
+        `${Backend}/api/v1/profile`,
         formData,
         {
           withCredentials: true,

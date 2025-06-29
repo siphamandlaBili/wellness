@@ -12,7 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://wellness-backend-ntls.onrender.com',
+  baseURL: '${Backend}',
   withCredentials: true
 });
 

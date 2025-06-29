@@ -13,6 +13,8 @@ import {
 } from "react-icons/hi2";
 import { UserContext } from "../../../context/authContext";
 
+const Backend= import.meta.env.BACKEND_URL;
+
 const generateEventCode = () => {
   const letters = "VT";
   const yearNow = new Date().getFullYear();
@@ -96,7 +98,7 @@ const EventBooking = () => {
   
       try {
         const response = await axios.post(
-          "https://wellness-backend-ntls.onrender.com/api/v1/events",
+          `${Backend}/api/v1/events`,
           eventData,
           { withCredentials: true }
         );

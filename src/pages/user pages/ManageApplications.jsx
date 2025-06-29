@@ -66,7 +66,7 @@ const ManageApplications = () => {
 
       // Fetch fresh data
       const response = await axios.get(
-        'https://wellness-backend-ntls.onrender.com/api/v1/events/user-events',
+        `${Backend}/api/v1/events/user-events`,
         { 
           withCredentials: true,
           signal 

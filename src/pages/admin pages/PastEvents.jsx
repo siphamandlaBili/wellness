@@ -13,7 +13,7 @@ import {
 } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+const Backend= import.meta.env.BACKEND_URL;
 const CACHE_KEY = 'pastEventsCache';
 const CACHE_DURATION = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
 
@@ -58,7 +58,7 @@ const PastEvents = () => {
         }
 
         const response = await axios.get(
-          'https://wellness-backend-ntls.onrender.com/api/v1/events/past-events',
+          `${Backend}/api/v1/events/past-events`,
           { withCredentials: true }
         );
         
