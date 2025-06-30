@@ -15,6 +15,7 @@ const Backend= import.meta.env.VITE_BACKEND_URL;
         { withCredentials: true }
       );
       
+      console.log(data)
       if (!data.success) {
         throw new Error('Failed to fetch event data');
       }

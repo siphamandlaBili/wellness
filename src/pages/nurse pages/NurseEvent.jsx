@@ -13,7 +13,7 @@ import { useNurseEvent } from '../../../context/NurseEventContext';
 
 const NurseEvent = () => {
   const { eventData, isLoading, error } = useNurseEvent();
-
+  console.log(eventData)
   if (isLoading) {
     return (
       <div className="max-w-[100vw] mx-auto p-6 dark:bg-gray-900 min-h-screen flex items-center justify-center">
