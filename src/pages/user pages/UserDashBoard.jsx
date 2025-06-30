@@ -5,7 +5,7 @@ import Navbar from '../../components/Navbar';
 import { CgProfile } from "react-icons/cg";
 import axios from 'axios';
 
-const Backend= import.meta.env.BACKEND_URL;
+const Backend= import.meta.env.VITE_BACKEND_URL;
 
 const UserDashboard = () => {
     const location = useLocation();

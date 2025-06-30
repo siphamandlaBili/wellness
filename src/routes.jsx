@@ -25,6 +25,7 @@ import ReportsList from "./pages/super admin/ReportsList";
 
 // Wrapper to extract eventId from URL params
 import { useParams } from "react-router-dom";
+import UserReport from "./pages/user pages/UserReport";
 const ViewReportWrapper = () => {
   const { eventId } = useParams();
   return <ViewReport eventId={eventId} />;
@@ -53,7 +54,7 @@ const router = createBrowserRouter([
       {
         index: true,
         path: "reports",
-        element: "admin report",
+        element: <UserReport/>,
       },
       {
         index: true,

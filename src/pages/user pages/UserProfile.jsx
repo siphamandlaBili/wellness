@@ -5,7 +5,7 @@ import { toast, ToastContainer } from 'react-toastify';
 
 axios.defaults.withCredentials = true;
 
-const Backend= import.meta.env.BACKEND_URL;
+const Backend= import.meta.env.VITE_BACKEND_URL;
 
 const EditProfileModal = ({ isOpen, onClose, onSave, isLoading }) => {
   const { user } = useContext(UserContext);

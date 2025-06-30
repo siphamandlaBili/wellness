@@ -13,7 +13,7 @@ import {
 } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-const Backend= import.meta.env.BACKEND_URL;
+const Backend= import.meta.env.VITE_BACKEND_URL;
 const CACHE_KEY = 'pastEventsCache';
 const CACHE_DURATION = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
 
@@ -58,13 +58,13 @@ const PastEvents = () => {
         }
 
         const response = await axios.get(
-          `${Backend}/api/v1/events/past-events`,
+          `${Backend}/api/v1/events/past`,
           { withCredentials: true }
         );
         
         if (response.data.success) {
-          setPastEvents(response.data.pastEvents);
-          setCachedEvents(response.data.pastEvents);
+          setPastEvents(response.data.events);
+          setCachedEvents(response.data.events);
         } else {
           throw new Error('Failed to fetch events');
         }
@@ -83,8 +83,8 @@ const PastEvents = () => {
   // Pagination calculations
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentEvents = pastEvents.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(pastEvents.length / itemsPerPage);
+  const currentEvents = pastEvents?.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(pastEvents?.length / itemsPerPage);
 
   const StatusBadge = ({ status }) => (
     <span className={`px-3 py-1 rounded-full text-sm ${
@@ -118,7 +118,7 @@ const PastEvents = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {currentEvents.length > 0 ? (
+              {currentEvents?.length > 0 ? (
                 currentEvents.map((event) => (
                   <div key={event._id} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow">
                     <div className="flex justify-between items-start mb-4">
@@ -168,7 +168,7 @@ const PastEvents = () => {
             </div>
 
             {/* Pagination Controls */}
-            {pastEvents.length > 0 && (
+            {pastEvents?.length > 0 && (
               <div className="flex justify-center items-center gap-4 mt-8">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -245,7 +245,7 @@ const PastEvents = () => {
                       <p className="text-gray-700 dark:text-gray-300">{selectedEvent.additionalNotes}</p>
                     </div>
                   )}
-                  {selectedEvent.invoiceItems?.length > 0 && (
+                  {selectedEvent?.invoiceItems?.length > 0 && (
                     <div className="mt-4">
                       <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Invoice Items</p>
                       <div className="space-y-2">

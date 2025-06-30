@@ -19,7 +19,7 @@ import {
 // Cache configuration
 const CACHE_KEY = 'eventsCache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
+const Backend= import.meta.env.VITE_BACKEND_URL;
 const ManageApplications = () => {
   const [eventStorage, setEventStorage] = useState([]);
   const [showPopup, setShowPopup] = useState(false);

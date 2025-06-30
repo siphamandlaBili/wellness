@@ -14,7 +14,7 @@ import {
 import { UserContext } from "../../../context/authContext";
 import Select from "react-select"; // You may need to install react-select
 
-const Backend= import.meta.env.BACKEND_URL;
+const Backend= import.meta.env.VITE_BACKEND_URL;
 
 const generateEventCode = () => {
   const letters = "VT";

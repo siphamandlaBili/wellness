@@ -5,7 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../../../context/authContext";
 
-const Backend= import.meta.env.BACKEND_URL;
+const Backend= import.meta.env.VITE_BACKEND_URL;
 
 export default function AuthForm() {
   const { login, user } = useContext(UserContext);
@@ -59,7 +59,7 @@ export default function AuthForm() {
           email: formData.clientEmail,
           password: formData.password,
         };
-        
+        console.log(Backend)
         const response = await axios.post(
           `${Backend}/api/v1/login`,
           payload,
@@ -77,6 +77,8 @@ export default function AuthForm() {
 
           setTimeout(() => navigate(route), 1000);
         } else{
+          
+          console.log(response)
             toast.error(response.data.message);
         }
       }

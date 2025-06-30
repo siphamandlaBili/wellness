@@ -25,7 +25,7 @@ const AdminManageApplications = () => {
   const [itemsPerPage] = useState(6);
   const [invoiceItems, setInvoiceItems] = useState([{ description: '', amount: '' }]);
 
-  const Backend= import.meta.env.BACKEND_URL;
+  const Backend= import.meta.env.VITE_BACKEND_URL;
   // Cache functions
   const getCachedEvents = () => {
     const cache = localStorage.getItem(CACHE_KEY);
@@ -60,7 +60,7 @@ const AdminManageApplications = () => {
     try {
       if (!cached) setLoading(true);
       const { data } = await axios.get(
-        '${Backend}/api/v1/events',
+        `${Backend}/api/v1/events`,
         { withCredentials: true }
       );
       setCachedEvents(data.events);
@@ -80,7 +80,7 @@ const AdminManageApplications = () => {
     try {
       const event = eventStorage[selectedEventIndex];
       const { data } = await axios.put(
-        `${Backend}/api/v1/events/${event._id}/status`,
+        `${Backend}/api/v1/events/${event._id}`,
         { 
           status: 'Rejected',
           reason: rejectionReason 
@@ -111,7 +111,7 @@ const AdminManageApplications = () => {
     try {
       const event = eventStorage[selectedEventIndex];
       const { data } = await axios.put(
-        `${Backend}/api/v1/events/${event._id}/status`,
+        `${Backend}/api/v1/events/${event._id}`,
         { 
           status: 'Accepted',
           invoiceItems: invoiceItems.filter(item => item.description && item.amount)
@@ -136,8 +136,8 @@ const AdminManageApplications = () => {
   // Pagination
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedEvents = eventStorage.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(eventStorage.length / itemsPerPage);
+  const paginatedEvents = eventStorage?.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(eventStorage?.length / itemsPerPage);
 
   useEffect(() => { getEvents(); }, []);
 
@@ -156,7 +156,7 @@ const AdminManageApplications = () => {
   };
 
   const removeInvoiceItem = (index) => {
-    if (invoiceItems.length === 1) return;
+    if (invoiceItems?.length === 1) return;
     const newItems = invoiceItems.filter((_, i) => i !== index);
     setInvoiceItems(newItems);
   };
@@ -172,7 +172,7 @@ const AdminManageApplications = () => {
     </div>
   );
 
-  if (eventStorage.length === 0) return (
+  if (eventStorage?.length === 0) return (
     <div className="text-center p-8 text-gray-600 dark:bg-gray-900 dark:text-gray-300 min-h-screen">
       <div className="inline-block p-4 bg-[#992787]/10 rounded-full mb-4 dark:bg-purple-400/20">
         <FiInfo className="text-3xl text-[#992787] dark:text-purple-400" />
@@ -212,7 +212,7 @@ const AdminManageApplications = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {paginatedEvents.map((event, index) => {
+              {paginatedEvents?.map((event, index) => {
                 const originalIndex = startIndex + index;
                 return (
                   <tr key={event._id} className="hover:bg-[#f9f4f9] dark:hover:bg-gray-700 transition-colors">
@@ -276,7 +276,7 @@ const AdminManageApplications = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {paginatedEvents.map((event, index) => {
+          {paginatedEvents?.map((event, index) => {
             const originalIndex = startIndex + index;
             return (
               <div key={event._id} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow">
@@ -430,7 +430,7 @@ const AdminManageApplications = () => {
                   <div className="mt-4">
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Invoice Items</p>
                     <div className="space-y-2">
-                      {selectedEventDetails.invoiceItems.map((item, index) => (
+                      {selectedEventDetails?.invoiceItems?.map((item, index) => (
                         <div key={index} className="flex justify-between">
                           <span className="dark:text-gray-300">{item.description}</span>
                           <span className="dark:text-gray-300">R{parseFloat(item.amount).toFixed(2)}</span>
@@ -491,7 +491,7 @@ const AdminManageApplications = () => {
                   maxLength={500}
                 />
                 <div className="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {rejectionReason.length}/500
+                  {rejectionReason?.length}/500
                 </div>
               </div>
             </div>
@@ -541,7 +541,7 @@ const AdminManageApplications = () => {
               </div>
 
               <div className="space-y-4">
-                {invoiceItems.map((item, index) => (
+                {invoiceItems?.map((item, index) => (
                   <div key={index} className="flex gap-4 items-start">
                     <div className="flex-1">
                       <label className="block text-sm text-gray-500 dark:text-gray-400 mb-2">Description</label>
@@ -571,7 +571,7 @@ const AdminManageApplications = () => {
                           className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-700 dark:text-gray-200"
                           placeholder="Amount"
                         />
-                        {invoiceItems.length > 1 && (
+                        {invoiceItems?.length > 1 && (
                           <button
                             onClick={() => removeInvoiceItem(index)}
                             className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"

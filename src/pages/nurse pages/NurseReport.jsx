@@ -18,7 +18,7 @@ import jsPDF from "jspdf";
 
 // Register Chart.js components
 Chart.register(...registerables);
-const Backend= import.meta.env.BACKEND_URL;
+const Backend= import.meta.env.VITE_BACKEND_URL;
 // Color palette for charts
 const CHART_COLORS = {
   normal: "#81c784",

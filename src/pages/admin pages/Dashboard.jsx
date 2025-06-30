@@ -30,7 +30,7 @@ const Dashboard = () => {
   {/* Left sidebar */}
   <div className='flex flex-col justify-between min-h-[90vh] border-3 border-[#eeeeee] dark:border-gray-700 bg-white dark:bg-gray-800'>
     <ul className='flex flex-col items-start pt-5 text-gray-800 dark:text-gray-300'>
-      {['profile', 'view-applications', 'past-events', 'assign-event','reports', 'analytics'].map((item) => (
+      {['profile', 'view-applications', 'past-events', 'assign-event', 'analytics'].map((item) => (
         <NavLink
           key={item}
           className={({ isActive }) =>
@@ -48,7 +48,6 @@ const Dashboard = () => {
               item === 'profile' ? "https://img.icons8.com/?size=28&id=H101gtpJBVoh&format=png&color=000000" :
               item === 'past-events' ? "https://img.icons8.com/?size=28&id=nGCq83WiIaj1&format=png&color=000000" :
               item === 'assign-event' ? "https://img.icons8.com/?size=100&id=rCVDCgFrMyRJ&format=png&color=000000":
-              item === 'reports' ? "https://img.icons8.com/?size=28&id=123822&format=png&color=000000":
               item === 'analytics' ? "https://img.icons8.com/?size=100&id=rjMOGEY1NKlC&format=png&color=000000" :
               "https://img.icons8.com/?size=28&id=RYcCGyq4E6Bv&format=png&color=000000"
             }
@@ -59,7 +58,7 @@ const Dashboard = () => {
             {item === 'past-events' && 'Past Events'}
             {item === 'view-applications' && 'View Applications'}
             {item === 'assign-event' && 'Assign Event'}
-            {item === 'analytics' && 'Analytics'}
+            
             {item === 'reports' && 'Reports'}
           </p>
         </NavLink>
