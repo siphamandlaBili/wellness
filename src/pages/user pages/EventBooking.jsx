@@ -12,9 +12,9 @@ import {
   HiOutlineExclamationCircle,
 } from "react-icons/hi2";
 import { UserContext } from "../../../context/authContext";
-import Select from "react-select"; // You may need to install react-select
+import Select from "react-select";
 
-const Backend= import.meta.env.VITE_BACKEND_URL;
+const Backend = import.meta.env.VITE_BACKEND_URL;
 
 const generateEventCode = () => {
   const letters = "VT";
@@ -36,16 +36,17 @@ const medicalProfessionalsOptions = [
 
 const EventBooking = () => {
   const { user } = useContext(UserContext);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     eventCode: generateEventCode(),
     eventName: "",
     eventType: "",
     eventDate: "",
-    eventLocation: "",
+    venue: "",
     numberOfAttendees: "",
     additionalNotes: "",
-    medicalProfessionalsNeeded: [], // <-- new field
+    medicalProfessionalsNeeded: [],
   });
 
   const [errors, setErrors] = useState({});
@@ -71,14 +72,12 @@ const EventBooking = () => {
     });
   };
 
-  // Handler for multi-select
   const handleProfessionalsChange = (selectedOptions) => {
     const values = selectedOptions ? selectedOptions.map((opt) => opt.value) : [];
     setFormData({
       ...formData,
       medicalProfessionalsNeeded: values,
     });
-    // Reset otherProfessional if "Other" is deselected
     if (!values.includes("Other")) setOtherMedicalProfessional("");
   };
 
@@ -86,15 +85,40 @@ const EventBooking = () => {
     let formErrors = {};
     let isValid = true;
 
-    Object.keys(formData).forEach((key) => {
-      if (!formData[key] && key !== "eventCode" && key !== "additionalNotes") {
-        formErrors[key] = `${key.replace(/([A-Z])/g, " $1")} is required`;
+    // Required fields validation
+    const requiredFields = [
+      "eventName",
+      "eventType",
+      "eventDate",
+      "venue",
+      "numberOfAttendees"
+    ];
+    
+    requiredFields.forEach(field => {
+      if (!formData[field]) {
+        formErrors[field] = `${field.replace(/([A-Z])/g, " $1")} is required`;
         isValid = false;
       }
     });
 
-    if (formData.clientPhone && !/^\d{10}$/.test(formData.clientPhone)) {
+    // Phone validation
+    if (user?.phone && !/^\d{10}$/.test(user.phone)) {
       formErrors.clientPhone = "Client phone must be 10 digits";
+      isValid = false;
+    }
+
+    // Medical professionals validation
+    if (formData.medicalProfessionalsNeeded.length === 0) {
+      formErrors.medicalProfessionalsNeeded = "At least one professional type is required";
+      isValid = false;
+    }
+
+    // Other professional validation
+    if (
+      formData.medicalProfessionalsNeeded.includes("Other") && 
+      !otherMedicalProfessional.trim()
+    ) {
+      formErrors.otherMedicalProfessional = "Please specify the professional type";
       isValid = false;
     }
 
@@ -104,96 +128,109 @@ const EventBooking = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    
     if (validateForm()) {
-      let professionals = formData.medicalProfessionalsNeeded;
-      if (professionals.includes("Other") && otherMedicalProfessional.trim()) {
-        professionals = professionals
-          .filter((p) => p !== "Other")
-          .concat(otherMedicalProfessional.trim());
-      }
-      const eventData = {
-        eventCode: formData?.eventCode,
-        clientName: user?.fullName,
-        clientEmail: user?.email,
-        clientPhone: user?.phone,
-        eventName: formData.eventName,
-        eventType: formData.eventType,
-        eventDate: formData.eventDate,
-        eventLocation: formData.eventLocation,
-        numberOfAttendees: formData.numberOfAttendees,
-        additionalNotes: formData.additionalNotes,
-        status: null,
-        role: "user",
-        medicalProfessionalsNeeded: professionals,
-      };
-
       try {
+        // Prepare professionals array
+        let professionals = [...formData.medicalProfessionalsNeeded];
+        
+        // Handle "Other" professional type
+        if (professionals.includes("Other") && otherMedicalProfessional.trim()) {
+          professionals = professionals
+            .filter(p => p !== "Other")
+            .concat(otherMedicalProfessional.trim());
+        }
+
+        // Prepare event data in EXACT structure backend expects
+        const eventData = {
+          eventCode: formData.eventCode,
+          clientName: user?.fullName || "",
+          clientEmail: user?.email || "",
+          clientPhone: user?.phone || "",
+          eventName: formData.eventName,
+          eventType: formData.eventType,
+          eventDate: formData.eventDate,
+          venue: formData.venue,
+          numberOfAttendees: parseInt(formData.numberOfAttendees, 10),
+          additionalNotes: formData.additionalNotes,
+          medicalProfessionalsNeeded: professionals,
+          status: "Pending",
+          role: "user"
+        };
+
         const response = await axios.post(
           `${Backend}/api/v1/events`,
           eventData,
           { withCredentials: true }
         );
-        console.log("User added:", response.data);
+        
         toast.success("Event Inquiry Submitted Successfully!");
 
-        // Generate new event code and reset form
+        // Reset form with new event code
         setFormData({
-          eventCode: generateEventCode(), // Generate new code here
+          eventCode: generateEventCode(),
           eventName: "",
           eventType: "",
           eventDate: "",
-          eventLocation: "",
+          venue: "",
           numberOfAttendees: "",
           additionalNotes: "",
-          medicalProfessionalsNeeded: [], // Reset new field
+          medicalProfessionalsNeeded: [],
         });
+        setOtherMedicalProfessional("");
+        setErrors({});
+        
       } catch (error) {
-        console.error("Error adding user:", error);
-        toast.error("Failed to submit inquiry. Please try again.");
+        console.error("Error adding event:", error);
+        toast.error(
+          error.response?.data?.message || 
+          "Failed to submit inquiry. Please try again."
+        );
       }
     } else {
       toast.error("Please fill in all required fields");
     }
+    setIsSubmitting(false);
   };
 
   return (
-    // <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 py-12 px-4 sm:px-6 lg:px-8">
     <>
-      <ToastContainer theme="colored" />
-      <div className="bg-white dark:bg-gray-800 p-8 sm:p-12 rounded-xl shadow-lg">
-        <h2 className="text-3xl text-[#992787] dark:text-purple-400 font-bold text-center mb-8">
+      <ToastContainer theme="colored" position="top-right" autoClose={3000} />
+      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 md:p-8 rounded-xl max-w-4xl mx-auto">
+        <h2 className="text-2xl sm:text-3xl text-[#992787] dark:text-purple-400 font-bold mb-6">
           Event Inquiry Form
         </h2>
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Event Code Display */}
-          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-8 flex items-center">
-            <HiOutlineTicket className="w-6 h-6 mr-2 text-[#992787] dark:text-purple-300" />
-            <span className="text-[#992787] dark:text-purple-300 font-semibold">
+          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-6 flex items-center">
+            <HiOutlineTicket className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-[#992787] dark:text-purple-300" />
+            <span className="text-sm sm:text-base text-[#992787] dark:text-purple-300 font-semibold">
               Your Event Code: {formData.eventCode}
             </span>
           </div>
 
           {/* Form Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Event Name */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Event Name
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Event Name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <HiOutlineTicket className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
+                <HiOutlineTicket className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
                 <input
                   name="eventName"
                   value={formData.eventName}
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="Enter event name"
                 />
               </div>
               {errors.eventName && (
-                <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center">
-                  <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1 flex items-center">
+                  <HiOutlineExclamationCircle className="w-3 h-3 mr-1" />
                   {errors.eventName}
                 </p>
               )}
@@ -201,16 +238,16 @@ const EventBooking = () => {
 
             {/* Event Type */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Event Type
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Event Type <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <HiOutlineTag className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
+                <HiOutlineTag className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
                 <select
                   name="eventType"
                   value={formData.eventType}
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 >
                   <option value="">Select event type</option>
                   {eventTypes.map((type) => (
@@ -221,8 +258,8 @@ const EventBooking = () => {
                 </select>
               </div>
               {errors.eventType && (
-                <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center">
-                  <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1 flex items-center">
+                  <HiOutlineExclamationCircle className="w-3 h-3 mr-1" />
                   {errors.eventType}
                 </p>
               )}
@@ -230,69 +267,70 @@ const EventBooking = () => {
 
             {/* Event Date */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Event Date
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Event Date <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <HiOutlineCalendar className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-purple-500 dark:text-purple-400" />
+                <HiOutlineCalendar className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-purple-500 dark:text-purple-400" />
                 <input
                   type="date"
                   name="eventDate"
                   value={formData.eventDate}
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
               </div>
               {errors.eventDate && (
-                <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center">
-                  <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1 flex items-center">
+                  <HiOutlineExclamationCircle className="w-3 h-3 mr-1" />
                   {errors.eventDate}
                 </p>
               )}
             </div>
 
-            {/* Event Location */}
+            {/* Event Venue */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Event Location
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Event Venue <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <HiOutlineMapPin className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
+                <HiOutlineMapPin className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
                 <input
-                  name="eventLocation"
-                  value={formData.eventLocation}
+                  name="venue"
+                  value={formData.venue}
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  placeholder="Enter event location"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  placeholder="Enter event venue"
                 />
               </div>
-              {errors.eventLocation && (
-                <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center">
-                  <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
-                  {errors.eventLocation}
+              {errors.venue && (
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1 flex items-center">
+                  <HiOutlineExclamationCircle className="w-3 h-3 mr-1" />
+                  {errors.venue}
                 </p>
               )}
             </div>
 
             {/* Number of Attendees */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Number of Attendees
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Attendees <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <HiOutlineUserGroup className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
+                <HiOutlineUserGroup className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
                 <input
                   type="number"
                   name="numberOfAttendees"
                   value={formData.numberOfAttendees}
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  min="1"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="Estimated attendees"
                 />
               </div>
               {errors.numberOfAttendees && (
-                <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center">
-                  <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1 flex items-center">
+                  <HiOutlineExclamationCircle className="w-3 h-3 mr-1" />
                   {errors.numberOfAttendees}
                 </p>
               )}
@@ -300,11 +338,11 @@ const EventBooking = () => {
 
             {/* Medical Professionals Needed */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Medical Professionals Needed
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Professionals Needed <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <HiOutlineUserGroup className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400 pointer-events-none" />
+                <HiOutlineUserGroup className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400 pointer-events-none" />
                 <div className="w-full">
                   <Select
                     isMulti
@@ -317,28 +355,38 @@ const EventBooking = () => {
                       .map((opt) => ({ value: opt, label: opt }))
                       .filter((opt) => formData.medicalProfessionalsNeeded.includes(opt.value))}
                     onChange={handleProfessionalsChange}
-                    placeholder="Select professionals needed"
+                    placeholder="Select professionals"
                     styles={{
-                      control: (base, state) => ({
+                      control: (base) => ({
                         ...base,
-                        minHeight: '48px',
-                        borderColor: state.isFocused ? '#992787' : '#e5e7eb',
-                        boxShadow: state.isFocused ? '0 0 0 2px #e9d5ff' : undefined,
-                        backgroundColor: state.isFocused ? '#fff' : undefined,
+                        minHeight: '42px',
+                        borderColor: errors.medicalProfessionalsNeeded 
+                          ? '#ef4444' 
+                          : '#e5e7eb',
+                        boxShadow: errors.medicalProfessionalsNeeded 
+                          ? '0 0 0 1px #ef4444' 
+                          : undefined,
+                        '&:hover': {
+                          borderColor: errors.medicalProfessionalsNeeded 
+                            ? '#ef4444' 
+                            : '#d1d5db',
+                        },
+                        paddingLeft: '2.5rem',
+                        backgroundColor: '#fff',
                         color: '#111827',
-                        fontSize: '1rem',
+                        fontSize: '0.875rem',
                         borderRadius: '0.5rem',
-                        paddingLeft: '2.75rem', // matches pl-12
-                        paddingRight: '1rem',   // matches pr-4
                       }),
                       multiValue: (base) => ({
                         ...base,
                         backgroundColor: '#f3e8ff',
                         color: '#7c3aed',
+                        fontSize: '0.875rem',
                       }),
                       placeholder: (base) => ({
                         ...base,
                         color: '#6b7280',
+                        fontSize: '0.875rem',
                       }),
                       menu: (base) => ({
                         ...base,
@@ -349,28 +397,38 @@ const EventBooking = () => {
                 </div>
               </div>
               {errors.medicalProfessionalsNeeded && (
-                <p className="text-red-500 dark:text-red-400 text-sm mt-1 flex items-center">
-                  <HiOutlineExclamationCircle className="w-4 h-4 mr-1" />
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1 flex items-center">
+                  <HiOutlineExclamationCircle className="w-3 h-3 mr-1" />
                   {errors.medicalProfessionalsNeeded}
                 </p>
               )}
 
-              {/* Other Medical Professional (if "Other" is selected) */}
+              {/* Other Medical Professional */}
               {formData.medicalProfessionalsNeeded.includes("Other") && (
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Please specify
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Specify Professional
                   </label>
                   <div className="relative">
-                    <HiOutlineUserGroup className="w-6 h-6 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
+                    <HiOutlineUserGroup className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
                     <input
                       type="text"
                       value={otherMedicalProfessional}
                       onChange={(e) => setOtherMedicalProfessional(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      placeholder="Specify other medical professional"
+                      className={`w-full pl-10 pr-3 py-2.5 rounded-lg border-2 ${
+                        errors.otherMedicalProfessional 
+                          ? 'border-red-500 dark:border-red-400' 
+                          : 'border-gray-200 dark:border-gray-600'
+                      } focus:border-[#992787] dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100`}
+                      placeholder="Specify professional"
                     />
                   </div>
+                  {errors.otherMedicalProfessional && (
+                    <p className="text-red-500 dark:text-red-400 text-xs mt-1 flex items-center">
+                      <HiOutlineExclamationCircle className="w-3 h-3 mr-1" />
+                      {errors.otherMedicalProfessional}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -378,28 +436,68 @@ const EventBooking = () => {
 
           {/* Additional Notes */}
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Additional Notes
             </label>
             <div className="relative">
-              <HiOutlineDocumentText className="w-6 h-6 absolute left-3 top-4 text-[#992787] dark:text-purple-400" />
+              <HiOutlineDocumentText className="w-5 h-5 absolute left-3 top-3 text-[#992787] dark:text-purple-400" />
               <textarea
                 name="additionalNotes"
                 value={formData.additionalNotes}
                 onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 h-32"
-                placeholder="Any special requirements or notes..."
+                className="w-full pl-10 pr-3 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 h-28"
+                placeholder="Special requirements or notes..."
               />
+            </div>
+          </div>
+
+          {/* Client Info Preview */}
+          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+            <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Client Information</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Name:</span>
+                <span className="ml-2 dark:text-gray-200">{user?.fullName || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Email:</span>
+                <span className="ml-2 dark:text-gray-200">{user?.email || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Phone:</span>
+                <span className="ml-2 dark:text-gray-200">{user?.phone || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Event Code:</span>
+                <span className="ml-2 dark:text-gray-200 font-medium">{formData.eventCode}</span>
+              </div>
             </div>
           </div>
 
           {/* Submit Button */}
           <button
             onClick={handleSubmit}
-            className="w-full bg-[#992787] dark:bg-purple-600 hover:bg-[#7a1f6e] dark:hover:bg-purple-700 text-white py-4 px-8 rounded-lg font-semibold text-lg flex items-center justify-center transition-colors"
+            disabled={isSubmitting}
+            className={`w-full bg-[#992787] dark:bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold text-base flex items-center justify-center transition-colors ${
+              isSubmitting 
+                ? "opacity-70 cursor-not-allowed" 
+                : "hover:bg-[#7a1f6e] dark:hover:bg-purple-700"
+            }`}
           >
-            <HiOutlineDocumentText className="w-5 h-5 mr-2" />
-            Submit Inquiry
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </>
+            ) : (
+              <>
+                <HiOutlineDocumentText className="w-5 h-5 mr-2" />
+                Submit Inquiry
+              </>
+            )}
           </button>
         </div>
       </div>

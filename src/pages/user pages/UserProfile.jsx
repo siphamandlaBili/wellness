@@ -267,13 +267,6 @@ const UserProfilePage = () => {
             {user?.eventsCompleted || 0}
           </p>
         </div>
-        
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm hover:shadow-md transition">
-          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Assigned Events</h3>
-          <p className="text-4xl font-bold text-[#992787] dark:text-purple-400 mt-2">
-            {user?.assignedEvents?.length || 0}
-          </p>
-        </div>
 
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm hover:shadow-md transition">
           <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Profile Strength</h3>

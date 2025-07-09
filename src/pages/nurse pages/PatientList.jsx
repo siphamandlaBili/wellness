@@ -14,7 +14,6 @@ import {
   HiOutlineArrowRight,
   HiOutlineArrowLeft,
   HiOutlineUserAdd,
-  HiOutlineDocumentAdd,
   HiOutlineEye,
   HiOutlineSearch,
 } from "react-icons/hi";
@@ -26,45 +25,18 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import { useNurseEvent } from '../../../context/NurseEventContext';
+
 const formSteps = [
   {
     title: "Patient Registration",
     fields: [
-      { name: "name", label: "Full Name", icon: HiOutlineUser, required: true },
-      {
-        name: "surname",
-        label: "Surname",
-        icon: HiOutlineUser,
-        required: true,
-      },
-      {
-        name: "dateOfBirth",
-        label: "Date of Birth",
-        type: "date",
-        required: true,
-      },
+      { name: "fullName", label: "Full Name", icon: HiOutlineUser, required: true },
+      { name: "surname", label: "Surname", icon: HiOutlineUser, required: true },
+      { name: "dateOfBirth", label: "Date of Birth", type: "date", required: true },
       { name: "idNumber", label: "ID Number", required: true },
-      {
-        name: "email",
-        label: "Email",
-        type: "email",
-        icon: HiOutlineMail,
-        required: true,
-      },
-      {
-        name: "cellPhone",
-        label: "Cell Phone",
-        type: "tel",
-        icon: HiOutlinePhone,
-        required: true,
-      },
-      {
-        name: "sex",
-        label: "Sex",
-        type: "select",
-        options: ["Male", "Female", "Other"],
-        required: true,
-      },
+      { name: "email", label: "Email", type: "email", icon: HiOutlineMail, required: true },
+      { name: "phone", label: "Cell Phone", type: "tel", icon: HiOutlinePhone, required: true },
+      { name: "sex", label: "Sex", type: "select", options: ["Male", "Female", "Other"], required: true },
     ],
   },
   {
@@ -74,30 +46,19 @@ const formSteps = [
       { name: "planOption", label: "Plan/Option" },
       { name: "membershipNumber", label: "Membership Number" },
       { name: "mainMemberNames", label: "Main Member Names" },
-      {
-        name: "mainMemberAddress",
-        label: "Main Member Address",
-        type: "textarea",
-      },
-      {
-        name: "dependentCode",
-        label: "Dependent Code",
-        type: "select",
-        options: Array.from({ length: 10 }, (_, i) =>
-          i.toString().padStart(2, "0")
-        ),
+      { name: "mainMemberAddress", label: "Main Member Address", type: "textarea" },
+      { 
+        name: "dependentCode", 
+        label: "Dependent Code", 
+        type: "select", 
+        options: Array.from({ length: 10 }, (_, i) => i.toString().padStart(2, "0")) 
       },
     ],
   },
   {
     title: "Consent Agreement",
     fields: [
-      {
-        name: "consent",
-        label: "Digital Signature",
-        type: "signature",
-        required: true,
-      },
+      { name: "consentSignature", label: "Digital Signature", type: "signature", required: true },
     ],
   },
   {
@@ -105,46 +66,12 @@ const formSteps = [
     fields: [
       { name: "height", label: "Height (cm)", type: "number" },
       { name: "weight", label: "Weight (kg)", type: "number" },
-      {
-        name: "cholesterol",
-        label: "Total Cholesterol (mg/dL)",
-        type: "number",
-      },
-      {
-        name: "hiv",
-        label: "HIV Screening Result",
-        type: "select",
-        options: ["Negative", "Positive", "Inconclusive"],
-      },
-      // New dropdown selector for blood glucose type
-      {
-        name: "bloodPressure",
-        label: "Blood Pressure (mmHg)",
-        type: "text",
-        required: true,
-        placeholder: "e.g., 120/80 mmHg",
-      },
-      {
-        name: "glucoseType",
-        label: "Blood Glucose Type",
-        type: "select",
-        options: ["Fasting", "Random", "Postprandial"],
-        required: true,
-      },
-      {
-        name: "hba1c",
-        label: "HbA1c (%)",
-        type: "number",
-        step: "0.1",
-        required: true,
-      },
-      // Glucose level input field (value)
-      {
-        name: "glucose",
-        label: "Glucose Level (mmol/L)",
-        type: "number",
-        required: true,
-      },
+      { name: "cholesterol", label: "Total Cholesterol (mg/dL)", type: "number" },
+      { name: "hivStatus", label: "HIV Screening Result", type: "select", options: ["Negative", "Positive", "Inconclusive"] },
+      { name: "bloodPressure", label: "Blood Pressure (mmHg)", type: "text", required: true, placeholder: "e.g., 120/80 mmHg" },
+      { name: "glucoseType", label: "Blood Glucose Type", type: "select", options: ["Fasting", "Random", "Postprandial"], required: true },
+      { name: "hba1c", label: "HbA1c (%)", type: "number", step: "0.1", required: true },
+      { name: "glucoseLevel", label: "Glucose Level (mmol/L)", type: "number", required: true },
     ],
   },
   {
@@ -153,7 +80,8 @@ const formSteps = [
   },
 ];
 
-const Backend= import.meta.env.VITE_BACKEND_URL;
+const Backend = import.meta.env.VITE_BACKEND_URL;
+
 const PatientList = () => {
   const [patients, setPatients] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]);
@@ -163,31 +91,34 @@ const PatientList = () => {
   const [showForm, setShowForm] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [newPatient, setNewPatient] = useState({
-    name: "",
-    surname: "",
-    bloodPressure: "",
-    dateOfBirth: "",
-    idNumber: "",
-    email: "",
-    cellPhone: "",
-    hba1c: "",
-    schemeName: "",
-    planOption: "",
-    membershipNumber: "",
-    mainMemberNames: "",
-    mainMemberAddress: "",
-    dependentCode: "",
-    height: "",
-    weight: "",
-    bmi: "",
-    cholesterol: "",
-    hiv: "",
-    glucose: "",
-    sex: "",
-    age: "",
+    personalInfo: {
+      fullName: "",
+      surname: "",
+      dateOfBirth: "",
+      idNumber: "",
+      email: "",
+      phone: "",
+      sex: "",
+    },
+    medicalAidDetails: {
+      schemeName: "",
+      planOption: "",
+      membershipNumber: "",
+      mainMemberNames: "",
+      mainMemberAddress: "",
+      dependentCode: "",
+    },
+    medicalInfo: {
+      height: "",
+      weight: "",
+      bloodPressure: "",
+      cholesterol: "",
+      hivStatus: "",
+      glucoseType: "",
+      hba1c: "",
+      glucoseLevel: "",
+    },
   });
-const [referralLoading, setReferralLoading] = useState(false);   
-
   const [signature, setSignature] = useState("");
   const [questions, setQuestions] = useState([
     { question: "How often do you feel anxious?", answer: "" },
@@ -201,22 +132,17 @@ const [referralLoading, setReferralLoading] = useState(false);
   const [selectedDetails, setSelectedDetails] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
-  const { eventData, isloading, error } = useNurseEvent();
+  const [referralLoading, setReferralLoading] = useState(false);
+  const { eventData } = useNurseEvent();
   const navigate = useNavigate();
 
-  const eventCode = eventData?.eventCode;
-  console.log(eventData?._id);
   useEffect(() => {
     const fetchPatients = async () => {
       try {
         const res = await axios.get(
           `${Backend}/api/v1/patients/event/${eventData?._id}`,
-          {
-            withCredentials: true
-          }
+          { withCredentials: true }
         );
-
-        console.log(res.data.data);
         setPatients(res.data.data);
         setFilteredPatients(res.data.data);
       } catch (error) {
@@ -224,28 +150,27 @@ const [referralLoading, setReferralLoading] = useState(false);
         toast.error("Failed to load patients");
       }
     };
-    fetchPatients();
-  }, []);
+    if (eventData?._id) fetchPatients();
+  }, [eventData]);
 
   useEffect(() => {
-  const filtered = patients.filter((patient) => {
-    const searchLower = searchTerm.toLowerCase();
-    const fullName = patient.personalInfo?.fullName?.toLowerCase() || '';
-    const surname = patient.personalInfo?.surname?.toLowerCase() || '';
-    const idNumber = patient.personalInfo?.idNumber?.toString() || '';
-    const email = patient.personalInfo?.email?.toLowerCase() || '';
+    const filtered = patients.filter((patient) => {
+      const searchLower = searchTerm.toLowerCase();
+      const fullName = patient.personalInfo?.fullName?.toLowerCase() || '';
+      const surname = patient.personalInfo?.surname?.toLowerCase() || '';
+      const idNumber = patient.personalInfo?.idNumber?.toString() || '';
+      const email = patient.personalInfo?.email?.toLowerCase() || '';
 
-    return (
-      fullName.includes(searchLower) ||
-      surname.includes(searchLower) ||
-      idNumber.includes(searchTerm) ||
-      email.includes(searchLower)
-    );
-  });
-  
-  setFilteredPatients(filtered);
-  setCurrentPage(1);
-}, [searchTerm, patients]);
+      return (
+        fullName.includes(searchLower) ||
+        surname.includes(searchLower) ||
+        idNumber.includes(searchTerm) ||
+        email.includes(searchLower)
+      );
+    });
+    setFilteredPatients(filtered);
+    setCurrentPage(1);
+  }, [searchTerm, patients]);
 
   useEffect(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -257,25 +182,22 @@ const [referralLoading, setReferralLoading] = useState(false);
 
   const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
 
- const calculateBMI = (height, weight) => {
-  // Return null if either value is missing
-  if (!height || !weight) return null;
-  
-  const h = parseFloat(height);
-  const w = parseFloat(weight);
+  const calculateBMI = (height, weight) => {
+    if (!height || !weight) return null;
+    const h = parseFloat(height) / 100; // Convert cm to meters
+    const w = parseFloat(weight);
+    if (isNaN(h) || isNaN(w) || h <= 0 || w <= 0) return null;
+    return (w / (h * h)).toFixed(1);
+  };
 
-  // Return null for invalid values
-  if (isNaN(h) || isNaN(w) || h <= 0 || w <= 0) {
-    return null;
-  }
-
-  // Convert height from cm to meters (h/100)
-  const heightInMeters = h / 100;
-  const bmi = w / (heightInMeters * heightInMeters);
-  
-  return parseFloat(bmi.toFixed(1));
-};
-
+  const getBmiCategory = (bmi) => {
+    if (!bmi) return "";
+    const numBmi = parseFloat(bmi);
+    if (numBmi < 18.5) return "Underweight";
+    if (numBmi < 25) return "Normal weight";
+    if (numBmi < 30) return "Overweight";
+    return "Obese";
+  };
 
   const getBmiColor = (bmi) => {
     if (bmi === undefined || bmi === null || bmi === "")
@@ -292,7 +214,6 @@ const [referralLoading, setReferralLoading] = useState(false);
     return "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100";
   };
 
-  // Function to return color classes based on glucose value
   const getGlucoseColor = (glucoseType, glucoseValue) => {
     const numericValue = parseFloat(glucoseValue);
     if (isNaN(numericValue))
@@ -313,7 +234,6 @@ const [referralLoading, setReferralLoading] = useState(false);
     }
   };
 
-  //blood pressure
   const getBloodPressureColor = (value) => {
     if (!value)
       return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
@@ -338,6 +258,7 @@ const [referralLoading, setReferralLoading] = useState(false);
   };
 
   const getHbA1cColor = (value) => {
+    if (!value) return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
     const numericValue = parseFloat(value);
     if (isNaN(numericValue))
       return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
@@ -347,179 +268,160 @@ const [referralLoading, setReferralLoading] = useState(false);
     return "bg-red-500 text-white";
   };
 
-const handleAddPatient = async () => {
-  try {
-    // Calculate BMI and age from form data
-    const bmiCalc = calculateBMI(newPatient.height, newPatient.weight);
-    const ageCalc = calculateAge(newPatient.dateOfBirth);
+  const handleAddPatient = async () => {
+    try {
+      // Calculate BMI
+      const bmi = calculateBMI(
+        newPatient.medicalInfo.height, 
+        newPatient.medicalInfo.weight
+      );
+      
+      // Prepare patient data
+      const patientData = {
+        eventId: eventData?._id,
+        personalInfo: newPatient.personalInfo,
+        medicalInfo: {
+          ...newPatient.medicalInfo,
+          bmi: bmi ? parseFloat(bmi) : null
+        },
+        medicalAidDetails: newPatient.medicalAidDetails,
+        mentalHealthAssessment: questions,
+        consentSignature: signature
+      };
 
-    // Construct the patient data according to API requirements
-    const patientData = {
-      eventId: eventData?._id, // Using event ID from context
-      personalInfo: {
-        fullName: newPatient.name,
-        surname: newPatient.surname,
-        dateOfBirth: newPatient.dateOfBirth,
-        idNumber: newPatient.idNumber,
-        email: newPatient.email,
-        phone: newPatient.cellPhone,
-      },
-      medicalInfo: {
-        bloodPressure: newPatient.bloodPressure,
-        height: parseFloat(newPatient.height),
-        weight: parseFloat(newPatient.weight),
-        cholesterol: parseFloat(newPatient.cholesterol),
-        hivStatus: newPatient.hiv,
-        glucoseLevel: parseFloat(newPatient.glucose),
-        hba1c: parseFloat(newPatient.hba1c),
-        bmi: bmiCalc,
-      },
-      medicalAidDetails: {
-        schemeName: newPatient.schemeName,
-        planOption: newPatient.planOption,
-        membershipNumber: newPatient.membershipNumber,
-        mainMemberNames: newPatient.mainMemberNames,
-        mainMemberAddress: newPatient.mainMemberAddress,
-        dependentCode: newPatient.dependentCode,
-      },
-      mentalHealthAssessment: questions.map((q) => ({
-        question: q.question,
-        answer: q.answer,
-      })),
-    };
+      // Send request
+      await axios.post(`${Backend}/api/v1/patients`, patientData, { 
+        withCredentials: true 
+      });
+      
+      toast.success("Patient registered successfully!");
+      
+      // Reset form
+      setShowForm(false);
+      setCurrentStep(0);
+      setNewPatient({
+        personalInfo: {
+          fullName: "",
+          surname: "",
+          dateOfBirth: "",
+          idNumber: "",
+          email: "",
+          phone: "",
+          sex: "",
+        },
+        medicalAidDetails: {
+          schemeName: "",
+          planOption: "",
+          membershipNumber: "",
+          mainMemberNames: "",
+          mainMemberAddress: "",
+          dependentCode: "",
+        },
+        medicalInfo: {
+          height: "",
+          weight: "",
+          bloodPressure: "",
+          cholesterol: "",
+          hivStatus: "",
+          glucoseType: "",
+          hba1c: "",
+          glucoseLevel: "",
+        },
+      });
+      setSignature("");
+      setQuestions([
+        { question: "How often do you feel anxious?", answer: "" },
+        { question: "Do you have trouble sleeping?", answer: "" },
+      ]);
 
-    // Send POST request to the API
-    const response = await axios.post(
-      `${Backend}/api/v1/patients`,
-      patientData,
-      { withCredentials: true }
-    );
-    console.log("Patient added successfully:", response);
-    // Show success notification
-    toast.success("Patient registered successfully!");
-
-    // Close the form and reset states
-    setShowForm(false);
-    setCurrentStep(0);
-    setNewPatient({
-      name: "",
-      surname: "",
-      dateOfBirth: "",
-      idNumber: "",
-      email: "",
-      cellPhone: "",
-      schemeName: "",
-      planOption: "",
-      membershipNumber: "",
-      mainMemberNames: "",
-      mainMemberAddress: "",
-      dependentCode: "",
-      height: "",
-      weight: "",
-      cholesterol: "",
-      hiv: "",
-      glucose: "",
-      hba1c: "",
-      bloodPressure: "",
-    });
-    setSignature("");
-    setQuestions([
-      { question: "How often do you feel anxious?", answer: "" },
-      { question: "Do you have trouble sleeping?", answer: "" },
-    ]);
-
-    // Refetch the updated patient list
-    const res = await axios.get(
-      `${Backend}/api/v1/patients/event/${eventData?._id}`,
-      { withCredentials: true }
-    );
-    setPatients(res.data.data);
-    setFilteredPatients(res.data.data);
-  } catch (error) {
-    console.error("Error adding patient:", error);
-    toast.error(
-      error.response?.data?.message || "Failed to register patient"
-    );
-  }
-};
+      // Refresh patient list
+      const res = await axios.get(
+        `${Backend}/api/v1/patients/event/${eventData?._id}`,
+        { withCredentials: true }
+      );
+      setPatients(res.data.data);
+      setFilteredPatients(res.data.data);
+      
+    } catch (error) {
+      console.error("Error adding patient:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to register patient"
+      );
+    }
+  };
 
   const handleQuestionChange = (index, field, value) => {
     const newQuestions = [...questions];
     newQuestions[index][field] = value;
     setQuestions(newQuestions);
   };
-const getBmiCategory = (bmi) => {
-  if (bmi < 18.5) return "Underweight";
-  if (bmi < 25) return "Normal weight";
-  if (bmi < 30) return "Overweight";
-  return "Obese";
-};
+
   const handleSignatureClear = () => {
     setSignature("");
   };
 
   const handleAddReferral = async () => {
-  if (!practitionerName.trim() || !practitionerEmail.trim()) {
-    toast.error("Please enter practitioner name and email");
-    return;
-  }
-  if (!referralComment.trim()) {
-    toast.error("Please enter referral comments");
-    return;
-  }
-  if (!eventData?._id) {
-    toast.error("No active event selected");
-    return;
-  }
+    if (!practitionerName.trim() || !practitionerEmail.trim()) {
+      toast.error("Please enter practitioner name and email");
+      return;
+    }
+    if (!referralComment.trim()) {
+      toast.error("Please enter referral comments");
+      return;
+    }
+    if (!eventData?._id) {
+      toast.error("No active event selected");
+      return;
+    }
 
-  try {
-    setReferralLoading(true);
+    try {
+      setReferralLoading(true);
 
-    const referralData = {
-      idNumber: selectedPatient.personalInfo.idNumber,
-      eventId: eventData._id,
-      practitionerName,
-      practitionerEmail,
-      comments: referralComment,
-    };
+      const referralData = {
+        idNumber: selectedPatient.personalInfo.idNumber,
+        eventId: eventData._id,
+        practitionerName,
+        practitionerEmail,
+        comments: referralComment,
+      };
 
-    const response = await axios.post(
-      `${Backend}/api/v1/refferals`,
-      referralData,
-      { withCredentials: true }
-    );
+      const response = await axios.post(
+        `${Backend}/api/v1/refferals`,
+        referralData,
+        { withCredentials: true }
+      );
 
-    toast.success("Referral created successfully!");
-    setShowReferralForm(false);
-    setReferralComment("");
-    setPractitionerName("");
-    setPractitionerEmail("");
-    setSelectedPatient(null);
-  } catch (error) {
-    console.error("Error creating referral:", error);
-    toast.error(
-      error.response?.data?.message || "Failed to create referral"
-    );
-  } finally {
-    setReferralLoading(false);
-  }
-};
+      toast.success("Referral created successfully!");
+      setShowReferralForm(false);
+      setReferralComment("");
+      setPractitionerName("");
+      setPractitionerEmail("");
+      setSelectedPatient(null);
+    } catch (error) {
+      console.error("Error creating referral:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to create referral"
+      );
+    } finally {
+      setReferralLoading(false);
+    }
+  };
 
- const calculateAge = (birthDateString) => {
-  const today = new Date();
-  const birthDate = new Date(birthDateString);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  const dayDiff = today.getDate() - birthDate.getDate();
+  const calculateAge = (birthDateString) => {
+    if (!birthDateString) return "";
+    const today = new Date();
+    const birthDate = new Date(birthDateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
 
-  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-    age--;
-  }
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      age--;
+    }
 
-  return age;
-};
+    return age;
+  };
 
-console.log(filteredPatients);
   return (
     <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
       <ToastContainer />
@@ -583,7 +485,7 @@ console.log(filteredPatients);
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {currentPatients.map((patient) => (
                     <tr
-                      key={patient.id}
+                      key={patient._id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group"
                     >
                       <td className="p-4">
@@ -608,7 +510,6 @@ console.log(filteredPatients);
                       </td>
                       <td className="p-4">
                         <div className="flex justify-center gap-4">
-                          {/* Referrals Button */}
                           <button
                             onClick={() => {
                               setSelectedPatient(patient);
@@ -616,11 +517,8 @@ console.log(filteredPatients);
                             }}
                             className="text-[#992787] dark:text-purple-400 hover:text-[#7a1f6e] dark:hover:text-purple-300 p-2"
                           >
-                            Referrals{" "}
-                            {/* Replaced the icon with the word "Referrals" */}
+                            Referrals
                           </button>
-
-                          {/* View Details Button (unchanged) */}
                           <button
                             onClick={() => {
                               setSelectedDetails(patient);
@@ -662,9 +560,8 @@ console.log(filteredPatients);
 
         {/* Add Patient Modal */}
         {showForm && (
-          <div className="fixed   inset-0 overflow-auto bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="fixed inset-0 overflow-auto bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 overflow-auto rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl">
-              {/* Modal header */}
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
                   {formSteps[currentStep].title}
@@ -677,7 +574,6 @@ console.log(filteredPatients);
                 </button>
               </div>
 
-              {/* Progress indicators */}
               <div className="mb-4 flex justify-center gap-2">
                 {formSteps.map((_, index) => (
                   <div
@@ -690,19 +586,21 @@ console.log(filteredPatients);
                 ))}
               </div>
 
-              {/* Form steps */}
               {currentStep === 0 && (
-                <div className="grid grid-cols-2 gap-4 ">
+                <div className="grid grid-cols-2 gap-4">
                   {formSteps[0].fields.map((field) => (
                     <div key={field.name} className="relative">
                       {field.type === "select" ? (
                         <select
                           className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
-                          value={newPatient[field.name]}
+                          value={newPatient.personalInfo[field.name] || ""}
                           onChange={(e) =>
                             setNewPatient({
                               ...newPatient,
-                              [field.name]: e.target.value,
+                              personalInfo: {
+                                ...newPatient.personalInfo,
+                                [field.name]: e.target.value
+                              }
                             })
                           }
                         >
@@ -721,11 +619,14 @@ console.log(filteredPatients);
                         <input
                           type={field.type || "text"}
                           placeholder={field.label}
-                          value={newPatient[field.name]}
+                          value={newPatient.personalInfo[field.name] || ""}
                           onChange={(e) =>
                             setNewPatient({
                               ...newPatient,
-                              [field.name]: e.target.value,
+                              personalInfo: {
+                                ...newPatient.personalInfo,
+                                [field.name]: e.target.value
+                              }
                             })
                           }
                           className={`w-full ${field.icon ? "pl-10" : "pl-4"
@@ -745,11 +646,14 @@ console.log(filteredPatients);
                       {field.type === "select" ? (
                         <select
                           className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
-                          value={newPatient[field.name]}
+                          value={newPatient.medicalAidDetails[field.name] || ""}
                           onChange={(e) =>
                             setNewPatient({
                               ...newPatient,
-                              [field.name]: e.target.value,
+                              medicalAidDetails: {
+                                ...newPatient.medicalAidDetails,
+                                [field.name]: e.target.value
+                              }
                             })
                           }
                         >
@@ -767,11 +671,14 @@ console.log(filteredPatients);
                       ) : field.type === "textarea" ? (
                         <textarea
                           placeholder={field.label}
-                          value={newPatient[field.name]}
+                          value={newPatient.medicalAidDetails[field.name] || ""}
                           onChange={(e) =>
                             setNewPatient({
                               ...newPatient,
-                              [field.name]: e.target.value,
+                              medicalAidDetails: {
+                                ...newPatient.medicalAidDetails,
+                                [field.name]: e.target.value
+                              }
                             })
                           }
                           className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
@@ -780,11 +687,14 @@ console.log(filteredPatients);
                         <input
                           type="text"
                           placeholder={field.label}
-                          value={newPatient[field.name]}
+                          value={newPatient.medicalAidDetails[field.name] || ""}
                           onChange={(e) =>
                             setNewPatient({
                               ...newPatient,
-                              [field.name]: e.target.value,
+                              medicalAidDetails: {
+                                ...newPatient.medicalAidDetails,
+                                [field.name]: e.target.value
+                              }
                             })
                           }
                           className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-transparent dark:text-gray-100"
@@ -831,292 +741,94 @@ console.log(filteredPatients);
               )}
 
               {currentStep === 3 && (
-                <div className="fixed inset-0 overflow-auto flex items-center justify-center z-50">
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl relative max-h-[90vh] flex flex-col">
-                    {/* Modal Header */}
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
-                        Medical Screening
-                      </h2>
-                      <button onClick={() => setShowForm(false)}>
-                        <HiOutlineX className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-                      </button>
-                    </div>
-
-                    {/* Scrollable Content */}
-                    <div className="overflow-y-auto flex-1 pr-2 -mr-2">
-                      <div className="space-y-6 pb-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Height */}
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Height (cm)
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                                value={newPatient.height}
-                                onChange={(e) =>
-                                  setNewPatient({
-                                    ...newPatient,
-                                    height: e.target.value,
-                                  })
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {formSteps[3].fields.map((field) => (
+                      <div key={field.name} className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {field.label}
+                        </label>
+                        {field.type === "select" ? (
+                          <select
+                            className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
+                            value={newPatient.medicalInfo[field.name] || ""}
+                            onChange={(e) =>
+                              setNewPatient({
+                                ...newPatient,
+                                medicalInfo: {
+                                  ...newPatient.medicalInfo,
+                                  [field.name]: e.target.value
                                 }
-                                placeholder="Height"
-                              />
-                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
-                                cm
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Weight */}
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Weight (kg)
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                                value={newPatient.weight}
-                                onChange={(e) =>
-                                  setNewPatient({
-                                    ...newPatient,
-                                    weight: e.target.value,
-                                  })
-                                }
-                                placeholder="Weight"
-                              />
-                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
-                                kg
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Total Cholesterol */}
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Total Cholesterol (mg/dL) {/* Updated label */}
-                            </label>
-                            <input
-                              type="number"
-                              className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                              value={newPatient.cholesterol}
-                              onChange={(e) =>
-                                setNewPatient({
-                                  ...newPatient,
-                                  cholesterol: e.target.value,
-                                })
-                              }
-                              placeholder="Total Cholesterol Level"
-                            />
-                          </div>
-
-                          {/* Blood Pressure */}
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Blood Pressure (mmHg)
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="\d+/\d+"
-                                placeholder="120/80"
-                                value={newPatient.bloodPressure}
-                                onChange={(e) => {
-                                  const value = e.target.value.replace(
-                                    /[^0-9/]/g,
-                                    ""
-                                  );
-                                  setNewPatient({
-                                    ...newPatient,
-                                    bloodPressure: value,
-                                  });
-                                }}
-                                className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getBloodPressureColor(
-                                  newPatient.bloodPressure
-                                )} ${!newPatient.bloodPressure
-                                    ? "border-2 border-gray-200 dark:border-gray-600"
-                                    : "border-transparent"
-                                  }`}
-                              />
-                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
-                                mmHg
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* HbA1c */}
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              HbA1c (%)
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                step="0.1"
-                                min="0"
-                                max="20"
-                                placeholder="HbA1c Level"
-                                value={newPatient.hba1c}
-                                onChange={(e) =>
-                                  setNewPatient({
-                                    ...newPatient,
-                                    hba1c: e.target.value,
-                                  })
-                                }
-                                className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getHbA1cColor(
-                                  newPatient.hba1c
-                                )} ${!newPatient.hba1c
-                                    ? "border-2 border-gray-200 dark:border-gray-600"
-                                    : "border-transparent"
-                                  }`}
-                              />
-                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
-                                %
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* HIV Screening */}
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              HIV Screening Result
-                            </label>
-                            <select
-                              className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                              value={newPatient.hiv}
-                              onChange={(e) =>
-                                setNewPatient({
-                                  ...newPatient,
-                                  hiv: e.target.value,
-                                })
-                              }
-                            >
-                              <option value="">Select Result</option>
-                              <option value="Negative">Negative</option>
-                              <option value="Positive">Positive</option>
-                              <option value="Inconclusive">Inconclusive</option>
-                            </select>
-                          </div>
-
-                          {/* Glucose Type */}
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Blood Glucose Type
-                            </label>
-                            <select
-                              className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-[#992787]/20 focus:border-[#992787] dark:focus:border-purple-400"
-                              value={newPatient.glucoseType}
-                              onChange={(e) =>
-                                setNewPatient({
-                                  ...newPatient,
-                                  glucoseType: e.target.value,
-                                })
-                              }
-                            >
-                              <option value="">Select Type</option>
-                              <option value="Fasting">Fasting</option>
-                              <option value="Random">Random</option>
-                              <option value="Postprandial">Postprandial</option>
-                            </select>
-                          </div>
-
-                          {/* Glucose Level */}
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Glucose Level (mmol/L)
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                step="0.1"
-                                placeholder="Glucose Level"
-                                value={newPatient.glucose}
-                                onChange={(e) =>
-                                  setNewPatient({
-                                    ...newPatient,
-                                    glucose: e.target.value,
-                                  })
-                                }
-                                className={`w-full px-4 py-3 text-sm rounded-lg transition-colors ${getGlucoseColor(
-                                  newPatient.glucoseType,
-                                  newPatient.glucose
-                                )} ${!newPatient.glucoseType
-                                    ? "border-2 border-gray-200 dark:border-gray-600"
-                                    : "border-transparent"
-                                  }`}
-                              />
-                              <span className="absolute right-3 top-3.5 text-sm text-gray-500 dark:text-gray-400">
-                                mmol/L
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* BMI Display */}
-                        <div className="mt-4">
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Body Mass Index (BMI)
-                          </label>
-                          <div
-                            className={`p-4 rounded-lg text-center text-sm md:text-base ${getBmiColor(
-                              calculateBMI(newPatient.height, newPatient.weight)
-                            )}`}
+                              })
+                            }
                           >
-                            {calculateBMI(
-                              newPatient.height,
-                              newPatient.weight
-                            ) !== null ? (
-                              <>
-                                <span className="font-semibold">
-                                  {calculateBMI(
-                                    newPatient.height,
-                                    newPatient.weight
-                                  ).toFixed(1)}
-                                </span>
-                                <span className="block text-xs mt-1 opacity-80">
-                    {getBmiCategory(calculateBMI(newPatient.height, newPatient.weight))}
-                  </span>
-                              </>
-                            ) : (
-                              "Enter height and weight to calculate BMI"
-                            )}
-                          </div>
-                        </div>
+                            <option value="">Select {field.label.split(' ')[0]}</option>
+                            {field.options.map((option) => (
+                              <option
+                                key={option}
+                                value={option}
+                                className="dark:bg-gray-700"
+                              >
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type={field.type || "text"}
+                            placeholder={field.placeholder || field.label}
+                            value={newPatient.medicalInfo[field.name] || ""}
+                            onChange={(e) =>
+                              setNewPatient({
+                                ...newPatient,
+                                medicalInfo: {
+                                  ...newPatient.medicalInfo,
+                                  [field.name]: e.target.value
+                                }
+                              })
+                            }
+                            className="w-full px-4 py-3 text-sm border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100"
+                            step={field.step}
+                          />
+                        )}
                       </div>
-                    </div>
-
-                    {/* Navigation Buttons */}
-                    <div className="flex justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <button
-                        onClick={() =>
-                          setCurrentStep((prev) => Math.max(0, prev - 1))
-                        }
-                        className="px-6 py-2 text-gray-600 dark:text-gray-300 hover:text-[#992787] dark:hover:text-purple-400 transition-colors"
-                      >
-                        <HiOutlineArrowLeft className="inline mr-2" /> Back
-                      </button>
-                      <button
-                        onClick={() =>
-                          currentStep === formSteps.length - 1
-                            ? handleAddPatient()
-                            : setCurrentStep((prev) => prev + 1)
-                        }
-                        className="px-6 py-2 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
-                      >
-                        {currentStep === formSteps.length - 1
-                          ? "Submit"
-                          : "Next"}
-                        <HiOutlineArrowRight className="inline ml-2" />
-                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Body Mass Index (BMI)
+                    </label>
+                    <div
+                      className={`p-4 rounded-lg text-center text-sm md:text-base ${getBmiColor(
+                        calculateBMI(
+                          newPatient.medicalInfo.height, 
+                          newPatient.medicalInfo.weight
+                        )
+                      )}`}
+                    >
+                      {calculateBMI(
+                        newPatient.medicalInfo.height, 
+                        newPatient.medicalInfo.weight
+                      ) || "Enter height and weight to calculate BMI"}
+                      {calculateBMI(
+                        newPatient.medicalInfo.height, 
+                        newPatient.medicalInfo.weight
+                      ) && (
+                        <span className="block text-xs mt-1 opacity-80">
+                          {getBmiCategory(
+                            calculateBMI(
+                              newPatient.medicalInfo.height, 
+                              newPatient.medicalInfo.weight
+                            )
+                          )}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
+
               {currentStep === 4 && (
                 <div className="space-y-6">
                   <div className="border-t pt-4 dark:border-gray-700">
@@ -1181,7 +893,6 @@ console.log(filteredPatients);
                 </div>
               )}
 
-              {/* Navigation buttons */}
               <div className="flex justify-between mt-6">
                 <button
                   onClick={() =>
@@ -1212,7 +923,6 @@ console.log(filteredPatients);
         {showDetails && selectedDetails && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto">
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-xl relative max-h-[90vh] flex flex-col">
-              {/* Header */}
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-[#992787] dark:text-purple-400">
                   Patient Details - {selectedDetails?.personalInfo?.fullName}
@@ -1222,10 +932,8 @@ console.log(filteredPatients);
                 </button>
               </div>
 
-              {/* Scrollable Content */}
               <div className="overflow-y-auto pr-4 -mr-4">
                 <div className="grid grid-cols-2 gap-4 pb-4">
-                  {/* Personal Information */}
                   <div className="space-y-2">
                     <h3 className="font-semibold dark:text-gray-100">
                       Personal Information
@@ -1240,22 +948,19 @@ console.log(filteredPatients);
                       ).toLocaleDateString()}
                     </p>
                     <p className="dark:text-gray-300">
+                      Age: {calculateAge(selectedDetails?.personalInfo?.dateOfBirth)}
+                    </p>
+                    <p className="dark:text-gray-300">
                       Email: {selectedDetails?.personalInfo?.email}
                     </p>
                     <p className="dark:text-gray-300">
                       Phone: {selectedDetails?.personalInfo?.phone}
                     </p>
                     <p className="dark:text-gray-300">
-                      Sex: {selectedDetails.sex || "N/A"}
-                    </p>
-                    <p className="dark:text-gray-300">
-                      Age: {calculateAge(new Date(
-                        selectedDetails?.personalInfo?.dateOfBirth
-                      ).toLocaleDateString())}
+                      Sex: {selectedDetails?.personalInfo?.sex || "N/A"}
                     </p>
                   </div>
 
-                  {/* Medical Aid Details */}
                   <div className="space-y-2">
                     <h3 className="font-semibold dark:text-gray-100">
                       Medical Aid Details
@@ -1280,63 +985,80 @@ console.log(filteredPatients);
                     </p>
                   </div>
 
-                  {/* Medical Information */}
                   <div className="col-span-2 space-y-2">
                     <h3 className="font-semibold dark:text-gray-100">
                       Medical Information
                     </h3>
-
+                    <p className="dark:text-gray-300">
+                      Blood Pressure:{" "}
+                      <span
+                        className={`${getBloodPressureColor(
+                          selectedDetails?.medicalInfo?.bloodPressure
+                        )} px-2 py-1 rounded`}
+                      >
+                        {selectedDetails?.medicalInfo?.bloodPressure || "N/A"}
+                      </span>
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Height: {selectedDetails?.medicalInfo?.height ? `${selectedDetails?.medicalInfo?.height} cm` : "N/A"}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Weight: {selectedDetails?.medicalInfo?.weight ? `${selectedDetails?.medicalInfo?.weight} kg` : "N/A"}
+                    </p>
                     <p className="dark:text-gray-300">
                       BMI:{" "}
                       <span
                         className={`${getBmiColor(
-                          selectedDetails.bmi
+                          selectedDetails?.medicalInfo?.bmi
                         )} px-2 py-1 rounded`}
                       >
-                        {selectedDetails?.medicalInfo.bmi}
+                        {selectedDetails?.medicalInfo?.bmi || "N/A"} 
+                        {selectedDetails?.medicalInfo?.bmi && (
+                          ` (${getBmiCategory(selectedDetails?.medicalInfo?.bmi)})`
+                        )}
                       </span>
                     </p>
-
                     <p className="dark:text-gray-300">
-                      Cholesterol: {selectedDetails?.medicalInfo.bmi.cholesterol} mg/dL
+                      Cholesterol: {selectedDetails?.medicalInfo?.cholesterol ? `${selectedDetails?.medicalInfo?.cholesterol} mg/dL` : "N/A"}
                     </p>
                     <p className="dark:text-gray-300">
-                      HIV Status: {selectedDetails?.medicalInfo.hivStatus}
+                      HIV Status: {selectedDetails?.medicalInfo?.hivStatus || "N/A"}
                     </p>
-
-                    {/* Blood Glucose Value */}
                     <p className="dark:text-gray-300">
-                      Glucose: {selectedDetails?.medicalInfo.glucoseLevel}
+                      Glucose Type: {selectedDetails?.medicalInfo?.glucoseType || "N/A"}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      Glucose Level:{" "}
+                      {selectedDetails?.medicalInfo?.glucoseLevel ? (
+                        <span
+                          className={`${getGlucoseColor(
+                            selectedDetails?.medicalInfo?.glucoseType,
+                            selectedDetails?.medicalInfo?.glucoseLevel
+                          )} px-2 py-1 rounded`}
+                        >
+                          {selectedDetails?.medicalInfo?.glucoseLevel} mmol/L
+                        </span>
+                      ) : "N/A"}
+                    </p>
+                    <p className="dark:text-gray-300">
+                      HbA1c:{" "}
+                      {selectedDetails?.medicalInfo?.hba1c ? (
+                        <span
+                          className={`${getHbA1cColor(
+                            selectedDetails?.medicalInfo?.hba1c
+                          )} px-2 py-1 rounded`}
+                        >
+                          {selectedDetails?.medicalInfo?.hba1c}%
+                        </span>
+                      ) : "N/A"}
                     </p>
                   </div>
-                  <p className="dark:text-gray-300">
-                    HbA1c:{" "}
-                    <span
-                      className={`${getHbA1cColor(
-                        selectedDetails.hba1c
-                      )} px-2 py-1 rounded`}
-                    >
-                      {selectedDetails?.medicalInfo.hba1c
-                        ? `${selectedDetails?.medicalInfo.hba1c}%`
-                        : "N/A"}
-                    </span>
-                  </p>
-                  <p className="dark:text-gray-300">
-                    Blood Pressure:{" "}
-                    <span
-                      className={`${getBloodPressureColor(
-                        selectedDetails.bloodPressure
-                      )} px-2 py-1 rounded`}
-                    >
-                      {selectedDetails?.medicalInfo.bloodPressure || "N/A"}
-                    </span>
-                  </p>
-                  {/* Mental Health Assessment */}
+
                   <div className="col-span-2">
                     <h3 className="font-semibold mt-4 dark:text-gray-100">
                       Mental Health Assessment
                     </h3>
-                    {selectedDetails.mentalHealthAssessment?.map((q, index) => (
+                    {selectedDetails?.mentalHealthAssessment?.map((q, index) => (
                       <div key={index} className="mb-2">
                         <p className="font-medium dark:text-gray-300">
                           {q.question}
@@ -1348,14 +1070,13 @@ console.log(filteredPatients);
                     ))}
                   </div>
 
-                  {/* Signature */}
-                  {selectedDetails.signature && (
+                  {selectedDetails?.consentSignature && (
                     <div className="col-span-2 mt-4">
                       <h3 className="font-semibold dark:text-gray-100">
                         Consent Signature
                       </h3>
                       <img
-                        src={selectedDetails.signature}
+                        src={selectedDetails.consentSignature}
                         alt="Consent signature"
                         className="w-48 h-32 border-2 border-gray-200 dark:border-gray-600 object-contain"
                       />
@@ -1448,29 +1169,29 @@ console.log(filteredPatients);
 
               <div className="flex justify-end gap-4 mt-6">
                 <button
-  onClick={handleAddReferral}
-  disabled={referralLoading}
-  className={`flex items-center gap-2 px-6 py-2.5 ${
-    referralLoading 
-      ? "bg-gray-400 cursor-not-allowed" 
-      : "bg-[#992787] dark:bg-purple-600 hover:bg-[#7a1f6e] dark:hover:bg-purple-700"
-  } text-white rounded-lg transition-colors`}
->
-  {referralLoading ? (
-    <span className="flex items-center">
-      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-      Processing...
-    </span>
-  ) : (
-    <>
-      Submit Referral
-      <HiOutlineArrowRight className="w-5 h-5" />
-    </>
-  )}
-</button>
+                  onClick={handleAddReferral}
+                  disabled={referralLoading}
+                  className={`flex items-center gap-2 px-6 py-2.5 ${
+                    referralLoading 
+                      ? "bg-gray-400 cursor-not-allowed" 
+                      : "bg-[#992787] dark:bg-purple-600 hover:bg-[#7a1f6e] dark:hover:bg-purple-700"
+                  } text-white rounded-lg transition-colors`}
+                >
+                  {referralLoading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Processing...
+                    </span>
+                  ) : (
+                    <>
+                      Submit Referral
+                      <HiOutlineArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>

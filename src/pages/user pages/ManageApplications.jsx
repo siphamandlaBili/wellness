@@ -20,6 +20,7 @@ import {
 const CACHE_KEY = 'eventsCache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const Backend= import.meta.env.VITE_BACKEND_URL;
+
 const ManageApplications = () => {
   const [eventStorage, setEventStorage] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
@@ -182,7 +183,7 @@ const ManageApplications = () => {
               <td className='py-4 px-6 max-md:hidden dark:text-gray-300'>
                 {new Date(event.eventDate).toLocaleDateString()}
               </td>
-              <td className='py-4 px-6 max-lg:hidden dark:text-gray-300'>{event.eventLocation}</td>
+              <td className='py-4 px-6 max-lg:hidden dark:text-gray-300'>{event.venue}</td>
               <td className='py-4 px-6 text-center dark:text-gray-300'>{event.numberOfAttendees}</td>
               <td className='py-4 px-6 text-center'><StatusBadge status={event.status} /></td>
               <td className='py-4 px-6 text-center'>
@@ -381,11 +382,31 @@ const ManageApplications = () => {
     </div>
   );
 
+  const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="bg-gray-100 dark:bg-gray-700/50 p-6 rounded-full mb-6">
+        <FiCalendar className="w-16 h-16 text-[#992787] dark:text-purple-400" />
+      </div>
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+        No Events Applied For
+      </h2>
+      <p className="text-gray-600 dark:text-gray-400 max-w-md mb-6">
+        You haven't applied to any events yet. Browse our events and apply to start managing your applications here.
+      </p>
+      <button
+        className="px-6 py-3 bg-[#992787] dark:bg-purple-600 text-white rounded-lg hover:bg-[#7a1f6e] dark:hover:bg-purple-700 transition-colors"
+        onClick={() => window.location.href = '/user-dashboard/apply-for-event'}
+      >
+        Apply for Event
+      </button>
+    </div>
+  );
+
   return (
     <div className='container p-6 max-w-7xl mx-auto dark:bg-gray-900 min-h-screen'>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-[#2d3748] dark:text-gray-100">Event Applications</h1>
-        {!isLoading && (
+        <h1 className="text-3xl text-[#992787] dark:text-purple-400 font-bold text-center mb-8">Manage Events Applied For</h1>
+        {!isLoading && eventStorage.length > 0 && (
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsTableView(!isTableView)}
@@ -404,6 +425,8 @@ const ManageApplications = () => {
 
       {isLoading ? (
         <LoadingSpinner />
+      ) : eventStorage.length === 0 ? (
+        <EmptyState />
       ) : (
         <>
           {isTableView ? <TableView /> : <CardView />}

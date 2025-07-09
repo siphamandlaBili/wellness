@@ -4,7 +4,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import { 
   FiMoreVertical, FiCheck, FiX, FiEye, FiGrid, FiList, 
   FiInfo, FiCalendar, FiMapPin, FiUsers, FiChevronLeft, 
-  FiChevronRight, FiPlus, FiTrash 
+  FiChevronRight, FiPlus, FiTrash, FiDollarSign, FiMail, 
+  FiPhone, FiUser, FiType, FiClipboard, FiPackage 
 } from 'react-icons/fi';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -23,7 +24,7 @@ const AdminManageApplications = () => {
   const [selectedEventDetails, setSelectedEventDetails] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(6);
-  const [invoiceItems, setInvoiceItems] = useState([{ description: '', amount: '' }]);
+  const [invoiceItems, setInvoiceItems] = useState([]);
 
   const Backend= import.meta.env.VITE_BACKEND_URL;
   // Cache functions
@@ -125,7 +126,7 @@ const AdminManageApplications = () => {
       setEventStorage(updatedEvents);
       setCachedEvents(updatedEvents);
       setShowInvoiceForm(false);
-      setInvoiceItems([{ description: '', amount: '' }]);
+      setInvoiceItems([]);
       toast.success('Event approved with invoice details');
     } catch (error) {
       console.log(error)
@@ -164,6 +165,27 @@ const AdminManageApplications = () => {
   const handleViewDetails = (eventId) => {
     const event = eventStorage.find(e => e._id === eventId);
     setSelectedEventDetails(event);
+  };
+
+  // Pre-populate invoice items when opening invoice form
+  const handleApproveClick = (originalIndex) => {
+    const event = eventStorage[originalIndex];
+    
+    // Create initial invoice items from medical professionals needed
+    const initialItems = event.medicalProfessionalsNeeded?.map(prof => ({
+      description: prof,
+      amount: ''
+    })) || [];
+    
+    // Add at least one empty item if no professionals are specified
+    if (initialItems.length === 0) {
+      initialItems.push({ description: '', amount: '' });
+    }
+    
+    setInvoiceItems(initialItems);
+    setSelectedEventIndex(originalIndex);
+    setShowInvoiceForm(true);
+    setActiveDropdownIndex(null);
   };
 
   if (loading) return (
@@ -236,11 +258,7 @@ const AdminManageApplications = () => {
                         {activeDropdownIndex === originalIndex && (
                           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-20">
                             <div
-                              onClick={() => {
-                                setSelectedEventIndex(originalIndex);
-                                setShowInvoiceForm(true);
-                                setActiveDropdownIndex(null);
-                              }}
+                              onClick={() => handleApproveClick(originalIndex)}
                               className="px-4 py-3 hover:bg-green-50 dark:hover:bg-green-900 cursor-pointer flex items-center gap-2 text-green-600 dark:text-green-300"
                             >
                               <FiCheck className="w-5 h-5" />
@@ -295,7 +313,7 @@ const AdminManageApplications = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <FiMapPin className="text-[#992787] dark:text-purple-400" />
-                    <span className="dark:text-gray-300">{event.eventLocation}</span>
+                    <span className="dark:text-gray-300">{event.venue}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FiUsers className="text-[#992787] dark:text-purple-400" />
@@ -321,11 +339,7 @@ const AdminManageApplications = () => {
                     {activeDropdownIndex === originalIndex && (
                       <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-20">
                         <div
-                          onClick={() => {
-                            setSelectedEventIndex(originalIndex);
-                            setShowInvoiceForm(true);
-                            setActiveDropdownIndex(null);
-                          }}
+                          onClick={() => handleApproveClick(originalIndex)}
                           className="px-4 py-3 hover:bg-green-50 dark:hover:bg-green-900 cursor-pointer flex items-center gap-2 text-green-600 dark:text-green-300"
                         >
                           <FiCheck className="w-5 h-5" />
@@ -373,12 +387,14 @@ const AdminManageApplications = () => {
         </button>
       </div>
 
-      {/* Details Modal */}
+      {/* Enhanced Details Modal */}
       {selectedEventDetails && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-          <div className="bg-white dark:bg-gray-800 w-full max-w-md mx-4 p-6 rounded-2xl shadow-2xl border-l-4 border-[#992787]">
+          <div className="bg-white dark:bg-gray-800 w-full max-w-2xl mx-4 p-6 rounded-2xl shadow-2xl border-l-4 border-[#992787]">
             <div className="flex justify-between items-start mb-6">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white">Event Details</h2>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+                Event Application Details
+              </h2>
               <button
                 onClick={() => setSelectedEventDetails(null)}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
@@ -387,53 +403,128 @@ const AdminManageApplications = () => {
               </button>
             </div>
             
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Event Code</p>
-                  <p className="font-medium dark:text-gray-200">{selectedEventDetails.eventCode}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Company</p>
-                  <p className="font-medium dark:text-gray-200">{selectedEventDetails.clientName}</p>
+            <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DetailItem 
+                  icon={<FiType className="text-[#992787] dark:text-purple-400" />}
+                  label="Event Code"
+                  value={selectedEventDetails.eventCode}
+                />
+                <DetailItem 
+                  icon={<FiUser className="text-[#992787] dark:text-purple-400" />}
+                  label="Client Name"
+                  value={selectedEventDetails.clientName}
+                />
+                <DetailItem 
+                  icon={<FiMail className="text-[#992787] dark:text-purple-400" />}
+                  label="Client Email"
+                  value={selectedEventDetails.clientEmail}
+                />
+                <DetailItem 
+                  icon={<FiPhone className="text-[#992787] dark:text-purple-400" />}
+                  label="Client Phone"
+                  value={selectedEventDetails.clientPhone}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DetailItem 
+                  icon={<FiClipboard className="text-[#992787] dark:text-purple-400" />}
+                  label="Event Name"
+                  value={selectedEventDetails.eventName}
+                />
+                <DetailItem 
+                  icon={<FiPackage className="text-[#992787] dark:text-purple-400" />}
+                  label="Event Type"
+                  value={selectedEventDetails.eventType}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <DetailItem 
+                  icon={<FiCalendar className="text-[#992787] dark:text-purple-400" />}
+                  label="Event Date"
+                  value={new Date(selectedEventDetails.eventDate).toLocaleDateString()}
+                />
+                <DetailItem 
+                  icon={<FiMapPin className="text-[#992787] dark:text-purple-400" />}
+                  label="Venue"
+                  value={selectedEventDetails.venue}
+                />
+                <DetailItem 
+                  icon={<FiUsers className="text-[#992787] dark:text-purple-400" />}
+                  label="Attendees"
+                  value={selectedEventDetails.numberOfAttendees}
+                />
+              </div>
+              
+              {/* Medical Professionals */}
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <FiUser className="text-[#992787] dark:text-purple-400" />
+                  Medical Professionals Needed
+                </h3>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedEventDetails.medicalProfessionalsNeeded?.map((prof, idx) => (
+                    <span 
+                      key={idx} 
+                      className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-sm"
+                    >
+                      {prof}
+                    </span>
+                  ))}
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <FiCalendar className="text-[#992787] dark:text-purple-400" />
-                  <span className="font-medium dark:text-gray-200">
-                    {new Date(selectedEventDetails.eventDate).toLocaleDateString()}
-                  </span>
+              {/* Additional Notes */}
+              {selectedEventDetails.additionalNotes && (
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                    <FiClipboard className="text-[#992787] dark:text-purple-400" />
+                    Additional Notes
+                  </h3>
+                  <p className="text-gray-700 dark:text-gray-300 mt-2 whitespace-pre-wrap">
+                    {selectedEventDetails.additionalNotes}
+                  </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <FiMapPin className="text-[#992787] dark:text-purple-400" />
-                  <span className="font-medium dark:text-gray-200">{selectedEventDetails.eventLocation}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiUsers className="text-[#992787] dark:text-purple-400" />
-                  <span className="font-medium dark:text-gray-200">{selectedEventDetails.numberOfAttendees} attendees</span>
-                </div>
+              )}
+              
+              {/* Status Information */}
+              <div className={`p-4 rounded-lg ${
+                selectedEventDetails.status === 'Rejected' ? 
+                  'bg-red-50 dark:bg-red-900/20' : 
+                selectedEventDetails.status === 'Accepted' ? 
+                  'bg-green-50 dark:bg-green-900/20' : 
+                  'bg-yellow-50 dark:bg-yellow-900/20'
+              }`}>
+                <h3 className="font-medium flex items-center gap-2 ${
+                  selectedEventDetails.status === 'Rejected' ? 
+                    'text-red-700 dark:text-red-300' : 
+                  selectedEventDetails.status === 'Accepted' ? 
+                    'text-green-700 dark:text-green-300' : 
+                    'text-yellow-700 dark:text-yellow-300'
+                }">
+                  <FiInfo className="text-lg" />
+                  Status: {selectedEventDetails.status || "Pending"}
+                </h3>
+                
                 {selectedEventDetails.reason && (
-                  <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/30 rounded-lg">
-                    <p className="text-sm text-red-600 dark:text-red-300 font-medium">Rejection Reason:</p>
-                    <p className="text-red-500 dark:text-red-400">{selectedEventDetails.reason}</p>
+                  <div className="mt-2">
+                    <p className="font-medium text-red-700 dark:text-red-300">Rejection Reason:</p>
+                    <p className="text-red-600 dark:text-red-400">{selectedEventDetails.reason}</p>
                   </div>
                 )}
-                {selectedEventDetails.additionalNotes && (
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Additional Notes</p>
-                    <p className="text-gray-700 dark:text-gray-300">{selectedEventDetails.additionalNotes}</p>
-                  </div>
-                )}
+                
                 {selectedEventDetails.invoiceItems?.length > 0 && (
                   <div className="mt-4">
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Invoice Items</p>
-                    <div className="space-y-2">
-                      {selectedEventDetails?.invoiceItems?.map((item, index) => (
-                        <div key={index} className="flex justify-between">
-                          <span className="dark:text-gray-300">{item.description}</span>
-                          <span className="dark:text-gray-300">R{parseFloat(item.amount).toFixed(2)}</span>
+                    <p className="font-medium text-green-700 dark:text-green-300">Invoice Items:</p>
+                    <div className="mt-2 space-y-2">
+                      {selectedEventDetails.invoiceItems?.map((item, idx) => (
+                        <div key={idx} className="flex justify-between border-b border-gray-200 dark:border-gray-600 pb-2">
+                          <span className="text-gray-700 dark:text-gray-300">{item.description}</span>
+                          <span className="text-gray-700 dark:text-gray-300 font-medium">
+                            R{parseFloat(item.amount).toFixed(2)}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -447,7 +538,7 @@ const AdminManageApplications = () => {
                 onClick={() => setSelectedEventDetails(null)}
                 className="px-4 py-2 bg-[#992787] text-white rounded-lg hover:bg-[#7a1f6e] transition-colors dark:bg-purple-600 dark:hover:bg-purple-700"
               >
-                Close
+                Close Details
               </button>
             </div>
           </div>
@@ -514,7 +605,7 @@ const AdminManageApplications = () => {
         </div>
       )}
 
-      {/* Invoice Form Modal */}
+      {/* Enhanced Invoice Form Modal */}
       {showInvoiceForm && selectedEventIndex !== null && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
           <div className="bg-white dark:bg-gray-800 w-full max-w-2xl mx-4 p-6 rounded-2xl shadow-2xl border-l-4 border-[#992787]">
@@ -540,7 +631,29 @@ const AdminManageApplications = () => {
                 </div>
               </div>
 
+              <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                  <FiUser className="text-[#992787] dark:text-purple-400" />
+                  Medical Professionals Needed
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {eventStorage[selectedEventIndex]?.medicalProfessionalsNeeded?.map((prof, idx) => (
+                    <span 
+                      key={idx} 
+                      className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-sm"
+                    >
+                      {prof}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
               <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <FiDollarSign className="text-[#992787] dark:text-purple-400" />
+                  Invoice Items
+                </h3>
+                
                 {invoiceItems?.map((item, index) => (
                   <div key={index} className="flex gap-4 items-start">
                     <div className="flex-1">
@@ -570,6 +683,8 @@ const AdminManageApplications = () => {
                           }}
                           className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-700 dark:text-gray-200"
                           placeholder="Amount"
+                          min="0"
+                          step="0.01"
                         />
                         {invoiceItems?.length > 1 && (
                           <button
@@ -586,9 +701,10 @@ const AdminManageApplications = () => {
                 
                 <button
                   onClick={addInvoiceItem}
-                  className="w-full py-2 text-[#992787] dark:text-purple-400 hover:bg-[#992787]/10 dark:hover:bg-purple-400/10 rounded-lg transition-colors"
+                  className="w-full py-2 text-[#992787] dark:text-purple-400 hover:bg-[#992787]/10 dark:hover:bg-purple-400/10 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
-                  <FiPlus className="inline-block mr-2" /> Add Another Item
+                  <FiPlus className="w-5 h-5" />
+                  Add Another Item
                 </button>
               </div>
             </div>
@@ -602,8 +718,9 @@ const AdminManageApplications = () => {
               </button>
               <button
                 onClick={handleInvoiceSubmit}
-                className="px-4 py-2 bg-[#992787] text-white rounded-lg hover:bg-[#7a1f6e] transition-colors dark:bg-purple-600 dark:hover:bg-purple-700"
+                className="px-4 py-2 bg-[#992787] text-white rounded-lg hover:bg-[#7a1f6e] transition-colors flex items-center gap-2 dark:bg-purple-600 dark:hover:bg-purple-700"
               >
+                <FiCheck className="w-5 h-5" />
                 Save Invoice & Approve
               </button>
             </div>
@@ -613,5 +730,16 @@ const AdminManageApplications = () => {
     </div>
   );
 };
+
+// Reusable detail item component
+const DetailItem = ({ icon, label, value }) => (
+  <div className="flex items-start gap-3">
+    <div className="mt-1">{icon}</div>
+    <div>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="font-medium dark:text-gray-200">{value || 'N/A'}</p>
+    </div>
+  </div>
+);
 
 export default AdminManageApplications;

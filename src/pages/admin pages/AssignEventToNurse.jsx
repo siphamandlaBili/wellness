@@ -362,7 +362,7 @@ const AssignEventToNurse = () => {
                 <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto">
                   {searchTerm 
                     ? "No nurses match your search. Try a different term." 
-                    : "You haven't added any nurses yet. Create nurse accounts to assign events."}
+                    : "You haven't added any nurses yet. Contact super admin to add nurse accounts"}
                 </p>
               </div>
             ) : (
