@@ -84,7 +84,6 @@ const UserReport = () => {
     fetchCompanyEvents();
   }, []);
   
-  console.log(selectedEvent);
   // Fetch report for selected event
   const fetchCompanyReport = async (eventId) => {
     try {

@@ -20,7 +20,7 @@ import left_arrow_icon from './left_arrow_icon.svg';
 import right_arrow_icon from './right_arrow_icon.svg';
 import facebook_icon from './facebook_icon.svg'
 import instagram_icon from './instagram_icon.svg'
-import twitter_icon from './twitter_icon.svg'
+// import twitter_icon from './twitter_icon.svg'
 import home_icon from './home_icon.svg'
 import add_icon from './add_icon.svg'
 import profile_upload_icon from './profile_upload_icon.svg'
@@ -58,7 +58,7 @@ export const assets = {
     person_icon,
     facebook_icon,
     instagram_icon,
-    twitter_icon,
+    // twitter_icon,
     home_icon,
     add_icon,
     person_tick_icon,

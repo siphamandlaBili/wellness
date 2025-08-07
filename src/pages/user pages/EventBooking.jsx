@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -13,8 +13,10 @@ import {
 } from "react-icons/hi2";
 import { UserContext } from "../../../context/authContext";
 import Select from "react-select";
+import { Loader } from "@googlemaps/js-api-loader";
 
 const Backend = import.meta.env.VITE_BACKEND_URL;
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const generateEventCode = () => {
   const letters = "VT";
@@ -37,6 +39,9 @@ const medicalProfessionalsOptions = [
 const EventBooking = () => {
   const { user } = useContext(UserContext);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [autocomplete, setAutocomplete] = useState(null);
+  const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
+  const venueInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     eventCode: generateEventCode(),
@@ -44,6 +49,12 @@ const EventBooking = () => {
     eventType: "",
     eventDate: "",
     venue: "",
+    venueDetails: {
+      formattedAddress: "",
+      placeId: "",
+      coordinates: null,
+      addressComponents: {}
+    },
     numberOfAttendees: "",
     additionalNotes: "",
     medicalProfessionalsNeeded: [],
@@ -64,12 +75,131 @@ const EventBooking = () => {
     "Waste Disposal - Post Event",
   ];
 
+  // Load Google Maps API
+  useEffect(() => {
+    const loadGoogleMaps = async () => {
+      if (!GOOGLE_MAPS_API_KEY) {
+        console.warn('Google Maps API key not found. Address autocomplete will be disabled.');
+        return;
+      }
+
+      try {
+        const loader = new Loader({
+          apiKey: GOOGLE_MAPS_API_KEY,
+          version: "weekly",
+          libraries: ["places"]
+        });
+
+        await loader.load();
+        setIsGoogleMapsLoaded(true);
+      } catch (error) {
+        console.error('Error loading Google Maps:', error);
+        toast.error('Failed to load address autocomplete. You can still enter addresses manually.');
+      }
+    };
+
+    loadGoogleMaps();
+  }, []);
+
+  // Initialize Google Places Autocomplete
+  useEffect(() => {
+    if (isGoogleMapsLoaded && venueInputRef.current && !autocomplete) {
+      const autocompleteInstance = new window.google.maps.places.Autocomplete(
+        venueInputRef.current,
+        {
+          types: ['establishment', 'geocode'],
+          componentRestrictions: { country: 'za' }, // Restrict to South Africa
+          fields: [
+            'place_id',
+            'formatted_address',
+            'name',
+            'geometry.location',
+            'address_components'
+          ]
+        }
+      );
+
+      autocompleteInstance.addListener('place_changed', () => {
+        const place = autocompleteInstance.getPlace();
+        
+        if (!place.place_id) {
+          toast.error('Please select a valid address from the dropdown');
+          return;
+        }
+
+        // Extract address components
+        const addressComponents = {};
+        if (place.address_components) {
+          place.address_components.forEach(component => {
+            const types = component.types;
+            if (types.includes('street_number')) {
+              addressComponents.streetNumber = component.long_name;
+            }
+            if (types.includes('route')) {
+              addressComponents.streetName = component.long_name;
+            }
+            if (types.includes('locality')) {
+              addressComponents.city = component.long_name;
+            }
+            if (types.includes('administrative_area_level_1')) {
+              addressComponents.province = component.long_name;
+            }
+            if (types.includes('postal_code')) {
+              addressComponents.postalCode = component.long_name;
+            }
+            if (types.includes('country')) {
+              addressComponents.country = component.long_name;
+            }
+          });
+        }
+
+        const coordinates = place.geometry?.location ? {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng()
+        } : null;
+
+        setFormData(prev => ({
+          ...prev,
+          venue: place.name || place.formatted_address || '',
+          venueDetails: {
+            formattedAddress: place.formatted_address || '',
+            placeId: place.place_id || '',
+            coordinates: coordinates,
+            addressComponents: addressComponents
+          }
+        }));
+
+        // Clear venue error if it exists
+        if (errors.venue) {
+          setErrors(prev => ({ ...prev, venue: '' }));
+        }
+      });
+
+      setAutocomplete(autocompleteInstance);
+    }
+  }, [isGoogleMapsLoaded, errors.venue]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    
+    // If manually typing in venue field, clear venue details
+    if (name === 'venue') {
+      setFormData({
+        ...formData,
+        [name]: value,
+        venueDetails: {
+          formattedAddress: "",
+          placeId: "",
+          coordinates: null,
+          addressComponents: {}
+        }
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleProfessionalsChange = (selectedOptions) => {
@@ -151,7 +281,8 @@ const EventBooking = () => {
           eventName: formData.eventName,
           eventType: formData.eventType,
           eventDate: formData.eventDate,
-          venue: formData.venue,
+          venue: `${formData.venueDetails.formattedAddress}`,
+          venueDetails: formData.venueDetails, // Include detailed venue info
           numberOfAttendees: parseInt(formData.numberOfAttendees, 10),
           additionalNotes: formData.additionalNotes,
           medicalProfessionalsNeeded: professionals,
@@ -174,12 +305,23 @@ const EventBooking = () => {
           eventType: "",
           eventDate: "",
           venue: "",
+          venueDetails: {
+            formattedAddress: "",
+            placeId: "",
+            coordinates: null,
+            addressComponents: {}
+          },
           numberOfAttendees: "",
           additionalNotes: "",
           medicalProfessionalsNeeded: [],
         });
         setOtherMedicalProfessional("");
         setErrors({});
+        
+        // Clear the autocomplete input
+        if (venueInputRef.current) {
+          venueInputRef.current.value = "";
+        }
         
       } catch (error) {
         console.error("Error adding event:", error);
@@ -210,6 +352,19 @@ const EventBooking = () => {
               Your Event Code: {formData.eventCode}
             </span>
           </div>
+
+          {/* Google Maps API Status */}
+          {!isGoogleMapsLoaded && GOOGLE_MAPS_API_KEY && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg flex items-center">
+              <svg className="animate-spin h-4 w-4 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span className="text-sm text-blue-600 dark:text-blue-300">
+                Loading address autocomplete...
+              </span>
+            </div>
+          )}
 
           {/* Form Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -288,19 +443,25 @@ const EventBooking = () => {
               )}
             </div>
 
-            {/* Event Venue */}
+            {/* Event Venue with Google Places Autocomplete */}
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Event Venue <span className="text-red-500">*</span>
+                {isGoogleMapsLoaded && (
+                  <span className="text-xs text-green-600 dark:text-green-400 ml-2">
+                    (Autocomplete enabled)
+                  </span>
+                )}
               </label>
               <div className="relative">
                 <HiOutlineMapPin className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-[#992787] dark:text-purple-400" />
                 <input
+                  ref={venueInputRef}
                   name="venue"
                   value={formData.venue}
                   onChange={handleChange}
                   className="w-full pl-10 pr-3 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-200/30 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  placeholder="Enter event venue"
+                  placeholder={isGoogleMapsLoaded ? "Start typing an address..." : "Enter event venue"}
                 />
               </div>
               {errors.venue && (
@@ -308,6 +469,16 @@ const EventBooking = () => {
                   <HiOutlineExclamationCircle className="w-3 h-3 mr-1" />
                   {errors.venue}
                 </p>
+              )}
+              
+              {/* Show selected address details */}
+              {formData.venueDetails.formattedAddress && (
+                <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
+                  <p className="text-xs text-green-700 dark:text-green-300">
+                    ✓ Selected: {formData.venueDetails.formattedAddress}
+                  </p>
+
+                </div>
               )}
             </div>
 

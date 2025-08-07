@@ -333,7 +333,6 @@ const UserProfilePage = () => {
         isOpen={isDeleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         onDelete={() => {
-          console.log("Account deleted");
           setDeleteModalOpen(false);
         }}
       />

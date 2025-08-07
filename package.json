@@ -11,6 +11,7 @@
     "start": "json-server --watch ./database/db.json --port 5000"
   },
   "dependencies": {
+    "@googlemaps/js-api-loader": "^1.16.10",
     "@heroicons/react": "^2.2.0",
     "@react-pdf/renderer": "^4.3.0",
     "@reduxjs/toolkit": "^2.7.0",

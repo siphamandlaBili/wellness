@@ -79,9 +79,22 @@ const router = createBrowserRouter([
     path: "/superadmin",
     element: <SuperAdminDashboard />,
     children: [
-      { path: "manage-admins", element: <ManageAdmins /> },
+      { index:true, element: <ManageAdmins /> },
       { path: "reports", element: <ReportsList /> }, // <-- Use the new component
-      { path: "settings", element: "setting" },
+      {
+  path: "settings",
+  element: (
+    <div className="flex items-center align-middle justify-center h-full">
+      <div className="text-center pt-20">
+        <div className="text-5xl mb-4">🚧</div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Coming Soon</h2>
+        <p className="text-gray-600 mb-6">
+          We're working hard to bring you this feature. Please check back later!
+        </p>
+      </div>
+    </div>
+  ),
+}
     ],
   },
   {

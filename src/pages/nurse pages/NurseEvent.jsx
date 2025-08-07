@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   HiOutlineCalendar,
   HiOutlineLocationMarker,
@@ -6,26 +6,81 @@ import {
   HiOutlineClipboardList,
   HiOutlineMail,
   HiOutlinePhone,
-  HiOutlineInformationCircle
+  HiOutlineInformationCircle,
+  HiOutlineEye,
+  HiOutlineEyeOff
 } from 'react-icons/hi';
 import { HiOutlineUser } from 'react-icons/hi2';
 import { useNurseEvent } from '../../../context/NurseEventContext';
 
 const NurseEvent = () => {
-  const { eventData, isLoading, error } = useNurseEvent();
-  console.log(eventData)
-  if (isLoading) {
+  const { eventData, isLoading, error, refetchEventData } = useNurseEvent();
+  const [showFullLocation, setShowFullLocation] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxLocationLength = 30;
+
+  // Auto-retry mechanism for authentication issues
+  useEffect(() => {
+    if (error && error.includes('only nurses are allowed') && retryCount < 3) {
+      const timer = setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+        if (refetchEventData) {
+          refetchEventData();
+        }
+      }, 1000); // Wait 1 second before retrying
+
+      return () => clearTimeout(timer);
+    }
+  }, [error, retryCount, refetchEventData]);
+
+  // Reset retry count when data loads successfully
+  useEffect(() => {
+    if (eventData) {
+      setRetryCount(0);
+    }
+  }, [eventData]);
+
+  const truncateLocation = (location) => {
+    if (!location) return '';
+    return location.length > maxLocationLength 
+      ? location.substring(0, maxLocationLength) + '...' 
+      : location;
+  };
+
+  if (isLoading || (error && error.includes('only nurses are allowed') && retryCount < 3)) {
     return (
       <div className="max-w-[100vw] mx-auto p-6 dark:bg-gray-900 min-h-screen flex items-center justify-center">
-        <div className="text-gray-500 dark:text-gray-400">Loading event details...</div>
+        <div className="text-center">
+          <div className="animate-pulse text-gray-500 dark:text-gray-400 mb-2">
+            Loading event details...
+          </div>
+          {retryCount > 0 && (
+            <div className="text-sm text-gray-400 dark:text-gray-500">
+              Retrying... ({retryCount}/3)
+            </div>
+          )}
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && !(error.includes('only nurses are allowed') && retryCount < 3)) {
     return (
       <div className="max-w-[100vw] mx-auto p-6 dark:bg-gray-900 min-h-screen flex items-center justify-center">
-        <div className="text-red-500 dark:text-red-400">Error: {error}</div>
+        <div className="text-center">
+          <div className="text-red-500 dark:text-red-400 mb-4">Error: {error}</div>
+          {refetchEventData && (
+            <button 
+              onClick={() => {
+                setRetryCount(0);
+                refetchEventData();
+              }}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Retry
+            </button>
+          )}
+        </div>
       </div>
     );
   }
@@ -37,6 +92,9 @@ const NurseEvent = () => {
       </div>
     );
   }
+
+  const locationToShow = showFullLocation ? eventData.venue : truncateLocation(eventData.venue);
+  const shouldShowViewButton = eventData.venue && eventData.venue.length > maxLocationLength;
 
   return (
     <div className="max-w-[100vw] mx-auto p-6 dark:bg-gray-900 min-h-screen">
@@ -65,9 +123,26 @@ const NurseEvent = () => {
           
           <div className="flex items-center space-x-3">
             <HiOutlineLocationMarker className="w-6 h-6 text-[#992787] dark:text-purple-400" />
-            <div>
+            <div className="flex-1">
               <p className="text-sm text-gray-500 dark:text-gray-400">Location</p>
-              <p className="font-medium dark:text-gray-100">{eventData.eventLocation}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium dark:text-gray-100 flex-1" title={eventData.venue}>
+                  {locationToShow}
+                </p>
+                {shouldShowViewButton && (
+                  <button
+                    onClick={() => setShowFullLocation(!showFullLocation)}
+                    className="flex items-center text-xs text-[#992787] dark:text-purple-400 hover:text-[#7a1f68] dark:hover:text-purple-300 transition-colors min-h-[20px]"
+                    title={showFullLocation ? "Show less" : "View full location"}
+                  >
+                    {showFullLocation ? (
+                       <span className="h-5 flex items-center">see less</span>
+                    ) : (
+                      <span className="h-5 flex items-center">see more</span>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 

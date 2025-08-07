@@ -14,8 +14,7 @@ const Backend= import.meta.env.VITE_BACKEND_URL;
         `${Backend}/api/v1/events/nurse/next`,
         { withCredentials: true }
       );
-      
-      console.log(data)
+  
       if (!data.success) {
         throw new Error('Failed to fetch event data');
       }

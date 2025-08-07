@@ -11,7 +11,6 @@ const Referrals = () => {
   const [error, setError] = useState(null);
   const { eventData, isLoading: eventLoading } = useNurseEvent();
 
-  console.log(eventData)
   useEffect(() => {
     const fetchReferrals = async () => {
       if (!eventData?._id) return;

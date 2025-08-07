@@ -59,7 +59,7 @@ export default function AuthForm() {
           email: formData.clientEmail,
           password: formData.password,
         };
-        console.log(Backend)
+        
         const response = await axios.post(
           `${Backend}/api/v1/login`,
           payload,
@@ -77,8 +77,6 @@ export default function AuthForm() {
 
           setTimeout(() => navigate(route), 1000);
         } else{
-          
-          console.log(response)
             toast.error(response.data.message);
         }
       }

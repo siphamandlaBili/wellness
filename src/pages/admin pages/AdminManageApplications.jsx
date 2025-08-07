@@ -129,7 +129,6 @@ const AdminManageApplications = () => {
       setInvoiceItems([]);
       toast.success('Event approved with invoice details');
     } catch (error) {
-      console.log(error)
       toast.error(error?.response?.data?.message || 'Failed to save invoice details');
     }
   };
