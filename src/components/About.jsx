@@ -17,7 +17,7 @@ const AboutSection = () => {
             </div>
             <p className="text-gray-600 dark:text-gray-300 text-[18px] leading-7 max-w-3xl mx-auto">
               HealthSpace FMP Wellness is a collaborative innovation born from
-              the partnership between leading experts in healthcare technology
+              the partnership between leading experts in Healthcare Technology
               and clinical practice. Our mission is to seamlessly integrate
               health and wellness into everyday healthcare — transforming it
               from a once-off service into a continuous, patient-centered
